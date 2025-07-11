@@ -991,7 +991,7 @@ function App() {
           <p>We use different AI models optimized for each task:</p>
           <div className="model-grid">
             <div className="model-card">
-              <h4>GPT-4 Turbo</h4>
+              <h4>GPT-4o (GPT-4.1)</h4>
               <p><strong>Chapter Generation</strong> - Advanced "show, don't tell" writing with rich dialogue</p>
             </div>
             <div className="model-card">
@@ -1481,7 +1481,7 @@ function App() {
                   className="btn-generate"
                   disabled={loading}
                 >
-                  {loading ? 'Writing Chapter... (GPT-4 Turbo)' : `Write Chapter ${quickGenData.chapters.length + 1}`}
+                  {loading ? 'Writing Chapter... (GPT-4o/GPT-4.1)' : `Write Chapter ${quickGenData.chapters.length + 1}`}
                 </button>
               )}
               

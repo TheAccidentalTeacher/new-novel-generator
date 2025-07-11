@@ -113,7 +113,7 @@ export const handler = async function(event, context) {
       break;
 
     case 'generate-chapter':
-      model = 'gpt-4-turbo'; // Use GPT-4 Turbo for highest quality fiction generation
+      model = 'gpt-4o'; // Use GPT-4o (GPT-4.1 equivalent) - OpenAI's most advanced model for complex reasoning and creative writing
       const chapterOutline = outline && outline[chapterNumber - 1] ? outline[chapterNumber - 1] : null;
       
       // Include more comprehensive context from previous chapters
