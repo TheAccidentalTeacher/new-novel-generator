@@ -237,27 +237,61 @@ function App() {
   }
 
   const handleQuickGenChapter = async (chapterNumber) => {
+    const targetWords = getTargetWordCount(quickGenData.wordCount);
+    
     const result = await generateContent('generate-chapter', '', {
       genre: quickGenData.genre,
       subgenre: quickGenData.subgenre,
       synopsis: quickGenData.synopsis,
       outline: quickGenData.outline,
       chapters: quickGenData.chapters,
-      chapterNumber: chapterNumber
+      chapterNumber: chapterNumber,
+      wordCount: quickGenData.wordCount
     })
     
     if (result) {
+      const actualWordCount = getWordCount(result);
       const newChapter = {
         number: chapterNumber,
         title: quickGenData.outline[chapterNumber - 1]?.title || `Chapter ${chapterNumber}`,
         content: result,
-        summary: quickGenData.outline[chapterNumber - 1]?.summary || ''
+        summary: quickGenData.outline[chapterNumber - 1]?.summary || '',
+        wordCount: actualWordCount,
+        targetWords: targetWords
+      }
+      
+      // Show word count feedback
+      if (actualWordCount < targetWords.min * 0.8) {
+        alert(`⚠️ Chapter ${chapterNumber} generated with ${actualWordCount} words (target: ${targetWords.min}-${targetWords.max}). This is shorter than expected. You may want to regenerate for a longer chapter.`);
+      } else if (actualWordCount > targetWords.max * 1.2) {
+        alert(`⚠️ Chapter ${chapterNumber} generated with ${actualWordCount} words (target: ${targetWords.min}-${targetWords.max}). This is longer than expected but still usable.`);
+      } else {
+        alert(`✅ Chapter ${chapterNumber} generated successfully with ${actualWordCount} words (target: ${targetWords.min}-${targetWords.max}).`);
       }
       
       setQuickGenData(prev => ({
         ...prev,
         chapters: [...prev.chapters, newChapter]
       }))
+    }
+  }
+
+  // Word count utility function
+  const getWordCount = (text) => {
+    if (!text) return 0;
+    return text.trim().split(/\s+/).filter(word => word.length > 0).length;
+  }
+
+  // Get target word count for chapter based on story length
+  const getTargetWordCount = (storyLength) => {
+    switch(storyLength) {
+      case 'flash-fiction': return { min: 200, max: 500, target: 350 };
+      case 'short-story': return { min: 500, max: 1000, target: 750 };
+      case 'novelette': return { min: 1000, max: 2000, target: 1500 };
+      case 'novella': return { min: 2000, max: 3000, target: 2500 };
+      case 'novel': return { min: 2500, max: 4000, target: 3000 };
+      case 'epic': return { min: 3000, max: 5000, target: 4000 };
+      default: return { min: 2000, max: 4000, target: 3000 };
     }
   }
 
@@ -1494,7 +1528,10 @@ function App() {
                 {quickGenData.chapters.map((chapter, index) => (
                   <div key={index} className="chapter-preview">
                     <h4>{chapter.title}</h4>
-                    <p className="word-count">~{chapter.content.split(' ').length} words</p>
+                    <p className="word-count">
+                      {chapter.wordCount || getWordCount(chapter.content)} words
+                      {chapter.targetWords && ` (target: ${chapter.targetWords.min}-${chapter.targetWords.max})`}
+                    </p>
                     <div className="chapter-actions">
                       <button 
                         onClick={() => setGeneratedContent(chapter.content)}

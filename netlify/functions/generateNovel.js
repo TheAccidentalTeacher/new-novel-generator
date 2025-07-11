@@ -135,6 +135,37 @@ export const handler = async function(event, context) {
         previousContext = 'This is the first chapter of the novel.';
       }
       
+      // Dynamic word count based on story length
+      let targetWordCount = '2000-3000';
+      let maxWordsInstruction = 'approximately 2000-3000 words';
+      
+      switch(wordCount) {
+        case 'flash-fiction':
+          targetWordCount = '200-500';
+          maxWordsInstruction = 'approximately 200-500 words';
+          break;
+        case 'short-story':
+          targetWordCount = '500-1000';
+          maxWordsInstruction = 'approximately 500-1000 words';
+          break;
+        case 'novelette':
+          targetWordCount = '1000-2000';
+          maxWordsInstruction = 'approximately 1000-2000 words';
+          break;
+        case 'novella':
+          targetWordCount = '2000-3000';
+          maxWordsInstruction = 'approximately 2000-3000 words';
+          break;
+        case 'novel':
+          targetWordCount = '2500-4000';
+          maxWordsInstruction = 'approximately 2500-4000 words';
+          break;
+        case 'epic':
+          targetWordCount = '3000-5000';
+          maxWordsInstruction = 'approximately 3000-5000 words';
+          break;
+      }
+      
       userPrompt = `Write Chapter ${chapterNumber} for a ${genre}${subgenre ? ` (${subgenre})` : ''} ${wordCount || 'novel'}.
         
         SYNOPSIS: ${synopsis}
@@ -143,8 +174,15 @@ export const handler = async function(event, context) {
         
         CHAPTER ${chapterNumber} OUTLINE TO FOLLOW: ${JSON.stringify(chapterOutline)}
         
-        REQUIREMENTS:
-        - Write a complete chapter of 2000-4000 words
+        CRITICAL WORD COUNT REQUIREMENTS:
+        - Target length: ${targetWordCount} words
+        - Write ${maxWordsInstruction} - this is ESSENTIAL
+        - Count as you write: aim for ${targetWordCount.split('-')[0]} words minimum
+        - Use substantial paragraphs (50-100 words each)
+        - Include detailed descriptions, full dialogue exchanges, and character thoughts
+        - Do NOT write short, abbreviated scenes
+        
+        WRITING REQUIREMENTS:
         - Follow the provided chapter outline exactly
         - Maintain perfect consistency with characters, plot, and tone from previous chapters
         - Use genre-appropriate writing style for ${genre}${subgenre ? ` (${subgenre})` : ''}
@@ -152,9 +190,12 @@ export const handler = async function(event, context) {
         - End with a compelling hook that leads naturally to the next chapter
         - Match the writing style and voice established in previous chapters
         - Ensure smooth transitions from the previous chapter's ending
+        - Write in full scenes with complete action, dialogue, and description
         
         Format the response as a complete chapter with proper paragraphs. Do not include chapter numbers, titles, or any prefacing text - just the chapter content.`;
-      maxTokens = 6000;
+      
+      // Increase max tokens significantly for longer chapters
+      maxTokens = Math.min(16000, Math.ceil(parseInt(targetWordCount.split('-')[1]) * 1.5)); // Allow 1.5x target words in tokens
       temperature = 0.8;
       break;
       
@@ -198,9 +239,31 @@ export const handler = async function(event, context) {
       break;
   }
 
+  // Retry function for rate limit handling
+  const makeOpenAIRequest = async (params, retries = 3) => {
+    for (let i = 0; i < retries; i++) {
+      try {
+        const completion = await openai.chat.completions.create(params);
+        return completion;
+      } catch (error) {
+        console.log(`Attempt ${i + 1} failed:`, error.message);
+        
+        if (error.status === 429) { // Rate limit error
+          const waitTime = Math.min(1000 * Math.pow(2, i), 30000); // Exponential backoff, max 30s
+          console.log(`Rate limited. Waiting ${waitTime}ms before retry ${i + 1}/${retries}`);
+          await new Promise(resolve => setTimeout(resolve, waitTime));
+          continue;
+        }
+        
+        if (i === retries - 1) throw error; // Last attempt, throw the error
+      }
+    }
+  };
+
   try {
     console.log(`Processing ${mode} request with model: ${model}`);
     console.log(`Prompt length: ${userPrompt.length} characters`);
+    console.log(`Max tokens: ${maxTokens}`);
     
     const messages = systemPrompt ? 
       [
@@ -209,14 +272,18 @@ export const handler = async function(event, context) {
       ] : 
       [{ role: 'user', content: userPrompt }];
 
-    const completion = await openai.chat.completions.create({
+    const completion = await makeOpenAIRequest({
       model: model,
       messages: messages,
       max_tokens: maxTokens,
       temperature: temperature
     });
     
+    const generatedContent = completion.choices[0].message.content;
+    const wordCount = generatedContent.trim().split(/\s+/).filter(word => word.length > 0).length;
+    
     console.log(`Successfully generated content for ${mode}`);
+    console.log(`Generated ${wordCount} words`);
     
     return {
       statusCode: 200,
@@ -225,7 +292,10 @@ export const handler = async function(event, context) {
         'Access-Control-Allow-Headers': 'Content-Type',
         'Access-Control-Allow-Methods': 'POST, OPTIONS'
       },
-      body: JSON.stringify({ result: completion.choices[0].message.content })
+      body: JSON.stringify({ 
+        result: generatedContent,
+        wordCount: wordCount
+      })
     };
   } catch (err) {
     console.error(`Error in ${mode} generation:`, err);
