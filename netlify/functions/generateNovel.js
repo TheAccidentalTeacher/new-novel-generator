@@ -113,7 +113,7 @@ export const handler = async function(event, context) {
       break;
 
     case 'generate-chapter':
-      model = 'gpt-4o'; // Use GPT-4o for chapter generation
+      model = 'gpt-4-turbo'; // Use GPT-4 Turbo for highest quality fiction generation
       const chapterOutline = outline && outline[chapterNumber - 1] ? outline[chapterNumber - 1] : null;
       
       // Include more comprehensive context from previous chapters
@@ -166,37 +166,112 @@ export const handler = async function(event, context) {
           break;
       }
       
-      userPrompt = `Write Chapter ${chapterNumber} for a ${genre}${subgenre ? ` (${subgenre})` : ''} ${wordCount || 'novel'}.
+      // Enhanced professional system prompt for highest quality fiction writing
+      systemPrompt = `You are a master novelist with the storytelling mastery of authors like Toni Morrison, Gabriel García Márquez, Ursula K. Le Guin, and Neil Gaiman. Your writing demonstrates literary excellence and commercial appeal. Apply these professional standards:
+
+SHOW, DON'T TELL MASTERY:
+- Transform exposition into immersive scenes where readers discover information through action and consequence
+- Use precise sensory details (sight, sound, smell, touch, taste) to create vivid, visceral experiences
+- Reveal character emotions through physical manifestations: "Her fingers trembled against the doorframe" instead of "She was nervous"
+- Show relationships through meaningful interactions, shared glances, and unspoken tensions
+- Convey backstory through objects, dialogue fragments, and character reactions to present events
+- Let readers infer character traits from behavior patterns and choices under pressure
+- Use environmental details that reflect and amplify emotional states and themes
+
+DIALOGUE EXCELLENCE & AUTHENTICITY:
+- Create distinct voice patterns for each character based on background, education, region, and personality
+- Layer subtext beneath surface conversations - characters have hidden agendas, fears, and desires
+- Include natural speech rhythms: hesitations, interruptions, incomplete thoughts, regional expressions
+- Balance dialogue with action beats that reveal character state: "She set down her cup with deliberate care"
+- Use dialogue to reveal conflict, advance plot, and deepen relationships simultaneously
+- Incorporate realistic power dynamics and communication styles between different characters
+- Make every conversation serve multiple story functions while feeling natural and unforced
+
+ADVANCED LITERARY TECHNIQUES:
+- Employ varied sentence structures: short punchy fragments for tension, flowing sentences for contemplation
+- Choose precise, evocative verbs over adverbs: "She stalked" instead of "She walked angrily"
+- Create metaphors and imagery that reinforce theme and character psychology
+- Use strategic repetition and parallel structure for emphasis and rhythm
+- Build tension through pacing: quick exchanges for urgency, longer passages for reflection
+- Employ stream of consciousness for intimate character moments
+- Create atmospheric mood through carefully selected concrete details
+
+SCENE CRAFT & STRUCTURE:
+- Begin scenes in medias res with immediate tension or conflict
+- Ground readers in time, place, and emotional context within the first few sentences
+- End scenes with forward momentum: questions, discoveries, or emotional shifts
+- Use cinematic techniques: close-ups on significant details, wide shots for scope
+- Create scene objectives where every character wants something specific
+- Build rising action through escalating obstacles and mounting tension
+- Ensure each scene advances plot, develops character, or deepens theme (ideally all three)`;
+
+      userPrompt = `Write Chapter ${chapterNumber} for a ${genre}${subgenre ? ` (${subgenre})` : ''} ${wordCount || 'novel'} that demonstrates professional, publishable quality.
         
-        SYNOPSIS: ${synopsis}
+        STORY FOUNDATION:
+        Synopsis: ${synopsis}
         
         ${previousContext}
         
-        CHAPTER ${chapterNumber} OUTLINE TO FOLLOW: ${JSON.stringify(chapterOutline)}
+        CHAPTER ${chapterNumber} DETAILED OUTLINE: ${JSON.stringify(chapterOutline)}
         
-        CRITICAL WORD COUNT REQUIREMENTS:
-        - Target length: ${targetWordCount} words
-        - Write ${maxWordsInstruction} - this is ESSENTIAL
-        - Count as you write: aim for ${targetWordCount.split('-')[0]} words minimum
-        - Use substantial paragraphs (50-100 words each)
-        - Include detailed descriptions, full dialogue exchanges, and character thoughts
-        - Do NOT write short, abbreviated scenes
+        CRITICAL LENGTH REQUIREMENTS:
+        - Target word count: ${targetWordCount} words
+        - Write ${maxWordsInstruction} - this is ESSENTIAL for proper chapter development
+        - Use substantial, well-developed paragraphs (75-150 words each)
+        - Include detailed scene-setting, full character interactions, and rich internal thoughts
+        - DO NOT write abbreviated or summary-style scenes - develop every moment fully
         
-        WRITING REQUIREMENTS:
-        - Follow the provided chapter outline exactly
-        - Maintain perfect consistency with characters, plot, and tone from previous chapters
-        - Use genre-appropriate writing style for ${genre}${subgenre ? ` (${subgenre})` : ''}
-        - Include vivid descriptions, realistic dialogue, and character development
-        - End with a compelling hook that leads naturally to the next chapter
-        - Match the writing style and voice established in previous chapters
-        - Ensure smooth transitions from the previous chapter's ending
-        - Write in full scenes with complete action, dialogue, and description
+        PROFESSIONAL WRITING MANDATES:
         
-        Format the response as a complete chapter with proper paragraphs. Do not include chapter numbers, titles, or any prefacing text - just the chapter content.`;
+        SHOW, DON'T TELL IMPLEMENTATION:
+        - Replace ALL exposition with dramatic scenes that reveal information through action
+        - Use concrete sensory details to immerse readers completely in each moment
+        - Show character emotions through body language, dialogue tone, and environmental interaction
+        - Reveal plot points through character discoveries, conversations, and consequences
+        - Let readers piece together relationships and backstory from behavioral evidence
+        - Use symbolic details and meaningful objects to convey deeper themes
+        
+        DIALOGUE MASTERY REQUIREMENTS:
+        - Write authentic, character-specific speech patterns that reflect personality and background
+        - Layer subtext beneath surface conversations - characters rarely say exactly what they mean
+        - Include realistic interruptions, overlapping speech, and natural conversation flow
+        - Balance spoken words with action beats that reveal character psychology
+        - Use dialogue to create tension, reveal secrets, and advance multiple plot threads
+        - Ensure every exchange serves character development, plot advancement, and relationship dynamics
+        
+        SCENE DEVELOPMENT STANDARDS:
+        - Open with immediate engagement - drop readers into ongoing action or tension
+        - Establish clear scene objectives: what each character wants and what's at stake
+        - Build conflict through character goals that clash or complement in complex ways
+        - Use environmental details to enhance mood and reflect character emotional states
+        - Create rising tension that culminates in meaningful change or revelation
+        - End with compelling forward momentum that hooks readers for the next chapter
+        
+        GENRE-SPECIFIC EXCELLENCE:
+        - Honor ${genre}${subgenre ? ` (${subgenre})` : ''} conventions while bringing fresh perspective
+        - Use genre-appropriate pacing, tone, and thematic elements
+        - Incorporate expected genre elements naturally within the story flow
+        - Balance familiar tropes with unexpected twists and character depth
+        
+        CONTINUITY & CONSISTENCY:
+        - Maintain perfect consistency with established characters, plot, and world-building
+        - Honor the tone and style established in previous chapters
+        - Create smooth transitions that connect naturally to preceding events
+        - Advance the overall story arc while developing this chapter's specific conflicts
+        - Set up future plot developments through careful foreshadowing and character setup
+        
+        FINAL TECHNICAL REQUIREMENTS:
+        - Write in complete, fully-developed scenes with clear beginning, middle, and end
+        - Use proper paragraph breaks for dialogue and scene transitions
+        - Maintain consistent point of view throughout the chapter
+        - End with a compelling hook that creates anticipation for the next chapter
+        - Format as clean chapter text without titles, numbers, or prefacing explanations
+        
+        Focus on creating a chapter that could appear in a professionally published novel, with the depth, authenticity, and literary quality that readers expect from accomplished authors.`;
       
-      // Increase max tokens significantly for longer chapters
-      maxTokens = Math.min(16000, Math.ceil(parseInt(targetWordCount.split('-')[1]) * 1.5)); // Allow 1.5x target words in tokens
-      temperature = 0.8;
+      // Increase max tokens significantly for longer, higher-quality chapters
+      maxTokens = Math.min(25000, Math.ceil(parseInt(targetWordCount.split('-')[1]) * 2)); // Allow 2x target words in tokens for quality
+      temperature = 0.85; // Optimal for creative but controlled writing
       break;
       
     case 'character':

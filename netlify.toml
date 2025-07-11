@@ -9,7 +9,7 @@
   functions = "netlify/functions"
 
 [functions."*"]
-  # Increase timeout for AI generation functions (5 minutes)
-  timeout = "300s"
-  # Increase memory for larger responses
-  memory = "1024MB"
+  # Increase timeout for enhanced AI chapter generation (8 minutes)
+  timeout = "480s"
+  # Increase memory for larger, high-quality responses
+  memory = "1536MB"
