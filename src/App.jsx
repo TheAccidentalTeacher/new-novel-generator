@@ -3,6 +3,7 @@ import './App.css'
 
 function App() {
   const [activeTab, setActiveTab] = useState('home')
+  const [activeWorldTab, setActiveWorldTab] = useState('Locations')
   const [storyData, setStoryData] = useState({
     title: '',
     genre: '',
@@ -47,10 +48,126 @@ function App() {
     }
   }
 
+  const handleGenerateSynopsis = async () => {
+    const result = await generateContent('synopsis', `Generate a synopsis for a ${storyData.genre} novel titled "${storyData.title}"`)
+    if (result) {
+      setStoryData({...storyData, synopsis: result})
+    }
+  }
+
+  const handleGenerateCharacter = async () => {
+    const result = await generateContent('character', `Create a character for a ${storyData.genre} story`)
+    if (result) {
+      const newCharacter = {
+        id: Date.now(),
+        name: extractName(result) || 'Generated Character',
+        role: 'Main Character',
+        description: result
+      }
+      setStoryData({...storyData, characters: [...storyData.characters, newCharacter]})
+    }
+  }
+
+  const handleGenerateWorldElement = async () => {
+    const result = await generateContent('worldbuilding', `Create ${activeWorldTab.toLowerCase()} for a ${storyData.genre} story`)
+    if (result) {
+      const newElement = {
+        id: Date.now(),
+        name: extractElementName(result) || `New ${activeWorldTab.slice(0, -1)}`,
+        type: activeWorldTab.slice(0, -1),
+        description: result
+      }
+      setStoryData({...storyData, worldbuilding: [...storyData.worldbuilding, newElement]})
+    }
+  }
+
+  const handleGenerateOutline = async () => {
+    const result = await generateContent('outline', `Create an outline for a ${storyData.genre} novel`)
+    if (result) {
+      const chapters = parseOutlineToChapters(result)
+      setStoryData({...storyData, outline: chapters})
+    }
+  }
+
+  const handleGenerateScene = async () => {
+    const result = await generateContent('scene', `Write a scene for a ${storyData.genre} story`)
+    if (result) {
+      setGeneratedContent(result)
+    }
+  }
+
+  // Helper functions
+  const extractName = (text) => {
+    const nameMatch = text.match(/(?:Name|Character):\s*([^\n\r]+)/i)
+    return nameMatch ? nameMatch[1].trim() : null
+  }
+
+  const extractElementName = (text) => {
+    const lines = text.split('\n')
+    const firstLine = lines[0].replace(/^[*#-]\s*/, '').trim()
+    return firstLine.length > 0 && firstLine.length < 50 ? firstLine : null
+  }
+
+  const parseOutlineToChapters = (outline) => {
+    const chapters = []
+    const lines = outline.split('\n')
+    let currentChapter = null
+    
+    lines.forEach(line => {
+      const chapterMatch = line.match(/(?:Chapter|Part)\s*(\d+)[:\-\s]*(.+)/i)
+      if (chapterMatch) {
+        if (currentChapter) chapters.push(currentChapter)
+        currentChapter = {
+          id: Date.now() + chapters.length,
+          title: chapterMatch[2].trim(),
+          summary: ''
+        }
+      } else if (currentChapter && line.trim()) {
+        currentChapter.summary += line.trim() + ' '
+      }
+    })
+    
+    if (currentChapter) chapters.push(currentChapter)
+    return chapters.length > 0 ? chapters : [{
+      id: Date.now(),
+      title: 'Generated Outline',
+      summary: outline
+    }]
+  }
+
+  const addManualCharacter = () => {
+    const newCharacter = {
+      id: Date.now(),
+      name: 'New Character',
+      role: 'Supporting Character',
+      description: 'Character description...'
+    }
+    setStoryData({...storyData, characters: [...storyData.characters, newCharacter]})
+  }
+
+  const addManualWorldElement = () => {
+    const newElement = {
+      id: Date.now(),
+      name: `New ${activeWorldTab.slice(0, -1)}`,
+      type: activeWorldTab.slice(0, -1),
+      description: 'Element description...'
+    }
+    setStoryData({...storyData, worldbuilding: [...storyData.worldbuilding, newElement]})
+  }
+
+  const addManualChapter = () => {
+    const newChapter = {
+      id: Date.now(),
+      title: `Chapter ${storyData.outline.length + 1}`,
+      summary: 'Chapter summary...'
+    }
+    setStoryData({...storyData, outline: [...storyData.outline, newChapter]})
+  }
+
   const renderSidebar = () => (
     <div className="sidebar">
       <div className="logo">
-        <h2>� Novel Studio</h2>
+        <h2>📚 Novel Studio</h2>
       </div>
       <nav className="nav-menu">
         <button 
@@ -173,7 +290,7 @@ function App() {
             rows={6}
           />
           <button 
-            onClick={() => generateContent('synopsis', `Generate a compelling synopsis for a ${storyData.genre} novel titled "${storyData.title}"`)}
+            onClick={handleGenerateSynopsis}
             className="btn-generate"
             disabled={loading}
           >
@@ -223,9 +340,11 @@ function App() {
       <div className="panel-header">
         <h2>👥 Characters</h2>
         <div className="header-actions">
-          <button className="btn-primary">+ Add Character</button>
+          <button className="btn-primary" onClick={addManualCharacter}>
+            + Add Character
+          </button>
           <button 
-            onClick={() => generateContent('character', `Create a compelling character for a ${storyData.genre} story`)}
+            onClick={handleGenerateCharacter}
             className="btn-generate"
             disabled={loading}
           >
@@ -241,8 +360,8 @@ function App() {
             <p>Create your first character to bring your story to life</p>
           </div>
         ) : (
-          storyData.characters.map((character, index) => (
-            <div key={index} className="character-card">
+          storyData.characters.map((character) => (
+            <div key={character.id} className="character-card">
               <div className="character-avatar">👤</div>
               <h4>{character.name}</h4>
               <p className="character-role">{character.role}</p>
@@ -259,9 +378,11 @@ function App() {
       <div className="panel-header">
         <h2>🌍 Worldbuilding</h2>
         <div className="header-actions">
-          <button className="btn-primary">+ Add Element</button>
+          <button className="btn-primary" onClick={addManualWorldElement}>
+            + Add Element
+          </button>
           <button 
-            onClick={() => generateContent('worldbuilding', `Create worldbuilding elements for a ${storyData.genre} story`)}
+            onClick={handleGenerateWorldElement}
             className="btn-generate"
             disabled={loading}
           >
@@ -272,24 +393,32 @@ function App() {
       
       <div className="worldbuilding-categories">
         <div className="category-tabs">
-          <button className="tab-btn active">🏛️ Locations</button>
-          <button className="tab-btn">📚 Lore</button>
-          <button className="tab-btn">🎭 Culture</button>
-          <button className="tab-btn">⚔️ Magic System</button>
-          <button className="tab-btn">🏛️ Government</button>
-          <button className="tab-btn">💰 Economy</button>
+          {['🏛️ Locations', '📚 Lore', '🎭 Culture', '⚔️ Magic System', '🏛️ Government', '💰 Economy'].map((tab) => {
+            const tabName = tab.split(' ')[1]
+            return (
+              <button 
+                key={tabName}
+                className={`tab-btn ${activeWorldTab === tabName ? 'active' : ''}`}
+                onClick={() => setActiveWorldTab(tabName)}
+              >
+                {tab}
+              </button>
+            )
+          })}
         </div>
         
         <div className="worldbuilding-content">
-          {storyData.worldbuilding.length === 0 ? (
+          {storyData.worldbuilding.filter(element => element.type === activeWorldTab.slice(0, -1) || activeWorldTab === 'Locations' && element.type === 'Location').length === 0 ? (
             <div className="empty-state">
-              <h3>No world elements yet</h3>
-              <p>Build your world with locations, cultures, magic systems, and more</p>
+              <h3>No {activeWorldTab.toLowerCase()} yet</h3>
+              <p>Build your world with {activeWorldTab.toLowerCase()}, and more</p>
             </div>
           ) : (
             <div className="worldbuilding-grid">
-              {storyData.worldbuilding.map((element, index) => (
-                <div key={index} className="world-element-card">
+              {storyData.worldbuilding
+                .filter(element => element.type === activeWorldTab.slice(0, -1) || (activeWorldTab === 'Locations' && element.type === 'Location'))
+                .map((element) => (
+                <div key={element.id} className="world-element-card">
                   <h4>{element.name}</h4>
                   <p className="element-type">{element.type}</p>
                   <p className="element-description">{element.description}</p>
@@ -307,9 +436,11 @@ function App() {
       <div className="panel-header">
         <h2>📋 Outline</h2>
         <div className="header-actions">
-          <button className="btn-primary">+ Add Chapter</button>
+          <button className="btn-primary" onClick={addManualChapter}>
+            + Add Chapter
+          </button>
           <button 
-            onClick={() => generateContent('outline', `Create a detailed outline for a ${storyData.genre} novel`)}
+            onClick={handleGenerateOutline}
             className="btn-generate"
             disabled={loading}
           >
@@ -327,7 +458,7 @@ function App() {
         ) : (
           <div className="outline-list">
             {storyData.outline.map((chapter, index) => (
-              <div key={index} className="outline-item">
+              <div key={chapter.id} className="outline-item">
                 <div className="chapter-number">Chapter {index + 1}</div>
                 <div className="chapter-content">
                   <h4>{chapter.title}</h4>
@@ -348,7 +479,7 @@ function App() {
         <div className="header-actions">
           <button className="btn-primary">+ Add Scene</button>
           <button 
-            onClick={() => generateContent('scene', `Write a compelling scene for a ${storyData.genre} story`)}
+            onClick={handleGenerateScene}
             className="btn-generate"
             disabled={loading}
           >
@@ -361,8 +492,9 @@ function App() {
         <div className="scene-controls">
           <select className="scene-select">
             <option>All chapters</option>
-            <option>Chapter 1</option>
-            <option>Chapter 2</option>
+            {storyData.outline.map((chapter, index) => (
+              <option key={chapter.id}>Chapter {index + 1}</option>
+            ))}
           </select>
           <select className="pov-select">
             <option>3rd person ltd. POV</option>
@@ -411,7 +543,7 @@ function App() {
           <h3>📋 Story Outline</h3>
           <p>Create a detailed chapter-by-chapter outline</p>
           <button 
-            onClick={() => generateContent('outline', 'Generate a detailed story outline with plot points and character arcs')}
+            onClick={handleGenerateOutline}
             className="btn-generate"
             disabled={loading}
           >
