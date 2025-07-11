@@ -48,6 +48,20 @@ function App() {
   })
   const [loading, setLoading] = useState(false)
   const [generatedContent, setGeneratedContent] = useState('')
+  
+  // AutoGenerate state
+  const [autoGenData, setAutoGenData] = useState({
+    genre: '',
+    subgenre: '',
+    wordCount: '',
+    synopsis: '',
+    jobId: null,
+    status: 'idle', // 'idle', 'processing', 'complete', 'error'
+    progress: 0,
+    currentPhase: '',
+    novel: null,
+    error: null
+  })
 
   // Save only generated content to localStorage whenever it changes
   useEffect(() => {
@@ -950,6 +964,12 @@ function App() {
         >
           ⚡ Quick Generate
         </button>
+        <button 
+          className={`nav-item ${activeTab === 'auto-generate' ? 'active' : ''}`}
+          onClick={() => setActiveTab('auto-generate')}
+        >
+          🤖 AutoGenerate
+        </button>
       </nav>
     </div>
   )
@@ -963,9 +983,17 @@ function App() {
         <div className="quick-actions">
           <div className="action-card">
             <h3>🚀 Quick Start</h3>
-            <p>Generate a complete novel premise instantly</p>
+            <p>Generate a complete novel premise step-by-step</p>
             <button onClick={() => setActiveTab('generator')} className="btn-primary">
               Start Generating
+            </button>
+          </div>
+          
+          <div className="action-card">
+            <h3>🤖 AutoGenerate</h3>
+            <p>Set it and forget it - complete novel from synopsis</p>
+            <button onClick={() => setActiveTab('auto-generate')} className="btn-primary">
+              Auto Generate Novel
             </button>
           </div>
           
@@ -1577,6 +1605,245 @@ function App() {
     )
   }
 
+  const renderAutoGenerate = () => (
+    <div className="content-panel">
+      <div className="panel-header">
+        <h2>🤖 AutoGenerate - Set It and Forget It</h2>
+        <p>Generate a complete novel from a detailed synopsis automatically</p>
+      </div>
+
+      {autoGenData.status === 'idle' && (
+        <div className="auto-generate-setup">
+          <div className="setup-section">
+            <h3>1. Select Genre & Subgenre</h3>
+            <div className="genre-selection">
+              <div className="genre-grid">
+                {Object.keys(genres).map(genre => (
+                  <div key={genre} className="genre-card">
+                    <h4>{genre}</h4>
+                    <div className="subgenre-list">
+                      {genres[genre].map(subgenre => (
+                        <button
+                          key={subgenre}
+                          className={`subgenre-btn ${autoGenData.genre === genre && autoGenData.subgenre === subgenre ? 'selected' : ''}`}
+                          onClick={() => setAutoGenData(prev => ({ ...prev, genre, subgenre }))}
+                        >
+                          {subgenre}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="setup-section">
+            <h3>2. Choose Word Count</h3>
+            <div className="word-count-selection">
+              {wordCounts.map(wc => (
+                <div 
+                  key={wc.id}
+                  className={`word-count-card ${autoGenData.wordCount === wc.id ? 'selected' : ''}`}
+                  onClick={() => setAutoGenData(prev => ({ ...prev, wordCount: wc.id }))}
+                >
+                  <h4>{wc.name}</h4>
+                  <p className="range">{wc.range}</p>
+                  <p className="description">{wc.description}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="setup-section">
+            <h3>3. Paste Your Detailed Synopsis</h3>
+            <p className="synopsis-instructions">
+              Provide a comprehensive 2000-5000 word synopsis that includes:
+              • Main characters and their arcs • Plot structure and key events 
+              • Setting and world details • Major conflicts and resolutions
+              • Themes and tone
+            </p>
+            <textarea
+              className="synopsis-input"
+              placeholder="Paste your detailed synopsis here... (2000-5000 words recommended for best results)"
+              rows={20}
+              value={autoGenData.synopsis}
+              onChange={(e) => setAutoGenData(prev => ({ ...prev, synopsis: e.target.value }))}
+            />
+            <div className="synopsis-stats">
+              Word count: {getWordCount(autoGenData.synopsis)} words
+              {getWordCount(autoGenData.synopsis) < 1000 && (
+                <span className="warning"> • Consider adding more detail for better results</span>
+              )}
+            </div>
+          </div>
+
+          <div className="setup-section">
+            <h3>4. Start Generation</h3>
+            {autoGenData.genre && autoGenData.subgenre && autoGenData.wordCount && (
+              <div className="generation-summary">
+                <p><strong>Selected:</strong> {autoGenData.genre} - {autoGenData.subgenre}</p>
+                <p><strong>Target Length:</strong> {wordCounts.find(wc => wc.id === autoGenData.wordCount)?.name}</p>
+                <p><strong>Synopsis:</strong> {getWordCount(autoGenData.synopsis)} words</p>
+              </div>
+            )}
+            
+            <button 
+              onClick={startAutoGeneration}
+              className="btn-generate-auto"
+              disabled={!autoGenData.synopsis.trim() || !autoGenData.genre || !autoGenData.subgenre || !autoGenData.wordCount}
+            >
+              🚀 Generate Complete Novel
+            </button>
+            
+            <div className="auto-gen-info">
+              <h4>What happens next:</h4>
+              <ul>
+                <li>✨ AI analyzes your synopsis and plans the novel structure</li>
+                <li>📋 Generates a complete chapter-by-chapter outline</li>
+                <li>✍️ Writes each chapter using advanced "show, don't tell" techniques</li>
+                <li>📚 Provides a complete, export-ready novel</li>
+              </ul>
+              <p className="timing-note">
+                <strong>Estimated time:</strong> 10-15 minutes for a full novel
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {autoGenData.status === 'processing' && (
+        <div className="auto-generate-progress">
+          <div className="progress-header">
+            <h3>🔄 Generating Your Novel...</h3>
+            <p>Sit back and relax! Your novel is being crafted with advanced AI.</p>
+          </div>
+          
+          <div className="progress-bar">
+            <div 
+              className="progress-fill" 
+              style={{ width: `${autoGenData.progress}%` }}
+            ></div>
+          </div>
+          
+          <div className="progress-details">
+            <p className="current-phase">{autoGenData.currentPhase}</p>
+            <p className="progress-percent">{autoGenData.progress}% Complete</p>
+          </div>
+          
+          <div className="progress-info">
+            <p>🎯 <strong>Genre:</strong> {autoGenData.genre} - {autoGenData.subgenre}</p>
+            <p>📏 <strong>Target:</strong> {wordCounts.find(wc => wc.id === autoGenData.wordCount)?.name}</p>
+            <p>⏱️ <strong>Started:</strong> {new Date().toLocaleTimeString()}</p>
+          </div>
+          
+          <button 
+            onClick={resetAutoGenerate}
+            className="btn-cancel"
+          >
+            Cancel Generation
+          </button>
+        </div>
+      )}
+
+      {autoGenData.status === 'complete' && autoGenData.novel && (
+        <div className="auto-generate-complete">
+          <div className="completion-header">
+            <h3>🎉 Novel Generation Complete!</h3>
+            <p>Your novel has been successfully generated and is ready for download.</p>
+          </div>
+          
+          <div className="novel-stats">
+            <div className="stat-card">
+              <h4>📚 Total Chapters</h4>
+              <p>{autoGenData.novel.chapters.length}</p>
+            </div>
+            <div className="stat-card">
+              <h4>📝 Total Words</h4>
+              <p>{autoGenData.novel.metadata.totalWords.toLocaleString()}</p>
+            </div>
+            <div className="stat-card">
+              <h4>🎭 Genre</h4>
+              <p>{autoGenData.novel.genre} - {autoGenData.novel.subgenre}</p>
+            </div>
+            <div className="stat-card">
+              <h4>⏰ Generated</h4>
+              <p>{new Date(autoGenData.novel.metadata.generatedAt).toLocaleString()}</p>
+            </div>
+          </div>
+          
+          <div className="export-section">
+            <h4>📥 Download Your Novel</h4>
+            <div className="export-controls">
+              <button 
+                onClick={() => exportAutoGeneratedNovel('docx')} 
+                className="btn-export"
+              >
+                📄 Download .docx
+              </button>
+              <button 
+                onClick={() => exportAutoGeneratedNovel('pdf')} 
+                className="btn-export"
+              >
+                📕 Download PDF
+              </button>
+              <button 
+                onClick={() => exportAutoGeneratedNovel('html')} 
+                className="btn-export"
+              >
+                📝 Export for Google Docs
+              </button>
+            </div>
+          </div>
+          
+          <div className="chapter-preview">
+            <h4>📖 Chapter Preview</h4>
+            <div className="chapter-list">
+              {autoGenData.novel.chapters.slice(0, 3).map((chapter, index) => (
+                <div key={index} className="chapter-preview-item">
+                  <h5>Chapter {chapter.number}: {chapter.title}</h5>
+                  <p className="chapter-summary">{chapter.summary}</p>
+                  <p className="chapter-stats">{chapter.wordCount} words</p>
+                </div>
+              ))}
+              {autoGenData.novel.chapters.length > 3 && (
+                <p className="more-chapters">
+                  ... and {autoGenData.novel.chapters.length - 3} more chapters
+                </p>
+              )}
+            </div>
+          </div>
+          
+          <div className="action-controls">
+            <button 
+              onClick={resetAutoGenerate}
+              className="btn-new-novel"
+            >
+              🔄 Generate Another Novel
+            </button>
+          </div>
+        </div>
+      )}
+
+      {autoGenData.status === 'error' && (
+        <div className="auto-generate-error">
+          <h3>❌ Generation Failed</h3>
+          <p className="error-message">{autoGenData.error}</p>
+          <p>Please try again or contact support if the problem persists.</p>
+          
+          <div className="error-actions">
+            <button 
+              onClick={resetAutoGenerate}
+              className="btn-retry"
+            >
+              🔄 Try Again
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+
   const renderContent = () => {
     switch(activeTab) {
       case 'home': return renderHome()
@@ -1586,9 +1853,107 @@ function App() {
       case 'outline': return renderOutline()
       case 'scenes': return renderScenes()
       case 'generator': return renderGenerator()
+      case 'auto-generate': return renderAutoGenerate()
       default: return renderHome()
     }
   }
+
+  // AutoGenerate API Functions
+  const startAutoGeneration = async () => {
+    if (!autoGenData.synopsis.trim() || !autoGenData.genre || !autoGenData.subgenre || !autoGenData.wordCount) {
+      alert('Please fill in all required fields: Synopsis, Genre, Subgenre, and Word Count');
+      return;
+    }
+
+    setAutoGenData(prev => ({
+      ...prev,
+      status: 'processing',
+      progress: 0,
+      currentPhase: 'Starting generation...',
+      error: null
+    }));
+
+    try {
+      const response = await fetch('/.netlify/functions/autoGenerateNovel', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          mode: 'start',
+          synopsis: autoGenData.synopsis,
+          genre: autoGenData.genre,
+          subgenre: autoGenData.subgenre,
+          wordCount: autoGenData.wordCount,
+          userPreferences: {
+            writingStyle: 'literary',
+            pacing: 'measured',
+            detailLevel: 'rich'
+          }
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+
+      if (result.status === 'complete') {
+        setAutoGenData(prev => ({
+          ...prev,
+          status: 'complete',
+          progress: 100,
+          currentPhase: 'Generation complete!',
+          novel: result.novel,
+          jobId: result.jobId
+        }));
+      } else if (result.status === 'error') {
+        throw new Error(result.error || 'Unknown error occurred');
+      }
+
+    } catch (error) {
+      console.error('AutoGenerate error:', error);
+      setAutoGenData(prev => ({
+        ...prev,
+        status: 'error',
+        error: error.message,
+        currentPhase: 'Generation failed'
+      }));
+    }
+  };
+
+  const resetAutoGenerate = () => {
+    setAutoGenData({
+      genre: '',
+      subgenre: '',
+      wordCount: '',
+      synopsis: '',
+      jobId: null,
+      status: 'idle',
+      progress: 0,
+      currentPhase: '',
+      novel: null,
+      error: null
+    });
+  };
+
+  const exportAutoGeneratedNovel = (format) => {
+    if (!autoGenData.novel || !autoGenData.novel.chapters) {
+      alert('No novel to export');
+      return;
+    }
+
+    const novel = autoGenData.novel;
+    
+    if (format === 'docx') {
+      exportToDocx(novel.chapters, novel.synopsis);
+    } else if (format === 'pdf') {
+      exportToPDF(novel.chapters, novel.synopsis);
+    } else if (format === 'html') {
+      exportToGoogleDocs(novel.chapters, novel.synopsis);
+    }
+  };
 
   return (
     <div className="app">

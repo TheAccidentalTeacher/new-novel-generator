@@ -13,3 +13,9 @@
   timeout = "480s"
   # Increase memory for larger, high-quality responses
   memory = "1536MB"
+
+[functions."autoGenerateNovel"]
+  # Maximum timeout for full novel generation (15 minutes)
+  timeout = "900s"
+  # Maximum memory for complex processing
+  memory = "3008MB"
