@@ -6,17 +6,25 @@ function App() {
   const [activeWorldTab, setActiveWorldTab] = useState('Locations')
   const [quickGenStep, setQuickGenStep] = useState(1)
   const [quickGenData, setQuickGenData] = useState(() => {
-    // Load from localStorage if available
-    const saved = localStorage.getItem('quickGenData')
+    // Load only generated content from localStorage if available
+    const saved = localStorage.getItem('quickGenContent')
     if (saved) {
       try {
         const parsed = JSON.parse(saved)
-        // Check if data is less than 72 hours old
-        if (parsed.timestamp && Date.now() - parsed.timestamp < 72 * 60 * 60 * 1000) {
-          return parsed.data
+        // Check if data is less than 7 days old (168 hours)
+        if (parsed.timestamp && Date.now() - parsed.timestamp < 168 * 60 * 60 * 1000) {
+          return {
+            genre: '',
+            subgenre: '',
+            wordCount: '',
+            userInput: '',
+            synopsis: '',
+            outline: parsed.data.outline || [],
+            chapters: parsed.data.chapters || []
+          }
         }
       } catch (e) {
-        console.error('Error loading saved data:', e)
+        console.error('Error loading saved content:', e)
       }
     }
     return {
@@ -41,19 +49,25 @@ function App() {
   const [loading, setLoading] = useState(false)
   const [generatedContent, setGeneratedContent] = useState('')
 
-  // Save quickGenData to localStorage whenever it changes
+  // Save only generated content to localStorage whenever it changes
   useEffect(() => {
     const saveData = () => {
-      localStorage.setItem('quickGenData', JSON.stringify({
-        data: quickGenData,
-        timestamp: Date.now()
-      }))
+      // Only save if there's actual generated content
+      if (quickGenData.outline.length > 0 || quickGenData.chapters.length > 0) {
+        localStorage.setItem('quickGenContent', JSON.stringify({
+          data: {
+            outline: quickGenData.outline,
+            chapters: quickGenData.chapters
+          },
+          timestamp: Date.now()
+        }))
+      }
     }
     
     // Debounce saves
     const timeoutId = setTimeout(saveData, 1000)
     return () => clearTimeout(timeoutId)
-  }, [quickGenData])
+  }, [quickGenData.outline, quickGenData.chapters])
 
   // Genre and subgenre data
   const genres = {
@@ -259,7 +273,48 @@ function App() {
       chapters: []
     })
     setGeneratedContent('')
-    localStorage.removeItem('quickGenData')
+    // Clear stored content
+    localStorage.removeItem('quickGenContent')
+    localStorage.removeItem('quickGenData') // Remove old storage key too
+  }
+
+  const clearGeneratedContent = () => {
+    if (window.confirm('Are you sure you want to clear all generated outlines and chapters? This cannot be undone.')) {
+      setQuickGenData(prev => ({
+        ...prev,
+        outline: [],
+        chapters: []
+      }))
+      localStorage.removeItem('quickGenContent')
+      alert('✅ Generated content cleared!')
+    }
+  }
+
+  const clearAllData = () => {
+    if (confirm('⚠️ This will clear ALL saved data and start completely fresh. Are you sure?')) {
+      localStorage.clear()
+      setQuickGenStep(1)
+      setQuickGenData({
+        genre: '',
+        subgenre: '',
+        wordCount: '',
+        userInput: '',
+        synopsis: '',
+        outline: [],
+        chapters: []
+      })
+      setStoryData({
+        title: '',
+        genre: '',
+        synopsis: '',
+        characters: [],
+        worldbuilding: [],
+        outline: [],
+        scenes: []
+      })
+      setGeneratedContent('')
+      alert('✅ All data cleared successfully!')
+    }
   }
 
   const acceptDraft = () => {
@@ -1391,7 +1446,7 @@ function App() {
               
               {quickGenData.chapters.length === quickGenData.outline.length && quickGenData.chapters.length > 0 && (
                 <div className="completion-controls">
-                  <button onClick={handleAcceptDraft} className="btn-accept">
+                  <button onClick={acceptDraft} className="btn-accept">
                     ✅ Accept Draft
                   </button>
                   <div className="export-controls">
@@ -1412,6 +1467,12 @@ function App() {
               <button onClick={resetQuickGen} className="btn-reset">
                 🔄 Start New Project
               </button>
+              
+              {(quickGenData.outline.length > 0 || quickGenData.chapters.length > 0) && (
+                <button onClick={clearGeneratedContent} className="btn-reset">
+                  🗑️ Clear Generated Content
+                </button>
+              )}
             </div>
             
             <div className="chapter-progress">

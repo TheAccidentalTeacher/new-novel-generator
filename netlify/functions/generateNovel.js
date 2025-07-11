@@ -55,6 +55,7 @@ export const handler = async function(event, context) {
       break;
 
     case 'synopsis':
+      model = 'gpt-4o'; // Use GPT-4o for synopsis generation
       const wordCountInfo = getWordCountContext(wordCount);
       const genreInfo = subgenre ? `${genre} (${subgenre})` : genre;
       userPrompt = `Create a compelling 250-word synopsis for a ${genreInfo} ${wordCount || 'novel'} ${wordCountInfo}. 
@@ -73,7 +74,7 @@ export const handler = async function(event, context) {
       break;
 
     case 'outline':
-      model = 'gpt-4o-mini'; // Use GPT-4 for outline generation
+      model = 'gpt-4o'; // Use GPT-4o for outline generation  
       const prevChapters = outline && outline.length > 0 ? 
         `Previous chapters in outline: ${outline.map((ch, i) => `Chapter ${i+1}: ${ch.title} - ${ch.summary}`).join('\n')}` : '';
       
@@ -100,7 +101,7 @@ export const handler = async function(event, context) {
       break;
 
     case 'generate-chapter':
-      model = 'gpt-4o-mini'; // Use GPT-4 for chapter generation
+      model = 'gpt-4o'; // Use GPT-4o for chapter generation
       const chapterOutline = outline && outline[chapterNumber - 1] ? outline[chapterNumber - 1] : null;
       
       // Include more comprehensive context from previous chapters
