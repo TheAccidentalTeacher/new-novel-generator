@@ -377,14 +377,14 @@ Write the complete chapter with proper paragraphs. Do not include chapter number
         });
 
         const chapterContent = response.choices[0].message.content;
-        const wordCount = chapterContent.trim().split(/\s+/).filter(word => word.length > 0).length;
+        const chapterWordCount = chapterContent.trim().split(/\s+/).filter(word => word.length > 0).length;
 
         chapters.push({
           number: chapterNum,
           title: outline[i].title,
           content: chapterContent,
           summary: outline[i].summary,
-          wordCount: wordCount,
+          wordCount: chapterWordCount,
           generatedAt: new Date().toISOString()
         });
 
