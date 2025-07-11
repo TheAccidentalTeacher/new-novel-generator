@@ -560,16 +560,8 @@ Provide a JSON response with an array of chapters:
         const chapterData = outline[i];
         const chapterNumber = i + 1;
         
-        // Update progress with detailed logging
+        // Update progress
         const progressPercent = 30 + Math.floor((i / totalChapters) * 65); // 30-95%
-        enhancedLog('info', `Starting chapter ${chapterNumber}`, {
-          jobId,
-          chapterNumber,
-          totalChapters,
-          progress: progressPercent,
-          title: chapterData.title
-        });
-        
         jobManager.updateJob(jobId, {
           status: 'writing',
           progress: progressPercent,
@@ -579,21 +571,19 @@ Provide a JSON response with an array of chapters:
         // Check if job was cancelled
         const currentJob = jobManager.getJob(jobId);
         if (currentJob && currentJob.status === 'cancelled') {
-          enhancedLog('warn', 'Job cancelled by user', { jobId, chapterNumber });
           throw new Error('Job was cancelled by user');
         }
 
-        try {
-          const context = contextManager.buildContext(synopsis, outline, chapters, chapterNumber);
-          
-          const systemPrompt = `You are a professional novelist writing a ${genre} novel. You excel at:
+        const context = contextManager.buildContext(synopsis, outline, chapters, chapterNumber);
+        
+        const systemPrompt = `You are a professional novelist writing a ${genre} novel. You excel at:
 - Creating immersive scenes with rich sensory details
 - Writing authentic dialogue that reveals character
 - Building tension and emotional resonance
 - Maintaining consistency across the narrative
 - Following genre conventions while being original`;
 
-          const userPrompt = `Write Chapter ${chapterNumber} of this ${genre} novel.
+        const userPrompt = `Write Chapter ${chapterNumber} of this ${genre} novel.
 
 CONTEXT:
 ${context}
@@ -618,62 +608,30 @@ WRITING REQUIREMENTS:
 
 Write the complete chapter with proper paragraphs. Do not include chapter numbers or titles - just the chapter content.`;
 
-          enhancedLog('info', 'Making OpenAI request for chapter', {
-            jobId,
-            chapterNumber,
-            model: 'gpt-4o',
-            maxTokens: Math.min(20000, Math.ceil(analysis.estimatedWordsPerChapter * 1.5))
-          });
+        const response = await makeOpenAIRequest({
+          model: 'gpt-4o', // Use premium model for chapter generation
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: userPrompt }
+          ],
+          max_tokens: Math.min(20000, Math.ceil(analysis.estimatedWordsPerChapter * 1.5)),
+          temperature: 0.85
+        });
 
-          const response = await makeOpenAIRequest({
-            model: 'gpt-4o', // Use premium model for chapter generation
-            messages: [
-              { role: 'system', content: systemPrompt },
-              { role: 'user', content: userPrompt }
-            ],
-            max_tokens: Math.min(20000, Math.ceil(analysis.estimatedWordsPerChapter * 1.5)),
-            temperature: 0.85
-          });
+        const chapterContent = response.choices[0].message.content;
+        const wordCount = chapterContent.split(/\s+/).length;
 
-          const chapterContent = response.choices[0].message.content;
-          const wordCount = chapterContent.split(/\s+/).length;
+        const chapter = {
+          chapterNumber,
+          title: chapterData.title,
+          content: chapterContent,
+          wordCount,
+          summary: chapterData.summary,
+          generatedAt: new Date().toISOString()
+        };
 
-          const chapter = {
-            chapterNumber,
-            title: chapterData.title,
-            content: chapterContent,
-            wordCount,
-            summary: chapterData.summary,
-            generatedAt: new Date().toISOString()
-          };
-
-          chapters.push(chapter);
-          enhancedLog('info', `Chapter ${chapterNumber} generated successfully`, {
-            jobId,
-            chapterNumber,
-            wordCount,
-            progress: progressPercent
-          });
-          
-        } catch (chapterError) {
-          enhancedLog('error', `Chapter ${chapterNumber} generation failed`, {
-            jobId,
-            chapterNumber,
-            error: chapterError.message,
-            progress: progressPercent,
-            stack: chapterError.stack
-          });
-          
-          // Update job with specific error information
-          jobManager.updateJob(jobId, {
-            status: 'error',
-            progress: progressPercent,
-            message: `Failed at Chapter ${chapterNumber}: ${chapterError.message}`,
-            error: `Chapter generation failed at ${progressPercent}% (Chapter ${chapterNumber}): ${chapterError.message}`
-          });
-          
-          throw chapterError; // Re-throw to stop the entire process
-        }
+        chapters.push(chapter);
+        console.log(`Generated Chapter ${chapterNumber}: ${wordCount} words`);
       }
 
       return chapters;
@@ -701,11 +659,5 @@ Write the complete chapter with proper paragraphs. Do not include chapter number
         timestamp: new Date().toISOString()
       })
     };
-  }
-
-  // Enhanced logging function
-  function enhancedLog(level, message, data = {}) {
-    const timestamp = new Date().toISOString();
-    console.log(`[${timestamp}] [${level.toUpperCase()}] ${message}`, JSON.stringify(data));
   }
 };

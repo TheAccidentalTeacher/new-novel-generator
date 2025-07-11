@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Novel Generator Debug Console</title>
+    <style>
+        body { font-family: monospace; margin: 20px; }
+        .error { color: red; }
+        .success { color: green; }
+        .info { color: blue; }
+        .section { margin: 20px 0; padding: 10px; border: 1px solid #ccc; }
+        button { margin: 5px; padding: 10px; }
+        textarea { width: 100%; height: 100px; }
+        .log { background: #f0f0f0; padding: 10px; height: 300px; overflow-y: scroll; }
+    </style>
+</head>
+<body>
+    <h1>🔧 Novel Generator Debug Console</h1>
+    
+    <div class="section">
+        <h2>1. Test Netlify Functions</h2>
+        <button onclick="testGenerateNovel()">Test generateNovel Function</button>
+        <button onclick="testAutoGenerate()">Test autoGenerateNovel Function</button>
+        <div id="function-test-results"></div>
+    </div>
+    
+    <div class="section">
+        <h2>2. Browser State Check</h2>
+        <button onclick="checkBrowserState()">Check Browser State</button>
+        <div id="browser-state-results"></div>
+    </div>
+    
+    <div class="section">
+        <h2>3. Network Test</h2>
+        <button onclick="testNetworkConnectivity()">Test Network</button>
+        <div id="network-test-results"></div>
+    </div>
+    
+    <div class="section">
+        <h2>4. Console Logs</h2>
+        <button onclick="clearLogs()">Clear Logs</button>
+        <div id="console-logs" class="log"></div>
+    </div>
+    
+    <script>
+        // Capture console logs
+        const originalLog = console.log;
+        const originalError = console.error;
+        const originalWarn = console.warn;
+        
+        function logToDebug(message, type = 'info') {
+            const logDiv = document.getElementById('console-logs');
+            const timestamp = new Date().toLocaleTimeString();
+            logDiv.innerHTML += `<div class="${type}">[${timestamp}] ${message}</div>`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+        
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            logToDebug(args.join(' '), 'info');
+        };
+        
+        console.error = function(...args) {
+            originalError.apply(console, args);
+            logToDebug(args.join(' '), 'error');
+        };
+        
+        console.warn = function(...args) {
+            originalWarn.apply(console, args);
+            logToDebug(args.join(' '), 'error');
+        };
+        
+        async function testGenerateNovel() {
+            const resultDiv = document.getElementById('function-test-results');
+            resultDiv.innerHTML = '<p>Testing generateNovel function...</p>';
+            
+            try {
+                const response = await fetch('/.netlify/functions/generateNovel', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        mode: 'test',
+                        prompt: 'Test prompt',
+                        genre: 'Fantasy',
+                        subgenre: 'Urban Fantasy'
+                    })
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    resultDiv.innerHTML += '<p class="success">✅ generateNovel function is working</p>';
+                    console.log('generateNovel test successful:', data);
+                } else {
+                    resultDiv.innerHTML += `<p class="error">❌ generateNovel failed: ${response.status}</p>`;
+                    console.error('generateNovel test failed:', response.status, response.statusText);
+                }
+            } catch (error) {
+                resultDiv.innerHTML += `<p class="error">❌ generateNovel error: ${error.message}</p>`;
+                console.error('generateNovel test error:', error);
+            }
+        }
+        
+        async function testAutoGenerate() {
+            const resultDiv = document.getElementById('function-test-results');
+            resultDiv.innerHTML += '<p>Testing autoGenerateNovel function...</p>';
+            
+            try {
+                const response = await fetch('/.netlify/functions/autoGenerateNovel', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        mode: 'test'
+                    })
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    resultDiv.innerHTML += '<p class="success">✅ autoGenerateNovel function is working</p>';
+                    console.log('autoGenerateNovel test successful:', data);
+                } else {
+                    resultDiv.innerHTML += `<p class="error">❌ autoGenerateNovel failed: ${response.status}</p>`;
+                    console.error('autoGenerateNovel test failed:', response.status, response.statusText);
+                }
+            } catch (error) {
+                resultDiv.innerHTML += `<p class="error">❌ autoGenerateNovel error: ${error.message}</p>`;
+                console.error('autoGenerateNovel test error:', error);
+            }
+        }
+        
+        function checkBrowserState() {
+            const resultDiv = document.getElementById('browser-state-results');
+            const state = {
+                userAgent: navigator.userAgent,
+                online: navigator.onLine,
+                cookieEnabled: navigator.cookieEnabled,
+                language: navigator.language,
+                localStorage: typeof(Storage) !== "undefined",
+                currentURL: window.location.href,
+                timestamp: new Date().toISOString()
+            };
+            
+            resultDiv.innerHTML = '<pre>' + JSON.stringify(state, null, 2) + '</pre>';
+            console.log('Browser State:', state);
+        }
+        
+        async function testNetworkConnectivity() {
+            const resultDiv = document.getElementById('network-test-results');
+            resultDiv.innerHTML = '<p>Testing network connectivity...</p>';
+            
+            try {
+                // Test main app
+                const appResponse = await fetch('http://localhost:5173/');
+                const appStatus = appResponse.ok ? '✅ App accessible' : '❌ App not accessible';
+                
+                // Test Netlify functions
+                const netlifyTest = await fetch('/.netlify/functions/generateNovel', { method: 'OPTIONS' });
+                const netlifyStatus = netlifyTest.ok ? '✅ Netlify functions accessible' : '❌ Netlify functions not accessible';
+                
+                resultDiv.innerHTML = `
+                    <p>${appStatus}</p>
+                    <p>${netlifyStatus}</p>
+                    <p class="info">Network status: ${navigator.onLine ? 'Online' : 'Offline'}</p>
+                `;
+                
+                console.log('Network test completed');
+            } catch (error) {
+                resultDiv.innerHTML += `<p class="error">❌ Network test error: ${error.message}</p>`;
+                console.error('Network test error:', error);
+            }
+        }
+        
+        function clearLogs() {
+            document.getElementById('console-logs').innerHTML = '';
+        }
+        
+        // Auto-load tests
+        window.addEventListener('load', function() {
+            console.log('Debug console loaded');
+            checkBrowserState();
+        });
+    </script>
+</body>
+</html>

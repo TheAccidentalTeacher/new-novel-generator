@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Quick Function Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .result { margin: 10px 0; padding: 10px; border-radius: 5px; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+        button { padding: 10px 20px; margin: 5px; }
+    </style>
+</head>
+<body>
+    <h1>Quick Function Test</h1>
+    
+    <div>
+        <button onclick="testAutoGenerate()">Test Enhanced AutoGenerate</button>
+        <button onclick="testAutoGenerateStatus()">Test Status Check</button>
+        <button onclick="clearResults()">Clear Results</button>
+    </div>
+    
+    <div id="results"></div>
+    
+    <script>
+        function addResult(message, type = 'info') {
+            const results = document.getElementById('results');
+            const div = document.createElement('div');
+            div.className = `result ${type}`;
+            div.innerHTML = `<strong>${new Date().toLocaleTimeString()}</strong>: ${message}`;
+            results.appendChild(div);
+            results.scrollTop = results.scrollHeight;
+        }
+        
+        async function testAutoGenerate() {
+            addResult('Testing enhanced AutoGenerate function...', 'info');
+            
+            try {
+                const response = await fetch('/.netlify/functions/autoGenerateNovel', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        mode: 'test'
+                    })
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    addResult(`✅ AutoGenerate test successful: ${data.message}`, 'success');
+                    addResult(`Debug info: ${JSON.stringify(data.debugInfo)}`, 'info');
+                } else {
+                    const errorText = await response.text();
+                    addResult(`❌ AutoGenerate test failed: ${response.status} - ${errorText}`, 'error');
+                }
+            } catch (error) {
+                addResult(`❌ Test error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testAutoGenerateStatus() {
+            addResult('Testing status check with invalid job ID...', 'info');
+            
+            try {
+                const response = await fetch('/.netlify/functions/autoGenerateNovel', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        mode: 'status',
+                        jobId: 'test-job-id'
+                    })
+                });
+                
+                const data = await response.json();
+                if (response.status === 404) {
+                    addResult('✅ Status check working correctly (job not found as expected)', 'success');
+                } else {
+                    addResult(`Status response: ${JSON.stringify(data)}`, 'info');
+                }
+            } catch (error) {
+                addResult(`❌ Status test error: ${error.message}`, 'error');
+            }
+        }
+        
+        function clearResults() {
+            document.getElementById('results').innerHTML = '';
+        }
+        
+        // Auto-run test on load
+        window.addEventListener('load', function() {
+            addResult('Function test page loaded', 'info');
+        });
+    </script>
+</body>
+</html>
