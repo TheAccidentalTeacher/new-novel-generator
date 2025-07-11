@@ -113,7 +113,7 @@ export const handler = async function(event, context) {
       break;
 
     case 'generate-chapter':
-      model = 'gpt-4o'; // Use GPT-4o (GPT-4.1 equivalent) - OpenAI's most advanced model for complex reasoning and creative writing
+      model = 'gpt-4o'; // Use GPT-4o for highest quality fiction generation
       const chapterOutline = outline && outline[chapterNumber - 1] ? outline[chapterNumber - 1] : null;
       
       // Include more comprehensive context from previous chapters
@@ -322,12 +322,25 @@ SCENE CRAFT & STRUCTURE:
         return completion;
       } catch (error) {
         console.log(`Attempt ${i + 1} failed:`, error.message);
+        console.log(`Error status: ${error.status}`);
+        console.log(`Error type: ${error.type}`);
         
         if (error.status === 429) { // Rate limit error
           const waitTime = Math.min(1000 * Math.pow(2, i), 30000); // Exponential backoff, max 30s
           console.log(`Rate limited. Waiting ${waitTime}ms before retry ${i + 1}/${retries}`);
           await new Promise(resolve => setTimeout(resolve, waitTime));
           continue;
+        }
+        
+        // Log more details for debugging
+        if (error.status === 400) {
+          console.log('Bad request error - check model name and parameters');
+        }
+        if (error.status === 401) {
+          console.log('Unauthorized - check API key');
+        }
+        if (error.status === 404) {
+          console.log('Model not found - check model name');
         }
         
         if (i === retries - 1) throw error; // Last attempt, throw the error
@@ -339,6 +352,7 @@ SCENE CRAFT & STRUCTURE:
     console.log(`Processing ${mode} request with model: ${model}`);
     console.log(`Prompt length: ${userPrompt.length} characters`);
     console.log(`Max tokens: ${maxTokens}`);
+    console.log(`API Key present: ${!!apiKey}`);
     
     const messages = systemPrompt ? 
       [
