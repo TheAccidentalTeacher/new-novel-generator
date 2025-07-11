@@ -67,7 +67,7 @@ export const handler = async function(event, context) {
       break;
 
     case 'synopsis':
-      model = 'gpt-4.1-mini'; // Use GPT-4.1-mini for cost-effective synopsis generation
+      model = 'gpt-4o-mini'; // Use GPT-4o-mini for cost-effective synopsis generation
       const wordCountInfo = getWordCountContext(wordCount);
       const genreInfo = subgenre ? `${genre} (${subgenre})` : genre;
       userPrompt = `Create a compelling 250-word synopsis for a ${genreInfo} ${wordCount || 'novel'} ${wordCountInfo}. 
@@ -86,7 +86,7 @@ export const handler = async function(event, context) {
       break;
 
     case 'outline':
-      model = 'gpt-4.1-mini'; // Use GPT-4.1-mini for cost-effective outline generation  
+      model = 'gpt-4o-mini'; // Use GPT-4o-mini for cost-effective outline generation  
       const prevChapters = outline && outline.length > 0 ? 
         `Previous chapters in outline: ${outline.map((ch, i) => `Chapter ${i+1}: ${ch.title} - ${ch.summary}`).join('\n')}` : '';
       
@@ -113,7 +113,7 @@ export const handler = async function(event, context) {
       break;
 
     case 'generate-chapter':
-      model = 'gpt-4.1'; // Use GPT-4.1 - OpenAI's newest flagship model (2025) for highest quality fiction generation
+      model = 'gpt-4o'; // Use GPT-4o (most advanced available) for highest quality fiction generation
       const chapterOutline = outline && outline[chapterNumber - 1] ? outline[chapterNumber - 1] : null;
       
       // Include more comprehensive context from previous chapters
@@ -275,7 +275,7 @@ SCENE CRAFT & STRUCTURE:
       break;
       
     case 'character':
-      model = 'gpt-4.1-nano'; // Use GPT-4.1-nano for cost-effective character generation
+      model = 'gpt-3.5-turbo'; // Use GPT-3.5-turbo for cost-effective character generation
       userPrompt = prompt 
         ? `Create a detailed character for a ${storyData?.genre || 'fiction'} story based on: ${prompt}. Include name, role, background, personality, goals, and conflicts.`
         : `Generate a compelling character for a ${storyData?.genre || 'fiction'} story with detailed background, personality, goals, and conflicts.`;
@@ -283,7 +283,7 @@ SCENE CRAFT & STRUCTURE:
       break;
       
     case 'worldbuilding':
-      model = 'gpt-4.1-nano'; // Use GPT-4.1-nano for cost-effective worldbuilding generation
+      model = 'gpt-3.5-turbo'; // Use GPT-3.5-turbo for cost-effective worldbuilding generation
       userPrompt = prompt 
         ? `Create detailed worldbuilding elements for a ${storyData?.genre || 'fiction'} story: ${prompt}. Include locations, cultures, rules, or systems.`
         : `Generate interesting worldbuilding elements for a ${storyData?.genre || 'fiction'} story including locations, cultures, and unique aspects.`;
@@ -298,7 +298,7 @@ SCENE CRAFT & STRUCTURE:
       break;
       
     case 'scene':
-      model = 'gpt-4.1-nano'; // Use GPT-4.1-nano for cost-effective scene generation
+      model = 'gpt-3.5-turbo'; // Use GPT-3.5-turbo for cost-effective scene generation
       userPrompt = prompt 
         ? `Write a compelling scene for a ${storyData?.genre || 'fiction'} story: ${prompt}. Make it engaging with dialogue, action, and character development.`
         : `Write an engaging scene with compelling dialogue, vivid descriptions, and character development.`;
@@ -306,7 +306,7 @@ SCENE CRAFT & STRUCTURE:
       break;
       
     case 'chapter':
-      model = 'gpt-4.1-nano'; // Use GPT-4.1-nano for basic chapter generation (legacy mode)
+      model = 'gpt-3.5-turbo'; // Use GPT-3.5-turbo for basic chapter generation (legacy mode)
       userPrompt = prompt 
         ? `Write the first chapter of a ${storyData?.genre || 'fiction'} novel based on: ${prompt}. Create an engaging opening with strong character introduction and plot hook.`
         : `Write an engaging first chapter with compelling characters, vivid setting, and an intriguing plot hook.`;
@@ -314,7 +314,7 @@ SCENE CRAFT & STRUCTURE:
       break;
       
     case 'quick':
-      model = 'gpt-4.1-nano'; // Use GPT-4.1-nano for basic quick generation
+      model = 'gpt-3.5-turbo'; // Use GPT-3.5-turbo for basic quick generation
       break;
       
     default:

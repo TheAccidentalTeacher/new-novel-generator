@@ -987,20 +987,20 @@ function App() {
         </div>
         
         <div className="ai-models-info">
-          <h3>🤖 AI Models Used - Optimized Cost Efficiency</h3>
-          <p>We use different GPT-4.1 models optimized for each task's complexity and cost:</p>
+          <h3>🤖 AI Models Used - Optimized Performance</h3>
+          <p>We use different AI models optimized for each task's complexity:</p>
           <div className="model-grid">
             <div className="model-card">
-              <h4>GPT-4.1</h4>
-              <p><strong>Chapter Generation</strong> - Premium model for complex creative writing with advanced "show, don't tell" techniques</p>
+              <h4>GPT-4o</h4>
+              <p><strong>Chapter Generation</strong> - Most advanced model for complex creative writing with "show, don't tell" techniques</p>
             </div>
             <div className="model-card">
-              <h4>GPT-4.1-mini</h4>
-              <p><strong>Synopsis & Outline</strong> - Cost-effective for story structure and planning tasks</p>
+              <h4>GPT-4o-mini</h4>
+              <p><strong>Synopsis & Outline</strong> - Efficient for story structure and planning tasks</p>
             </div>
             <div className="model-card">
-              <h4>GPT-4.1-nano</h4>
-              <p><strong>Characters, World & Scenes</strong> - Efficient for creative elements and basic generation</p>
+              <h4>GPT-3.5 Turbo</h4>
+              <p><strong>Characters, World & Scenes</strong> - Fast and reliable for creative elements</p>
             </div>
           </div>
         </div>
@@ -1051,7 +1051,7 @@ function App() {
             className="btn-generate"
             disabled={loading}
           >
-            {loading ? 'Generating... (GPT-4.1-mini)' : '✨ Generate Synopsis'}
+            {loading ? 'Generating... (GPT-4o-mini)' : '✨ Generate Synopsis'}
           </button>
         </div>
         
@@ -1105,7 +1105,7 @@ function App() {
             className="btn-generate"
             disabled={loading}
           >
-            {loading ? 'Generating... (GPT-4.1-nano)' : '✨ Generate Character'}
+            {loading ? 'Generating... (GPT-3.5 Turbo)' : '✨ Generate Character'}
           </button>
         </div>
       </div>
@@ -1143,7 +1143,7 @@ function App() {
             className="btn-generate"
             disabled={loading}
           >
-            {loading ? 'Generating... (GPT-4.1-nano)' : '✨ Generate Element'}
+            {loading ? 'Generating... (GPT-3.5 Turbo)' : '✨ Generate Element'}
           </button>
         </div>
       </div>
@@ -1201,7 +1201,7 @@ function App() {
             className="btn-generate"
             disabled={loading}
           >
-            {loading ? 'Generating... (GPT-4.1-mini)' : '✨ Generate Outline'}
+            {loading ? 'Generating... (GPT-4o-mini)' : '✨ Generate Outline'}
           </button>
         </div>
       </div>
@@ -1240,7 +1240,7 @@ function App() {
             className="btn-generate"
             disabled={loading}
           >
-            {loading ? 'Generating... (GPT-4.1-nano)' : '✨ Generate Scene'}
+            {loading ? 'Generating... (GPT-3.5 Turbo)' : '✨ Generate Scene'}
           </button>
         </div>
       </div>
@@ -1396,7 +1396,7 @@ function App() {
                 className="btn-next"
                 disabled={!quickGenData.userInput.trim() || loading}
               >
-                {loading ? 'Generating Synopsis & Outline... (GPT-4.1-mini)' : 'Next: Generate Outline →'}
+                {loading ? 'Generating Synopsis & Outline... (GPT-4o-mini)' : 'Next: Generate Outline →'}
               </button>
             </div>
           </div>
@@ -1426,7 +1426,7 @@ function App() {
                 className="btn-generate"
                 disabled={loading}
               >
-                {loading ? 'Generating Chapter... (GPT-4.1-mini)' : `Generate Chapter ${quickGenData.outline.length + 1}`}
+                {loading ? 'Generating Chapter... (GPT-4o-mini)' : `Generate Chapter ${quickGenData.outline.length + 1}`}
               </button>
               
               {quickGenData.outline.length > 0 && (
@@ -1481,7 +1481,7 @@ function App() {
                   className="btn-generate"
                   disabled={loading}
                 >
-                  {loading ? 'Writing Chapter... (GPT-4.1)' : `Write Chapter ${quickGenData.chapters.length + 1}`}
+                  {loading ? 'Writing Chapter... (GPT-4o)' : `Write Chapter ${quickGenData.chapters.length + 1}`}
                 </button>
               )}
               
