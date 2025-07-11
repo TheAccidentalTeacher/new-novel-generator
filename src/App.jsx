@@ -1851,12 +1851,33 @@ Please copy this entire error message for debugging.
     )
   }
 
-  const renderAutoGenerate = () => (
-    <div className="content-panel">
-      <div className="panel-header">
-        <h2>🤖 AutoGenerate - Set It and Forget It</h2>
-        <p>Generate a complete novel from a detailed synopsis automatically</p>
-      </div>
+  const renderAutoGenerate = () => {
+    console.log('AutoGenerate status:', autoGenData.status);
+    console.log('AutoGenerate data:', autoGenData);
+    
+    return (
+      <div className="content-panel">
+        <div className="panel-header">
+          <h2>🤖 AutoGenerate - Set It and Forget It</h2>
+          <p>Generate a complete novel from a detailed synopsis automatically</p>
+          
+          {/* Debug Info */}
+          <div style={{ 
+            background: '#f0f0f0', 
+            padding: '10px', 
+            margin: '10px 0', 
+            borderRadius: '5px',
+            fontSize: '12px',
+            fontFamily: 'monospace'
+          }}>
+            <strong>Debug Info:</strong><br/>
+            Status: {autoGenData.status}<br/>
+            Job ID: {autoGenData.jobId || 'None'}<br/>
+            Progress: {autoGenData.progress}%<br/>
+            Current Phase: {autoGenData.currentPhase || 'None'}<br/>
+            Last Update: {autoGenData.lastUpdate ? new Date(autoGenData.lastUpdate).toLocaleString() : 'None'}
+          </div>
+        </div>
 
       {autoGenData.status === 'idle' && (
         <div className="auto-generate-setup">
@@ -2210,7 +2231,8 @@ Please copy this entire error message for debugging.
         </div>
       )}
     </div>
-  )
+    )
+  }
 
   const renderContent = () => {
     switch(activeTab) {
