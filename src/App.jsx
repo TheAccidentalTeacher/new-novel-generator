@@ -147,6 +147,45 @@ function App() {
     }
   }
 
+  // Auto-generate synopsis and go to outline step
+  const handleQuickGenProceedToOutline = async () => {
+    if (!quickGenData.userInput.trim()) return;
+    
+    setLoading(true);
+    try {
+      // Auto-generate synopsis in the background
+      const synopsis = await generateContent('synopsis', '', {
+        genre: quickGenData.genre,
+        subgenre: quickGenData.subgenre,
+        wordCount: quickGenData.wordCount,
+        userInput: quickGenData.userInput
+      });
+      
+      if (synopsis) {
+        setQuickGenData(prev => ({ 
+          ...prev, 
+          synopsis: synopsis,
+          // Clear any old outline/chapter data to prevent conflicts
+          outline: [],
+          chapters: []
+        }));
+      }
+      
+      setQuickGenStep(5); // Skip step 4, go directly to outline generation
+    } catch (error) {
+      console.error('Synopsis generation failed:', error);
+      // Even if synopsis fails, continue to outline with empty synopsis
+      setQuickGenData(prev => ({ 
+        ...prev,
+        outline: [],
+        chapters: []
+      }));
+      setQuickGenStep(5);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Quick Generate workflow functions
   const handleQuickGenSynopsis = async () => {
     const result = await generateContent('synopsis', '', {
@@ -1308,7 +1347,7 @@ function App() {
       return (
         <div className="content-panel">
           <div className="panel-header">
-            <h2>⚡ Quick Generate - Step 3/6</h2>
+            <h2>⚡ Quick Generate - Step 3/5</h2>
             <p>Tell us about your story idea</p>
           </div>
           
@@ -1334,11 +1373,11 @@ function App() {
                 ← Back
               </button>
               <button 
-                onClick={() => setQuickGenStep(4)} 
+                onClick={handleQuickGenProceedToOutline}
                 className="btn-next"
-                disabled={!quickGenData.userInput.trim()}
+                disabled={!quickGenData.userInput.trim() || loading}
               >
-                Next: Generate Synopsis →
+                {loading ? 'Generating Synopsis & Outline...' : 'Next: Generate Outline →'}
               </button>
             </div>
           </div>
@@ -1346,70 +1385,19 @@ function App() {
       )
     }
 
-    // Step 4: Synopsis Generation
-    if (quickGenStep === 4) {
-      return (
-        <div className="content-panel">
-          <div className="panel-header">
-            <h2>⚡ Quick Generate - Step 4/6</h2>
-            <p>AI-generated synopsis (250 words)</p>
-          </div>
-          
-          <div className="synopsis-section">
-            <div className="synopsis-controls">
-              <button 
-                onClick={handleQuickGenSynopsis}
-                className="btn-generate"
-                disabled={loading}
-              >
-                {loading ? 'Generating Synopsis...' : 'Generate Synopsis'}
-              </button>
-              
-              {quickGenData.synopsis && (
-                <button 
-                  onClick={handleQuickGenSynopsis}
-                  className="btn-regenerate"
-                  disabled={loading}
-                >
-                  🔄 Regenerate
-                </button>
-              )}
-            </div>
-            
-            {quickGenData.synopsis && (
-              <div className="synopsis-editor">
-                <label>Edit your synopsis:</label>
-                <textarea
-                  value={quickGenData.synopsis}
-                  onChange={(e) => setQuickGenData(prev => ({ ...prev, synopsis: e.target.value }))}
-                  rows={10}
-                  className="synopsis-text"
-                />
-              </div>
-            )}
-            
-            <div className="step-controls">
-              <button onClick={() => setQuickGenStep(3)} className="btn-back">
-                ← Back
-              </button>
-              {quickGenData.synopsis && (
-                <button onClick={() => setQuickGenStep(5)} className="btn-next">
-                  Next: Generate Outline →
-                </button>
-              )}
-            </div>
-          </div>
-        </div>
-      )
-    }
-
-    // Step 5: Outline Generation
+    // Step 4: Outline Generation (was step 5)
     if (quickGenStep === 5) {
       return (
         <div className="content-panel">
           <div className="panel-header">
-            <h2>⚡ Quick Generate - Step 5/6</h2>
+            <h2>⚡ Quick Generate - Step 4/5</h2>
             <p>Chapter-by-chapter outline generation</p>
+            {quickGenData.synopsis && (
+              <div className="auto-synopsis">
+                <h4>Auto-generated Synopsis:</h4>
+                <p>{quickGenData.synopsis}</p>
+              </div>
+            )}
           </div>
           
           <div className="outline-section">
@@ -1448,7 +1436,7 @@ function App() {
             )}
             
             <div className="step-controls">
-              <button onClick={() => setQuickGenStep(4)} className="btn-back">
+              <button onClick={() => setQuickGenStep(3)} className="btn-back">
                 ← Back
               </button>
             </div>
@@ -1457,12 +1445,12 @@ function App() {
       )
     }
 
-    // Step 6: Chapter Generation
+    // Step 5: Chapter Generation (was step 6)
     if (quickGenStep === 6) {
       return (
         <div className="content-panel">
           <div className="panel-header">
-            <h2>⚡ Quick Generate - Step 6/6</h2>
+            <h2>⚡ Quick Generate - Step 5/5</h2>
             <p>Generate your chapters</p>
           </div>
           

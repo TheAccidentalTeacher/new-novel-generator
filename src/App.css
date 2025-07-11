@@ -1206,3 +1206,24 @@ textarea {
     flex-wrap: wrap;
   }
 }
+
+/* Auto-generated synopsis display */
+.auto-synopsis {
+  background: #e8f5e8;
+  border: 2px solid #27ae60;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-top: 1rem;
+}
+
+.auto-synopsis h4 {
+  color: #27ae60;
+  margin-bottom: 0.5rem;
+  font-size: 1rem;
+}
+
+.auto-synopsis p {
+  color: #2c3e50;
+  line-height: 1.6;
+  font-size: 0.95rem;
+}
