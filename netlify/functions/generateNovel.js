@@ -163,6 +163,9 @@ exports.handler = async function(event, context) {
   }
 
   try {
+    console.log(`Processing ${mode} request with model: ${model}`);
+    console.log(`Prompt length: ${userPrompt.length} characters`);
+    
     const messages = systemPrompt ? 
       [
         { role: 'system', content: systemPrompt },
@@ -177,6 +180,8 @@ exports.handler = async function(event, context) {
       temperature: temperature
     });
     
+    console.log(`Successfully generated content for ${mode}`);
+    
     return {
       statusCode: 200,
       headers: {
@@ -187,6 +192,7 @@ exports.handler = async function(event, context) {
       body: JSON.stringify({ result: completion.choices[0].message.content })
     };
   } catch (err) {
+    console.error(`Error in ${mode} generation:`, err);
     return {
       statusCode: 500,
       headers: {
@@ -194,7 +200,11 @@ exports.handler = async function(event, context) {
         'Access-Control-Allow-Headers': 'Content-Type',
         'Access-Control-Allow-Methods': 'POST, OPTIONS'
       },
-      body: JSON.stringify({ error: err.message })
+      body: JSON.stringify({ 
+        error: `${mode} generation failed: ${err.message}`,
+        details: err.toString(),
+        stack: err.stack
+      })
     };
   }
 };

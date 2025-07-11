@@ -58,6 +58,9 @@ function App() {
   const generateContent = async (type, prompt, additionalData = {}) => {
     setLoading(true)
     try {
+      console.log(`Making request to /.netlify/functions/generateNovel with mode: ${type}`)
+      console.log('Request data:', { mode: type, prompt, storyData, ...additionalData })
+      
       const response = await fetch('/.netlify/functions/generateNovel', {
         method: 'POST',
         headers: {
@@ -71,16 +74,30 @@ function App() {
         })
       })
       
+      console.log('Response status:', response.status)
+      console.log('Response headers:', response.headers)
+      
+      if (!response.ok) {
+        const errorText = await response.text()
+        console.error('Error response:', errorText)
+        throw new Error(`HTTP ${response.status}: ${errorText}`)
+      }
+      
       const data = await response.json()
-      if (response.ok) {
+      console.log('Response data:', data)
+      
+      if (data.result) {
         setGeneratedContent(data.result)
         return data.result
-      } else {
+      } else if (data.error) {
         throw new Error(data.error)
+      } else {
+        throw new Error('No result or error in response')
       }
     } catch (error) {
       console.error('Generation error:', error)
-      setGeneratedContent(`Error: ${error.message}`)
+      const errorMessage = error.message || 'Unknown error occurred'
+      setGeneratedContent(`Error: ${errorMessage}\n\nTroubleshooting:\n- Check if you're using the Netlify live URL (not localhost)\n- Verify OpenAI API key is set in Netlify environment variables\n- Check browser console for detailed error logs`)
       return null
     } finally {
       setLoading(false)
