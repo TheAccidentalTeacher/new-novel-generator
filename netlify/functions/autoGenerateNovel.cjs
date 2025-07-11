@@ -5,10 +5,12 @@ const { OpenAI } = require('openai');
 const jobStorage = new Map();
 
 exports.handler = async function(event, context) {
-  console.log('AutoGenerate function called with method:', event.httpMethod);
+  console.log('=== AutoGenerate Function Start ===');
+  console.log('HTTP Method:', event.httpMethod);
   console.log('Request body:', event.body);
   
   if (event.httpMethod === 'OPTIONS') {
+    console.log('Handling OPTIONS request');
     return {
       statusCode: 200,
       headers: {
@@ -20,13 +22,18 @@ exports.handler = async function(event, context) {
   }
 
   try {
-    console.log('Parsing request body...');
+    console.log('Step 1: Parsing request body...');
     const requestData = JSON.parse(event.body || '{}');
     const { mode, jobId, synopsis, genre, subgenre, wordCount, userPreferences } = requestData;
-    console.log('Request data parsed:', { mode, genre, subgenre, wordCount, synopsisLength: synopsis?.length });
+    console.log('Step 2: Request data parsed successfully:', { mode, genre, subgenre, wordCount, synopsisLength: synopsis?.length });
     
+    console.log('Step 3: Checking environment variables...');
     const apiKey = process.env.OPENAI_API_KEY;
+    console.log('API key exists:', !!apiKey);
+    console.log('API key length:', apiKey?.length || 0);
+    
     if (!apiKey) {
+      console.log('ERROR: API key not found in environment variables');
       return {
         statusCode: 500,
         headers: {
@@ -40,11 +47,16 @@ exports.handler = async function(event, context) {
       };
     }
     
+    console.log('Step 4: Initializing OpenAI client...');
     const openai = new OpenAI({ apiKey });
+    console.log('Step 5: OpenAI client initialized successfully');
 
+    console.log('Step 6: Setting up helper functions...');
+    
     // Job Management System
     const jobManager = {
       createJob(jobId, synopsis, genre, subgenre, wordCount, userPreferences) {
+        console.log('Creating job:', jobId);
         const job = {
           jobId,
           status: 'starting',
@@ -61,10 +73,12 @@ exports.handler = async function(event, context) {
           error: null
         };
         jobStorage.set(jobId, job);
+        console.log('Job created successfully:', jobId);
         return job;
       },
 
       updateJob(jobId, updates) {
+        console.log('Updating job:', jobId, updates);
         const job = jobStorage.get(jobId);
         if (job) {
           Object.assign(job, updates, { lastUpdate: new Date().toISOString() });
@@ -75,13 +89,17 @@ exports.handler = async function(event, context) {
       },
 
       getJob(jobId) {
+        console.log('Getting job:', jobId);
         return jobStorage.get(jobId);
       },
 
       deleteJob(jobId) {
+        console.log('Deleting job:', jobId);
         return jobStorage.delete(jobId);
       }
     };
+
+    console.log('Step 7: Job manager initialized');
 
     // Context Management System
     const contextManager = {
@@ -184,10 +202,12 @@ exports.handler = async function(event, context) {
       return Math.ceil(words / chapters);
     }
 
+    console.log('Step 8: Processing mode:', mode);
+    
     // Handle different modes
     switch(mode) {
       case 'test':
-        console.log('Test mode - returning success');
+        console.log('Step 9: Test mode - returning success');
         return {
           statusCode: 200,
           headers: {
@@ -197,20 +217,29 @@ exports.handler = async function(event, context) {
           body: JSON.stringify({
             status: 'success',
             message: 'AutoGenerate function is working',
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toISOString(),
+            debugInfo: {
+              apiKeyLength: apiKey.length,
+              mode: mode,
+              step: 'test-complete'
+            }
           })
         };
         
       case 'start':
+        console.log('Step 9: Start mode - calling startAutoGeneration');
         return await startAutoGeneration(synopsis, genre, subgenre, wordCount, userPreferences);
       
       case 'status':
+        console.log('Step 9: Status mode - calling getJobStatus');
         return await getJobStatus(jobId);
       
       case 'cancel':
+        console.log('Step 9: Cancel mode - calling cancelJob');
         return await cancelJob(jobId);
       
       default:
+        console.log('Step 9: Invalid mode specified:', mode);
         throw new Error(`Invalid mode specified: ${mode}`);
     }
 
@@ -245,7 +274,7 @@ exports.handler = async function(event, context) {
           status: 'started',
           message: 'Novel generation started in background',
           estimatedTimeMinutes: getEstimatedTime(wordCount),
-          pollUrl: `/.netlify/functions/autoGenerateNovel.cjs?mode=status&jobId=${jobId}`
+          pollUrl: `/.netlify/functions/autoGenerateNovel?mode=status&jobId=${jobId}`
         })
       };
     }
@@ -606,7 +635,11 @@ Write the complete chapter with proper paragraphs. Do not include chapter number
     }
 
   } catch (mainErr) {
-    console.error('AutoGenerate handler error:', mainErr);
+    console.error('=== AutoGenerate Error ===');
+    console.error('Error type:', mainErr.constructor.name);
+    console.error('Error message:', mainErr.message);
+    console.error('Error stack:', mainErr.stack);
+    console.error('Error occurred at step: Checking error location...');
     
     return {
       statusCode: 500,
@@ -617,8 +650,10 @@ Write the complete chapter with proper paragraphs. Do not include chapter number
       },
       body: JSON.stringify({ 
         error: `AutoGenerate failed: ${mainErr.message}`,
+        errorType: mainErr.constructor.name,
         details: mainErr.toString(),
-        stack: mainErr.stack
+        stack: mainErr.stack,
+        timestamp: new Date().toISOString()
       })
     };
   }
