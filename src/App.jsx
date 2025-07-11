@@ -318,94 +318,274 @@ function App() {
 
   // Export functions
   const exportToDocx = async () => {
-    // Dynamic import to avoid build issues
-    const { default: htmlDocx } = await import('html-docx-js/dist/html-docx')
-    const { saveAs } = await import('file-saver')
-    
-    const htmlContent = generateExportHTML()
-    const docxBlob = htmlDocx.asBlob(htmlContent)
-    saveAs(docxBlob, `${quickGenData.genre}-${quickGenData.subgenre}-novel.docx`)
+    try {
+      // Dynamic import to avoid build issues
+      const { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType, PageBreak } = await import('docx')
+      const { saveAs } = await import('file-saver')
+      
+      const children = []
+      
+      // Title page
+      children.push(
+        new Paragraph({
+          alignment: AlignmentType.CENTER,
+          spacing: { before: 1440, after: 720 }, // 1 inch before, 0.5 inch after
+          children: [
+            new TextRun({
+              text: `${quickGenData.genre} Novel`,
+              size: 48,
+              bold: true
+            })
+          ]
+        }),
+        new Paragraph({
+          alignment: AlignmentType.CENTER,
+          spacing: { after: 240 },
+          children: [
+            new TextRun({
+              text: `Genre: ${quickGenData.genre} - ${quickGenData.subgenre}`,
+              size: 28
+            })
+          ]
+        }),
+        new Paragraph({
+          alignment: AlignmentType.CENTER,
+          spacing: { after: 240 },
+          children: [
+            new TextRun({
+              text: `Length: ${quickGenData.wordCount}`,
+              size: 28
+            })
+          ]
+        }),
+        new Paragraph({
+          alignment: AlignmentType.CENTER,
+          spacing: { after: 240 },
+          children: [
+            new TextRun({
+              text: `Total Words: ~${quickGenData.chapters.reduce((total, ch) => total + ch.content.split(' ').length, 0).toLocaleString()}`,
+              size: 28
+            })
+          ]
+        }),
+        new Paragraph({
+          alignment: AlignmentType.CENTER,
+          children: [
+            new TextRun({
+              text: `Generated: ${new Date().toLocaleDateString()}`,
+              size: 28
+            })
+          ]
+        }),
+        new Paragraph({
+          children: [new PageBreak()]
+        })
+      )
+      
+      // Synopsis
+      if (quickGenData.synopsis) {
+        children.push(
+          new Paragraph({
+            heading: HeadingLevel.HEADING_1,
+            alignment: AlignmentType.CENTER,
+            spacing: { before: 720, after: 480 },
+            children: [
+              new TextRun({
+                text: "Synopsis",
+                size: 32,
+                bold: true
+              })
+            ]
+          })
+        )
+        
+        const synopsisParas = quickGenData.synopsis.split('\n\n')
+        synopsisParas.forEach(para => {
+          if (para.trim()) {
+            children.push(
+              new Paragraph({
+                spacing: { after: 240 },
+                alignment: AlignmentType.JUSTIFIED,
+                children: [
+                  new TextRun({
+                    text: para.trim(),
+                    size: 24
+                  })
+                ]
+              })
+            )
+          }
+        })
+        
+        children.push(new Paragraph({ children: [new PageBreak()] }))
+      }
+      
+      // Chapters
+      quickGenData.chapters.forEach((chapter, index) => {
+        // Chapter title
+        children.push(
+          new Paragraph({
+            heading: HeadingLevel.HEADING_1,
+            alignment: AlignmentType.CENTER,
+            spacing: { before: 720, after: 480 },
+            children: [
+              new TextRun({
+                text: chapter.title,
+                size: 32,
+                bold: true
+              })
+            ]
+          })
+        )
+        
+        // Chapter content
+        const contentParas = chapter.content.split('\n\n')
+        contentParas.forEach(para => {
+          if (para.trim()) {
+            children.push(
+              new Paragraph({
+                spacing: { after: 240 },
+                alignment: AlignmentType.JUSTIFIED,
+                indent: { firstLine: 360 }, // 0.25 inch first line indent
+                children: [
+                  new TextRun({
+                    text: para.trim(),
+                    size: 24
+                  })
+                ]
+              })
+            )
+          }
+        })
+        
+        // Page break after each chapter except the last
+        if (index < quickGenData.chapters.length - 1) {
+          children.push(new Paragraph({ children: [new PageBreak()] }))
+        }
+      })
+      
+      const doc = new Document({
+        sections: [{
+          properties: {
+            page: {
+              margin: {
+                top: 1440,    // 1 inch
+                right: 1440,  // 1 inch
+                bottom: 1440, // 1 inch
+                left: 1440    // 1 inch
+              }
+            }
+          },
+          children: children
+        }]
+      })
+      
+      const blob = await Packer.toBlob(doc)
+      saveAs(blob, `${quickGenData.genre}-${quickGenData.subgenre}-novel.docx`)
+    } catch (error) {
+      console.error('Error exporting to DOCX:', error)
+      alert('Error exporting to DOCX. Please try the PDF or HTML export instead.')
+    }
   }
 
   const exportToPDF = async () => {
-    const { jsPDF } = await import('jspdf')
-    const pdf = new jsPDF('p', 'mm', 'a4')
-    const { saveAs } = await import('file-saver')
-    
-    // Add title page
-    pdf.setFontSize(24)
-    pdf.text(`${quickGenData.genre} Novel`, 20, 30)
-    pdf.setFontSize(16)
-    pdf.text(`Genre: ${quickGenData.genre} - ${quickGenData.subgenre}`, 20, 50)
-    pdf.text(`Word Count: ${quickGenData.wordCount}`, 20, 65)
-    
-    let yPosition = 90
-    
-    // Add synopsis
-    if (quickGenData.synopsis) {
-      pdf.setFontSize(14)
-      pdf.text('Synopsis', 20, yPosition)
-      yPosition += 10
-      pdf.setFontSize(10)
-      const synopsisLines = pdf.splitTextToSize(quickGenData.synopsis, 170)
-      synopsisLines.forEach(line => {
-        if (yPosition > 270) {
-          pdf.addPage()
-          yPosition = 20
-        }
-        pdf.text(line, 20, yPosition)
-        yPosition += 5
-      })
-      yPosition += 10
-    }
-    
-    // Add chapters
-    quickGenData.chapters.forEach((chapter, index) => {
-      pdf.addPage()
-      yPosition = 20
+    try {
+      const { jsPDF } = await import('jspdf')
+      const { saveAs } = await import('file-saver')
       
-      // Chapter title
+      const pdf = new jsPDF('p', 'mm', 'a4')
+      
+      // Add title page
+      pdf.setFontSize(24)
+      pdf.text(`${quickGenData.genre} Novel`, 105, 50, { align: 'center' })
       pdf.setFontSize(16)
-      pdf.text(chapter.title, 20, yPosition)
-      yPosition += 15
+      pdf.text(`Genre: ${quickGenData.genre} - ${quickGenData.subgenre}`, 105, 70, { align: 'center' })
+      pdf.text(`Word Count: ${quickGenData.wordCount}`, 105, 85, { align: 'center' })
+      pdf.text(`Total Words: ~${quickGenData.chapters.reduce((total, ch) => total + ch.content.split(' ').length, 0).toLocaleString()}`, 105, 100, { align: 'center' })
+      pdf.text(`Generated: ${new Date().toLocaleDateString()}`, 105, 115, { align: 'center' })
       
-      // Chapter content
-      pdf.setFontSize(10)
-      const contentLines = pdf.splitTextToSize(chapter.content, 170)
-      contentLines.forEach(line => {
-        if (yPosition > 270) {
-          pdf.addPage()
-          yPosition = 20
-        }
-        pdf.text(line, 20, yPosition)
-        yPosition += 5
+      let yPosition = 140
+      
+      // Add synopsis
+      if (quickGenData.synopsis) {
+        pdf.addPage()
+        yPosition = 20
+        pdf.setFontSize(16)
+        pdf.text('Synopsis', 105, yPosition, { align: 'center' })
+        yPosition += 15
+        pdf.setFontSize(11)
+        const synopsisLines = pdf.splitTextToSize(quickGenData.synopsis, 170)
+        synopsisLines.forEach(line => {
+          if (yPosition > 280) {
+            pdf.addPage()
+            yPosition = 20
+          }
+          pdf.text(line, 20, yPosition)
+          yPosition += 6
+        })
+      }
+      
+      // Add chapters
+      quickGenData.chapters.forEach((chapter, index) => {
+        pdf.addPage()
+        yPosition = 30
+        
+        // Chapter title
+        pdf.setFontSize(18)
+        pdf.text(chapter.title, 105, yPosition, { align: 'center' })
+        yPosition += 20
+        
+        // Chapter content
+        pdf.setFontSize(11)
+        const contentLines = pdf.splitTextToSize(chapter.content, 170)
+        contentLines.forEach(line => {
+          if (yPosition > 280) {
+            pdf.addPage()
+            yPosition = 20
+          }
+          pdf.text(line, 20, yPosition)
+          yPosition += 6
+        })
       })
-    })
-    
-    const pdfBlob = pdf.output('blob')
-    saveAs(pdfBlob, `${quickGenData.genre}-${quickGenData.subgenre}-novel.pdf`)
+      
+      const pdfBlob = pdf.output('blob')
+      saveAs(pdfBlob, `${quickGenData.genre}-${quickGenData.subgenre}-novel.pdf`)
+    } catch (error) {
+      console.error('Error exporting to PDF:', error)
+      alert('Error exporting to PDF. Please try the HTML export instead.')
+    }
   }
 
   const exportToGoogleDocs = () => {
-    const htmlContent = generateExportHTML()
-    const blob = new Blob([htmlContent], { type: 'text/html' })
-    const url = URL.createObjectURL(blob)
-    
-    // Create a temporary link to download the HTML file
-    const link = document.createElement('a')
-    link.href = url
-    link.download = `${quickGenData.genre}-${quickGenData.subgenre}-novel.html`
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-    URL.revokeObjectURL(url)
-    
-    // Show instructions
-    alert(`HTML file downloaded! To import to Google Docs:
-1. Open Google Docs
-2. File > Import
-3. Upload the downloaded HTML file
-4. The document will maintain proper formatting`)
+    try {
+      const htmlContent = generateExportHTML()
+      const blob = new Blob([htmlContent], { type: 'text/html' })
+      const url = URL.createObjectURL(blob)
+      
+      // Create a temporary link to download the HTML file
+      const link = document.createElement('a')
+      link.href = url
+      link.download = `${quickGenData.genre}-${quickGenData.subgenre}-novel.html`
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      URL.revokeObjectURL(url)
+      
+      // Show instructions
+      alert(`✅ HTML file downloaded successfully!
+
+📝 To import to Google Docs:
+1. Open Google Docs (docs.google.com)
+2. Click "File" → "Import"
+3. Click "Upload" and select the downloaded HTML file
+4. The document will open with proper formatting
+5. You can then edit, share, or export from Google Docs
+
+💡 The HTML file contains your complete novel with professional formatting and will maintain proper chapter breaks when imported.`)
+    } catch (error) {
+      console.error('Error exporting HTML:', error)
+      alert('Error creating HTML export. Please try again.')
+    }
   }
 
   const generateExportHTML = () => {
