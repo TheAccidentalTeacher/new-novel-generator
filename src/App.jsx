@@ -56,12 +56,19 @@ function App() {
     wordCount: '',
     synopsis: '',
     jobId: null,
-    status: 'idle', // 'idle', 'processing', 'complete', 'error'
+    status: 'idle', // 'idle', 'processing', 'complete', 'error', 'cancelled'
     progress: 0,
     currentPhase: '',
     novel: null,
-    error: null
+    error: null,
+    estimatedTimeMinutes: 0,
+    pollUrl: null,
+    startTime: null,
+    lastUpdate: null
   })
+
+  // Polling interval for AutoGenerate jobs
+  const [pollingInterval, setPollingInterval] = useState(null)
 
   // Save only generated content to localStorage whenever it changes
   useEffect(() => {
@@ -1793,6 +1800,9 @@ Please copy this entire error message for debugging.
           <div className="progress-header">
             <h3>🔄 Generating Your Novel...</h3>
             <p>Sit back and relax! Your novel is being crafted with advanced AI.</p>
+            {autoGenData.jobId && (
+              <p className="job-id">Job ID: {autoGenData.jobId}</p>
+            )}
           </div>
           
           <div className="progress-bar">
@@ -1805,20 +1815,37 @@ Please copy this entire error message for debugging.
           <div className="progress-details">
             <p className="current-phase">{autoGenData.currentPhase}</p>
             <p className="progress-percent">{autoGenData.progress}% Complete</p>
+            {autoGenData.lastUpdate && (
+              <p className="last-update">Last update: {new Date(autoGenData.lastUpdate).toLocaleTimeString()}</p>
+            )}
           </div>
           
           <div className="progress-info">
             <p>🎯 <strong>Genre:</strong> {autoGenData.genre} - {autoGenData.subgenre}</p>
             <p>📏 <strong>Target:</strong> {wordCounts.find(wc => wc.id === autoGenData.wordCount)?.name}</p>
-            <p>⏱️ <strong>Started:</strong> {new Date().toLocaleTimeString()}</p>
+            {autoGenData.startTime && (
+              <p>⏱️ <strong>Started:</strong> {new Date(autoGenData.startTime).toLocaleTimeString()}</p>
+            )}
+            {autoGenData.estimatedTimeMinutes > 0 && (
+              <p>🕒 <strong>Estimated time:</strong> {autoGenData.estimatedTimeMinutes} minutes</p>
+            )}
           </div>
           
-          <button 
-            onClick={resetAutoGenerate}
-            className="btn-cancel"
-          >
-            Cancel Generation
-          </button>
+          <div className="progress-actions">
+            <button 
+              onClick={cancelAutoGenerate}
+              className="btn-cancel"
+              disabled={!autoGenData.jobId}
+            >
+              🛑 Cancel Generation
+            </button>
+            <button 
+              onClick={resetAutoGenerate}
+              className="btn-secondary"
+            >
+              🔄 Reset
+            </button>
+          </div>
         </div>
       )}
 
@@ -1917,6 +1944,23 @@ Please copy this entire error message for debugging.
           </div>
         </div>
       )}
+
+      {autoGenData.status === 'cancelled' && (
+        <div className="auto-generate-cancelled">
+          <h3>🛑 Generation Cancelled</h3>
+          <p>Novel generation was cancelled by the user.</p>
+          <p>You can start a new generation at any time.</p>
+          
+          <div className="cancelled-actions">
+            <button 
+              onClick={resetAutoGenerate}
+              className="btn-new-novel"
+            >
+              🚀 Start New Generation
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   )
 
@@ -1934,19 +1978,24 @@ Please copy this entire error message for debugging.
     }
   }
 
-  // AutoGenerate API Functions
+  // AutoGenerate API Functions with Polling
   const startAutoGeneration = async () => {
     if (!autoGenData.synopsis.trim() || !autoGenData.genre || !autoGenData.subgenre || !autoGenData.wordCount) {
       alert('Please fill in all required fields: Synopsis, Genre, Subgenre, and Word Count');
       return;
     }
 
+    // Reset state and start processing
     setAutoGenData(prev => ({
       ...prev,
       status: 'processing',
       progress: 0,
       currentPhase: 'Starting generation...',
-      error: null
+      error: null,
+      novel: null,
+      jobId: null,
+      pollUrl: null,
+      startTime: new Date().toISOString()
     }));
 
     try {
@@ -1970,7 +2019,7 @@ Please copy this entire error message for debugging.
         }
       };
 
-      console.log('Sending request to autoGenerateNovel function...');
+      console.log('Sending start request to autoGenerateNovel function...');
       
       const response = await fetch('/.netlify/functions/autoGenerateNovel', {
         method: 'POST',
@@ -1980,10 +2029,9 @@ Please copy this entire error message for debugging.
         body: JSON.stringify(requestBody)
       });
 
-      console.log('Response received:', {
+      console.log('Start response received:', {
         status: response.status,
-        statusText: response.statusText,
-        headers: Object.fromEntries(response.headers.entries())
+        statusText: response.statusText
       });
 
       if (!response.ok) {
@@ -1998,11 +2046,10 @@ Please copy this entire error message for debugging.
         }
 
         const detailedError = `
-🚨 AutoGenerate Error Details:
+🚨 AutoGenerate Start Error:
 
 HTTP Status: ${response.status} ${response.statusText}
 URL: ${response.url}
-Request Mode: ${requestBody.mode}
 
 Error Response:
 ${JSON.stringify(errorDetails, null, 2)}
@@ -2014,51 +2061,37 @@ Request Data:
 - Synopsis Length: ${autoGenData.synopsis.length} characters
 
 Timestamp: ${new Date().toISOString()}
-
-Troubleshooting Steps:
-1. Check Netlify function logs
-2. Verify OpenAI API key is set
-3. Check network connectivity
-4. Verify function deployment
-
-Please copy this entire message and share it for debugging.
         `;
 
         throw new Error(detailedError);
       }
 
       const result = await response.json();
-      console.log('Parsed response:', result);
+      console.log('Start response parsed:', result);
 
-      if (result.status === 'complete') {
+      if (result.status === 'started' && result.jobId) {
+        // Update state with job info and start polling
         setAutoGenData(prev => ({
           ...prev,
-          status: 'complete',
-          progress: 100,
-          currentPhase: 'Generation complete!',
-          novel: result.novel,
-          jobId: result.jobId
+          jobId: result.jobId,
+          status: 'processing',
+          progress: 5,
+          currentPhase: 'Job started, waiting for progress...',
+          estimatedTimeMinutes: result.estimatedTimeMinutes || 0,
+          pollUrl: result.pollUrl
         }));
-      } else if (result.status === 'error') {
-        throw new Error(result.error || 'Unknown error occurred');
+
+        // Start polling for job status
+        startJobPolling(result.jobId);
       } else {
-        // Handle processing or error status
-        console.log('AutoGenerate result status:', result.status);
-        setAutoGenData(prev => ({
-          ...prev,
-          status: result.status || 'error',
-          progress: result.progress || 0,
-          currentPhase: result.currentPhase || 'Processing...',
-          error: result.error || null,
-          jobId: result.jobId || null
-        }));
+        throw new Error(`Unexpected start response: ${JSON.stringify(result)}`);
       }
 
     } catch (error) {
-      console.error('AutoGenerate error:', error);
+      console.error('AutoGenerate start error:', error);
       
       const detailedErrorInfo = `
-🚨 DETAILED AUTOGENERATE ERROR:
+🚨 DETAILED AUTOGENERATE START ERROR:
 
 Error Type: ${error.name || 'Unknown'}
 Error Message: ${error.message}
@@ -2069,6 +2102,7 @@ ${error.stack || 'No stack trace available'}
 Request Information:
 - Function URL: /.netlify/functions/autoGenerateNovel
 - Method: POST
+- Mode: start
 - Genre: ${autoGenData.genre}
 - Subgenre: ${autoGenData.subgenre}  
 - Word Count: ${autoGenData.wordCount}
@@ -2080,16 +2114,6 @@ Browser Information:
 - Timestamp: ${new Date().toISOString()}
 
 Network Status: ${navigator.onLine ? 'Online' : 'Offline'}
-
-Error Details for Debugging:
-${JSON.stringify({
-  errorName: error.name,
-  errorMessage: error.message,
-  errorCause: error.cause,
-  errorFileName: error.fileName,
-  errorLineNumber: error.lineNumber,
-  errorColumnNumber: error.columnNumber
-}, null, 2)}
 
 Please copy this entire error message and share it for troubleshooting.
       `;
@@ -2105,7 +2129,149 @@ Please copy this entire error message and share it for troubleshooting.
     }
   };
 
+  // Start polling for job status
+  const startJobPolling = (jobId) => {
+    console.log(`Starting polling for job ${jobId}`);
+    
+    // Clear any existing polling
+    if (pollingInterval) {
+      clearInterval(pollingInterval);
+    }
+
+    // Poll every 3 seconds
+    const interval = setInterval(async () => {
+      await pollJobStatus(jobId);
+    }, 3000);
+
+    setPollingInterval(interval);
+
+    // Also poll immediately
+    pollJobStatus(jobId);
+  };
+
+  // Poll job status
+  const pollJobStatus = async (jobId) => {
+    try {
+      console.log(`Polling status for job ${jobId}`);
+      
+      const response = await fetch('/.netlify/functions/autoGenerateNovel', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          mode: 'status',
+          jobId
+        })
+      });
+
+      if (!response.ok) {
+        console.error(`Polling failed: ${response.status} ${response.statusText}`);
+        return;
+      }
+
+      const result = await response.json();
+      console.log(`Job ${jobId} status:`, result);
+
+      // Update state with latest status
+      setAutoGenData(prev => ({
+        ...prev,
+        status: result.status,
+        progress: result.progress || prev.progress,
+        currentPhase: result.message || prev.currentPhase,
+        lastUpdate: result.lastUpdate,
+        error: result.error || prev.error,
+        novel: result.novel || prev.novel
+      }));
+
+      // Check if job is complete or failed
+      if (result.status === 'complete') {
+        console.log('Job completed successfully!');
+        stopJobPolling();
+        
+        setAutoGenData(prev => ({
+          ...prev,
+          status: 'complete',
+          progress: 100,
+          currentPhase: 'Novel generation complete!',
+          novel: result.novel
+        }));
+        
+      } else if (result.status === 'error' || result.status === 'cancelled') {
+        console.log(`Job ${result.status}:`, result.error);
+        stopJobPolling();
+        
+        setAutoGenData(prev => ({
+          ...prev,
+          status: result.status,
+          error: result.error || `Job ${result.status}`,
+          currentPhase: `Generation ${result.status}`
+        }));
+      }
+
+    } catch (error) {
+      console.error('Polling error:', error);
+      // Don't stop polling on network errors, just log and continue
+    }
+  };
+
+  // Stop job polling
+  const stopJobPolling = () => {
+    if (pollingInterval) {
+      clearInterval(pollingInterval);
+      setPollingInterval(null);
+      console.log('Stopped job polling');
+    }
+  };
+
+  // Cancel job
+  const cancelAutoGenerate = async () => {
+    if (!autoGenData.jobId) {
+      return;
+    }
+
+    try {
+      console.log(`Cancelling job ${autoGenData.jobId}`);
+      
+      const response = await fetch('/.netlify/functions/autoGenerateNovel', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          mode: 'cancel',
+          jobId: autoGenData.jobId
+        })
+      });
+
+      const result = await response.json();
+      console.log('Cancel response:', result);
+
+      stopJobPolling();
+      
+      setAutoGenData(prev => ({
+        ...prev,
+        status: 'cancelled',
+        currentPhase: 'Generation cancelled by user'
+      }));
+
+    } catch (error) {
+      console.error('Cancel error:', error);
+      alert('Failed to cancel job: ' + error.message);
+    }
+  };
+
+  // Clean up polling on component unmount
+  useEffect(() => {
+    return () => {
+      stopJobPolling();
+    };
+  }, [pollingInterval]);
+
   const resetAutoGenerate = () => {
+    // Stop any active polling
+    stopJobPolling();
+    
     setAutoGenData({
       genre: '',
       subgenre: '',
@@ -2116,7 +2282,11 @@ Please copy this entire error message and share it for troubleshooting.
       progress: 0,
       currentPhase: '',
       novel: null,
-      error: null
+      error: null,
+      estimatedTimeMinutes: 0,
+      pollUrl: null,
+      startTime: null,
+      lastUpdate: null
     });
   };
 

@@ -1485,153 +1485,42 @@ textarea {
 }
 
 .btn-cancel {
-  background: #e74c3c;
-  color: white;
-  border: none;
-  padding: 0.75rem 1.5rem;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.btn-cancel:hover {
-  background: #c0392b;
-  transform: translateY(-1px);
-}
-
-/* Completion Styles */
-.auto-generate-complete {
-  max-width: 1000px;
-  margin: 0 auto;
-}
-
-.completion-header {
-  text-align: center;
-  margin-bottom: 3rem;
-}
-
-.completion-header h3 {
-  color: #27ae60;
-  font-size: 2.5rem;
-  margin-bottom: 1rem;
-}
-
-.novel-stats {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1.5rem;
-  margin-bottom: 3rem;
-}
-
-.stat-card {
-  background: white;
-  padding: 1.5rem;
-  border-radius: 12px;
-  text-align: center;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-  border: 2px solid transparent;
-  transition: all 0.3s ease;
-}
-
-.stat-card:hover {
-  transform: translateY(-2px);
-  border-color: #3498db;
-}
-
-.stat-card h4 {
-  color: #2c3e50;
-  margin-bottom: 0.5rem;
-  font-size: 1rem;
-}
-
-.stat-card p {
-  color: #3498db;
-  font-size: 1.5rem;
-  font-weight: 600;
-}
-
-.export-section {
-  background: white;
-  padding: 2rem;
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-  margin-bottom: 3rem;
-}
-
-.export-section h4 {
-  color: #2c3e50;
-  margin-bottom: 1.5rem;
-  text-align: center;
-}
-
-.chapter-preview {
-  background: white;
-  padding: 2rem;
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-  margin-bottom: 3rem;
-}
-
-.chapter-preview h4 {
-  color: #2c3e50;
-  margin-bottom: 1.5rem;
-}
-
-.chapter-preview-item {
-  padding: 1rem;
-  border: 1px solid #e1e8ed;
-  border-radius: 8px;
-  margin-bottom: 1rem;
-}
-
-.chapter-preview-item h5 {
-  color: #2c3e50;
-  margin-bottom: 0.5rem;
-}
-
-.chapter-summary {
-  color: #7f8c8d;
-  margin-bottom: 0.5rem;
-  line-height: 1.5;
-}
-
-.chapter-stats {
-  color: #3498db;
-  font-size: 0.9rem;
-  font-weight: 600;
-}
-
-.more-chapters {
-  text-align: center;
-  color: #7f8c8d;
-  font-style: italic;
-  margin-top: 1rem;
-}
-
-.action-controls {
-  text-align: center;
-}
-
-.btn-new-novel {
-  background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+  background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
   color: white;
   border: none;
   padding: 1rem 2rem;
-  border-radius: 12px;
-  font-size: 1.1rem;
+  border-radius: 8px;
+  font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 20px rgba(39, 174, 96, 0.3);
 }
 
-.btn-new-novel:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 25px rgba(39, 174, 96, 0.4);
+.btn-cancel:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3);
 }
 
-/* Error Styles */
-.auto-generate-error {
+.btn-cancel:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.job-id {
+  font-family: 'Courier New', monospace;
+  font-size: 0.9rem;
+  color: #7f8c8d;
+  margin-top: 0.5rem;
+}
+
+.last-update {
+  font-size: 0.9rem;
+  color: #7f8c8d;
+  font-style: italic;
+}
+
+/* Auto-generate cancelled state */
+.auto-generate-cancelled {
   max-width: 600px;
   margin: 0 auto;
   text-align: center;
@@ -1641,39 +1530,21 @@ textarea {
   box-shadow: 0 4px 20px rgba(0,0,0,0.1);
 }
 
-.auto-generate-error h3 {
-  color: #e74c3c;
+.auto-generate-cancelled h3 {
+  color: #f39c12;
   font-size: 2rem;
   margin-bottom: 1rem;
 }
 
-.error-message {
-  color: #7f8c8d;
-  font-size: 1.1rem;
-  margin-bottom: 1rem;
-  padding: 1rem;
-  background: #fdf2f2;
-  border-radius: 8px;
-  border-left: 4px solid #e74c3c;
-}
-
-.error-actions {
+.cancelled-actions {
   margin-top: 2rem;
 }
 
-.btn-retry {
-  background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
-  color: white;
-  border: none;
-  padding: 1rem 2rem;
-  border-radius: 8px;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.btn-retry:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+/* Progress actions styling */
+.progress-actions {
+  margin-top: 2rem;
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
 }
