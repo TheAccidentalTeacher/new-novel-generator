@@ -999,7 +999,7 @@ Please copy this entire error message for debugging.
 
   const generateExportHTML = () => {
     const totalWords = quickGenData.chapters.reduce((total, chapter) => 
-      total + chapter.content.split(' ').length, 0)
+      total + (chapter.content ? chapter.content.split(' ').length : 0), 0)
     
     return `
 <!DOCTYPE html>
@@ -1078,13 +1078,13 @@ Please copy this entire error message for debugging.
     ${quickGenData.synopsis ? `
     <div class="synopsis">
         <div class="synopsis-title">Synopsis</div>
-        <div>${quickGenData.synopsis.split('\n').map(para => `<p>${para}</p>`).join('')}</div>
+        <div>${quickGenData.synopsis.split('\n\n').map(para => `<p>${para}</p>`).join('')}</div>
     </div>
     ` : ''}
     
     ${quickGenData.chapters.map((chapter, index) => `
     <div class="chapter">
-        <div class="chapter-title">${chapter.title}</div>
+        <div class="chapter-title">Chapter ${chapter.number || (index + 1)}: ${chapter.title}</div>
         <div class="chapter-content">
             ${chapter.content.split('\n\n').map(para => `<p>${para.replace(/\n/g, '<br>')}</p>`).join('')}
         </div>
@@ -1764,17 +1764,19 @@ Please copy this entire error message for debugging.
                   <button onClick={acceptDraft} className="btn-accept">
                     ✅ Accept Draft
                   </button>
-                  <div className="export-controls">
-                    <h4>Export Options:</h4>
-                    <button onClick={exportToDocx} className="btn-export">
-                      📄 Export to .docx
-                    </button>
-                    <button onClick={exportToPDF} className="btn-export">
-                      📕 Export to PDF
-                    </button>
-                    <button onClick={exportToGoogleDocs} className="btn-export">
-                      📝 Export for Google Docs
-                    </button>
+                  <div className="export-section">
+                    <h4>📥 Export Options</h4>
+                    <div className="export-controls">
+                      <button onClick={exportToDocx} className="btn-export docx">
+                        📄 Export to .docx
+                      </button>
+                      <button onClick={exportToPDF} className="btn-export pdf">
+                        📕 Export to PDF
+                      </button>
+                      <button onClick={exportToGoogleDocs} className="btn-export html">
+                        📝 Export for Google Docs
+                      </button>
+                    </div>
                   </div>
                 </div>
               )}
@@ -1790,17 +1792,19 @@ Please copy this entire error message for debugging.
               )}
             </div>
             
-            <div className="chapter-progress">
-              <p>Progress: {quickGenData.chapters.length} of {quickGenData.outline.length} chapters written</p>
-              <div className="progress-bar">
-                <div 
-                  className="progress-fill"
-                  style={{ width: `${(quickGenData.chapters.length / quickGenData.outline.length) * 100}%` }}
-                ></div>
+            <div className="progress-container">
+              <div className="chapter-progress">
+                <p>Progress: {quickGenData.chapters.length} of {quickGenData.outline.length} chapters written</p>
+                <div className="progress-bar">
+                  <div 
+                    className="progress-fill"
+                    style={{ width: `${(quickGenData.chapters.length / quickGenData.outline.length) * 100}%` }}
+                  ></div>
+                </div>
+                {quickGenData.chapters.length === quickGenData.outline.length && (
+                  <p className="completion-message">🎉 Novel complete! Total words: ~{quickGenData.chapters.reduce((total, ch) => total + ch.content.split(' ').length, 0).toLocaleString()}</p>
+                )}
               </div>
-              {quickGenData.chapters.length === quickGenData.outline.length && (
-                <p className="completion-message">🎉 Novel complete! Total words: ~{quickGenData.chapters.reduce((total, ch) => total + ch.content.split(' ').length, 0).toLocaleString()}</p>
-              )}
             </div>
             
             {quickGenData.chapters.length > 0 && (
@@ -2065,55 +2069,57 @@ Please copy this entire error message for debugging.
       )}
 
       {autoGenData.status === 'processing' && (
-        <div className="auto-generate-progress">
-          <div className="progress-header">
-            <h3>🔄 Generating Your Novel...</h3>
-            <p>Sit back and relax! Your novel is being crafted with advanced AI.</p>
-            {autoGenData.jobId && (
-              <p className="job-id">Job ID: {autoGenData.jobId}</p>
-            )}
-          </div>
-          
-          <div className="progress-bar">
-            <div 
-              className="progress-fill" 
-              style={{ width: `${autoGenData.progress}%` }}
-            ></div>
-          </div>
-          
-          <div className="progress-details">
-            <p className="current-phase">{autoGenData.currentPhase}</p>
-            <p className="progress-percent">{autoGenData.progress}% Complete</p>
-            {autoGenData.lastUpdate && (
-              <p className="last-update">Last update: {new Date(autoGenData.lastUpdate).toLocaleTimeString()}</p>
-            )}
-          </div>
-          
-          <div className="progress-info">
-            <p>🎯 <strong>Genre:</strong> {autoGenData.genre} - {autoGenData.subgenre}</p>
-            <p>📏 <strong>Target:</strong> {wordCounts.find(wc => wc.id === autoGenData.wordCount)?.name}</p>
-            {autoGenData.startTime && (
-              <p>⏱️ <strong>Started:</strong> {new Date(autoGenData.startTime).toLocaleTimeString()}</p>
-            )}
-            {autoGenData.estimatedTimeMinutes > 0 && (
-              <p>🕒 <strong>Estimated time:</strong> {autoGenData.estimatedTimeMinutes} minutes</p>
-            )}
-          </div>
-          
-          <div className="progress-actions">
-            <button 
-              onClick={cancelAutoGenerate}
-              className="btn-cancel"
-              disabled={!autoGenData.jobId}
-            >
-              🛑 Cancel Generation
-            </button>
-            <button 
-              onClick={resetAutoGenerate}
-              className="btn-secondary"
-            >
-              🔄 Reset
-            </button>
+        <div className="progress-container">
+          <div className="auto-generate-progress">
+            <div className="progress-header">
+              <h3>🔄 Generating Your Novel...</h3>
+              <p>Sit back and relax! Your novel is being crafted with advanced AI.</p>
+              {autoGenData.jobId && (
+                <p className="job-id">Job ID: {autoGenData.jobId}</p>
+              )}
+            </div>
+            
+            <div className="progress-bar">
+              <div 
+                className="progress-fill" 
+                style={{ width: `${autoGenData.progress}%` }}
+              ></div>
+            </div>
+            
+            <div className="progress-details">
+              <p className="current-phase">{autoGenData.currentPhase}</p>
+              <p className="progress-percent">{autoGenData.progress}% Complete</p>
+              {autoGenData.lastUpdate && (
+                <p className="last-update">Last update: {new Date(autoGenData.lastUpdate).toLocaleTimeString()}</p>
+              )}
+            </div>
+            
+            <div className="progress-info">
+              <p>🎯 <strong>Genre:</strong> {autoGenData.genre} - {autoGenData.subgenre}</p>
+              <p>📏 <strong>Target:</strong> {wordCounts.find(wc => wc.id === autoGenData.wordCount)?.name}</p>
+              {autoGenData.startTime && (
+                <p>⏱️ <strong>Started:</strong> {new Date(autoGenData.startTime).toLocaleTimeString()}</p>
+              )}
+              {autoGenData.estimatedTimeMinutes > 0 && (
+                <p>🕒 <strong>Estimated time:</strong> {autoGenData.estimatedTimeMinutes} minutes</p>
+              )}
+            </div>
+            
+            <div className="progress-actions">
+              <button 
+                onClick={cancelAutoGenerate}
+                className="btn-cancel"
+                disabled={!autoGenData.jobId}
+              >
+                🛑 Cancel Generation
+              </button>
+              <button 
+                onClick={resetAutoGenerate}
+                className="btn-secondary"
+              >
+                🔄 Reset
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -2149,19 +2155,19 @@ Please copy this entire error message for debugging.
             <div className="export-controls">
               <button 
                 onClick={() => exportAutoGeneratedNovel('docx')} 
-                className="btn-export"
+                className="btn-export docx"
               >
                 📄 Download .docx
               </button>
               <button 
                 onClick={() => exportAutoGeneratedNovel('pdf')} 
-                className="btn-export"
+                className="btn-export pdf"
               >
                 📕 Download PDF
               </button>
               <button 
                 onClick={() => exportAutoGeneratedNovel('html')} 
-                className="btn-export"
+                className="btn-export html"
               >
                 📝 Export for Google Docs
               </button>
@@ -2173,9 +2179,15 @@ Please copy this entire error message for debugging.
             <div className="chapter-list">
               {autoGenData.novel.chapters.slice(0, 3).map((chapter, index) => (
                 <div key={index} className="chapter-preview-item">
-                  <h5>Chapter {chapter.number}: {chapter.title}</h5>
+                  <h5>Chapter {chapter.chapterNumber || chapter.number || index + 1}: {chapter.title}</h5>
                   <p className="chapter-summary">{chapter.summary}</p>
                   <p className="chapter-stats">{chapter.wordCount} words</p>
+                  <button 
+                    onClick={() => setGeneratedContent(chapter.content)}
+                    className="btn-view-chapter"
+                  >
+                    📖 View Full Chapter
+                  </button>
                 </div>
               ))}
               {autoGenData.novel.chapters.length > 3 && (
@@ -2183,6 +2195,21 @@ Please copy this entire error message for debugging.
                   ... and {autoGenData.novel.chapters.length - 3} more chapters
                 </p>
               )}
+            </div>
+            
+            <div className="full-novel-preview">
+              <h4>📋 Full Novel Content</h4>
+              <button 
+                onClick={() => {
+                  const fullContent = autoGenData.novel.chapters
+                    .map(ch => `Chapter ${ch.chapterNumber || ch.number}: ${ch.title}\n\n${ch.content}`)
+                    .join('\n\n---\n\n');
+                  setGeneratedContent(fullContent);
+                }}
+                className="btn-view-full"
+              >
+                📖 View Complete Novel
+              </button>
             </div>
           </div>
           
@@ -2564,28 +2591,393 @@ Timestamp: ${new Date().toISOString()}
     });
   };
 
-  const exportAutoGeneratedNovel = (format) => {
+  const exportAutoGeneratedNovel = async (format) => {
     if (!autoGenData.novel || !autoGenData.novel.chapters) {
-      showDetailedError(
-        'Export Error',
-        'No novel available to export',
-        new Error('Novel data not found'),
-        'Please generate a novel first before attempting to export.',
-        'exportAutoGeneratedNovel'
-      );
+      alert('❌ No novel available to export. Please generate a novel first.');
       return;
     }
 
     const novel = autoGenData.novel;
     
-    if (format === 'docx') {
-      exportToDocx(novel.chapters, novel.synopsis);
-    } else if (format === 'pdf') {
-      exportToPDF(novel.chapters, novel.synopsis);
-    } else if (format === 'html') {
-      exportToGoogleDocs(novel.chapters, novel.synopsis);
+    try {
+      if (format === 'docx') {
+        await exportAutoNovelToDocx(novel);
+      } else if (format === 'pdf') {
+        await exportAutoNovelToPDF(novel);
+      } else if (format === 'html') {
+        await exportAutoNovelToHTML(novel);
+      }
+    } catch (error) {
+      console.error('Export error:', error);
+      alert(`❌ Export failed: ${error.message}`);
     }
   };
+
+  // Export AutoGenerated Novel to DOCX
+  const exportAutoNovelToDocx = async (novel) => {
+    try {
+      console.log('Exporting novel to DOCX...', novel);
+      
+      // Dynamic import to avoid build issues
+      const { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType, PageBreak } = await import('docx')
+      const { saveAs } = await import('file-saver')
+      
+      const children = []
+      
+      // Title page
+      children.push(
+        new Paragraph({
+          alignment: AlignmentType.CENTER,
+          spacing: { before: 1440, after: 720 },
+          children: [
+            new TextRun({
+              text: novel.title || `${novel.genre} Novel`,
+              size: 48,
+              bold: true
+            })
+          ]
+        }),
+        new Paragraph({
+          alignment: AlignmentType.CENTER,
+          spacing: { after: 240 },
+          children: [
+            new TextRun({
+              text: `Genre: ${novel.genre} - ${novel.subgenre}`,
+              size: 28
+            })
+          ]
+        }),
+        new Paragraph({
+          alignment: AlignmentType.CENTER,
+          spacing: { after: 240 },
+          children: [
+            new TextRun({
+              text: `Total Words: ${novel.metadata.totalWords.toLocaleString()}`,
+              size: 28
+            })
+          ]
+        }),
+        new Paragraph({
+          alignment: AlignmentType.CENTER,
+          children: [
+            new TextRun({
+              text: `Generated: ${new Date(novel.metadata.generatedAt).toLocaleDateString()}`,
+              size: 28
+            })
+          ]
+        }),
+        new Paragraph({
+          children: [new PageBreak()]
+        })
+      )
+      
+      // Synopsis
+      if (novel.synopsis) {
+        children.push(
+          new Paragraph({
+            heading: HeadingLevel.HEADING_1,
+            alignment: AlignmentType.CENTER,
+            spacing: { before: 720, after: 480 },
+            children: [
+              new TextRun({
+                text: "Synopsis",
+                size: 32,
+                bold: true
+              })
+            ]
+          })
+        )
+        
+        const synopsisParas = novel.synopsis.split('\n\n')
+        synopsisParas.forEach(para => {
+          if (para.trim()) {
+            children.push(
+              new Paragraph({
+                spacing: { after: 240 },
+                alignment: AlignmentType.JUSTIFIED,
+                children: [
+                  new TextRun({
+                    text: para.trim(),
+                    size: 24
+                  })
+                ]
+              })
+            )
+          }
+        })
+        
+        children.push(new Paragraph({ children: [new PageBreak()] }))
+      }
+      
+      // Chapters
+      novel.chapters.forEach((chapter, index) => {
+        // Chapter title
+        children.push(
+          new Paragraph({
+            heading: HeadingLevel.HEADING_1,
+            alignment: AlignmentType.CENTER,
+            spacing: { before: 720, after: 480 },
+            children: [
+              new TextRun({
+                text: `Chapter ${chapter.chapterNumber}: ${chapter.title}`,
+                size: 32,
+                bold: true
+              })
+            ]
+          })
+        )
+        
+        // Chapter content
+        const contentParas = chapter.content.split('\n\n')
+        contentParas.forEach(para => {
+          if (para.trim()) {
+            children.push(
+              new Paragraph({
+                spacing: { after: 240 },
+                alignment: AlignmentType.JUSTIFIED,
+                indent: { firstLine: 360 }, // 0.25 inch first line indent
+                children: [
+                  new TextRun({
+                    text: para.trim(),
+                    size: 24
+                  })
+                ]
+              })
+            )
+          }
+        })
+        
+        // Page break after each chapter except the last
+        if (index < novel.chapters.length - 1) {
+          children.push(new Paragraph({ children: [new PageBreak()] }))
+        }
+      })
+      
+      const doc = new Document({
+        sections: [{
+          properties: {
+            page: {
+              margin: {
+                top: 1440,    // 1 inch
+                right: 1440,  // 1 inch
+                bottom: 1440, // 1 inch
+                left: 1440    // 1 inch
+              }
+            }
+          },
+          children: children
+        }]
+      })
+      
+      const buffer = await Packer.toBlob(doc)
+      const filename = `${novel.title || novel.genre + '_Novel'}_${new Date().toISOString().split('T')[0]}.docx`
+      saveAs(buffer, filename)
+      
+      alert(`✅ Novel exported successfully as ${filename}`)
+      
+    } catch (error) {
+      console.error('DOCX export error:', error)
+      throw new Error(`DOCX export failed: ${error.message}`)
+    }
+  }
+
+  // Export AutoGenerated Novel to PDF
+  const exportAutoNovelToPDF = async (novel) => {
+    try {
+      const { jsPDF } = await import('jspdf')
+      const { saveAs } = await import('file-saver')
+      
+      const pdf = new jsPDF('p', 'mm', 'a4')
+      
+      // Add title page
+      pdf.setFontSize(24)
+      pdf.text(novel.title || `${novel.genre} Novel`, 105, 50, { align: 'center' })
+      pdf.setFontSize(16)
+      pdf.text(`Genre: ${novel.genre} - ${novel.subgenre}`, 105, 70, { align: 'center' })
+      pdf.text(`Total Words: ${novel.metadata.totalWords.toLocaleString()}`, 105, 85, { align: 'center' })
+      pdf.text(`Generated: ${new Date(novel.metadata.generatedAt).toLocaleDateString()}`, 105, 100, { align: 'center' })
+      
+      let yPosition = 130
+      
+      // Add synopsis
+      if (novel.synopsis) {
+        pdf.addPage()
+        yPosition = 20
+        pdf.setFontSize(16)
+        pdf.text('Synopsis', 105, yPosition, { align: 'center' })
+        yPosition += 15
+        pdf.setFontSize(11)
+        const synopsisLines = pdf.splitTextToSize(novel.synopsis, 170)
+        synopsisLines.forEach(line => {
+          if (yPosition > 280) {
+            pdf.addPage()
+            yPosition = 20
+          }
+          pdf.text(line, 20, yPosition)
+          yPosition += 6
+        })
+      }
+      
+      // Add chapters
+      novel.chapters.forEach((chapter, index) => {
+        pdf.addPage()
+        yPosition = 30
+        
+        // Chapter title
+        pdf.setFontSize(18)
+        pdf.text(`Chapter ${chapter.chapterNumber}: ${chapter.title}`, 105, yPosition, { align: 'center' })
+        yPosition += 20
+        
+        // Chapter content
+        pdf.setFontSize(11)
+        const contentLines = pdf.splitTextToSize(chapter.content, 170)
+        contentLines.forEach(line => {
+          if (yPosition > 280) {
+            pdf.addPage()
+            yPosition = 20
+          }
+          pdf.text(line, 20, yPosition)
+          yPosition += 6
+        })
+      })
+      
+      const filename = `${novel.title || novel.genre + '_Novel'}_${new Date().toISOString().split('T')[0]}.pdf`
+      const pdfBlob = pdf.output('blob')
+      saveAs(pdfBlob, filename)
+      
+      alert(`✅ Novel exported successfully as ${filename}`)
+      
+    } catch (error) {
+      console.error('PDF export error:', error)
+      throw new Error(`PDF export failed: ${error.message}`)
+    }
+  }
+
+  // Export AutoGenerated Novel to HTML
+  const exportAutoNovelToHTML = async (novel) => {
+    try {
+      const htmlContent = generateAutoNovelHTML(novel)
+      const blob = new Blob([htmlContent], { type: 'text/html' })
+      const url = URL.createObjectURL(blob)
+      
+      const filename = `${novel.title || novel.genre + '_Novel'}_${new Date().toISOString().split('T')[0]}.html`
+      
+      // Create a temporary link to download the HTML file
+      const link = document.createElement('a')
+      link.href = url
+      link.download = filename
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      URL.revokeObjectURL(url)
+      
+      alert(`✅ HTML file downloaded successfully as ${filename}!
+
+📝 To import to Google Docs:
+1. Open Google Docs (docs.google.com)
+2. Click "File" → "Import"
+3. Click "Upload" and select the downloaded HTML file
+4. The document will open with proper formatting`)
+      
+    } catch (error) {
+      console.error('HTML export error:', error)
+      throw new Error(`HTML export failed: ${error.message}`)
+    }
+  }
+
+  // Generate HTML for AutoGenerated Novel
+  const generateAutoNovelHTML = (novel) => {
+    return `
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>${novel.title || novel.genre + ' Novel'}</title>
+    <style>
+        body {
+            font-family: 'Times New Roman', serif;
+            font-size: 12pt;
+            line-height: 1.6;
+            margin: 1in;
+            color: #000;
+        }
+        .title-page {
+            text-align: center;
+            page-break-after: always;
+            margin-top: 2in;
+        }
+        .title {
+            font-size: 24pt;
+            font-weight: bold;
+            margin-bottom: 1in;
+        }
+        .metadata {
+            font-size: 14pt;
+            margin-bottom: 0.5in;
+        }
+        .synopsis {
+            page-break-after: always;
+            margin-top: 1in;
+        }
+        .synopsis-title {
+            font-size: 18pt;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 0.5in;
+        }
+        .chapter {
+            page-break-before: always;
+        }
+        .chapter-title {
+            font-size: 16pt;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 1in;
+            margin-top: 1in;
+        }
+        .chapter-content {
+            text-align: justify;
+            text-indent: 0.5in;
+        }
+        .chapter-content p {
+            margin-bottom: 0.25in;
+        }
+        @page {
+            margin: 1in;
+        }
+        @media print {
+            .chapter {
+                page-break-before: always;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="title-page">
+        <div class="title">${novel.title || novel.genre + ' Novel'}</div>
+        <div class="metadata">Genre: ${novel.genre} - ${novel.subgenre}</div>
+        <div class="metadata">Total Words: ${novel.metadata.totalWords.toLocaleString()}</div>
+        <div class="metadata">Generated: ${new Date(novel.metadata.generatedAt).toLocaleDateString()}</div>
+    </div>
+    
+    ${novel.synopsis ? `
+    <div class="synopsis">
+        <div class="synopsis-title">Synopsis</div>
+        <div>${novel.synopsis.split('\n\n').map(para => `<p>${para}</p>`).join('')}</div>
+    </div>
+    ` : ''}
+    
+    ${novel.chapters.map((chapter, index) => `
+    <div class="chapter">
+        <div class="chapter-title">Chapter ${chapter.chapterNumber}: ${chapter.title}</div>
+        <div class="chapter-content">
+            ${chapter.content.split('\n\n').map(para => `<p>${para.replace(/\n/g, '<br>')}</p>`).join('')}
+        </div>
+    </div>
+    `).join('')}
+</body>
+</html>`
+  }
 
   // Test AutoGenerate function
   const testAutoGenerate = async () => {

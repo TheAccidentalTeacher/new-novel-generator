@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Content Recovery Tool</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .recovery-section { margin: 20px 0; padding: 15px; border: 1px solid #ccc; border-radius: 5px; }
+        .success { background: #d4edda; }
+        .error { background: #f8d7da; }
+        .info { background: #d1ecf1; }
+        button { padding: 10px 15px; margin: 5px; }
+        textarea { width: 100%; height: 200px; margin: 10px 0; }
+        .content-preview { max-height: 300px; overflow-y: auto; background: #f8f9fa; padding: 10px; margin: 10px 0; }
+        .download-btn { background: #28a745; color: white; border: none; border-radius: 3px; }
+    </style>
+</head>
+<body>
+    <h1>🔧 Content Recovery Tool</h1>
+    
+    <div class="recovery-section">
+        <h2>🔍 Search Browser Storage</h2>
+        <button onclick="searchLocalStorage()">Search Local Storage</button>
+        <button onclick="searchSessionStorage()">Search Session Storage</button>
+        <button onclick="searchAllStorage()">Search All Storage</button>
+        <div id="storage-results"></div>
+    </div>
+    
+    <div class="recovery-section">
+        <h2>📊 Check Active Job Status</h2>
+        <button onclick="checkActiveJob()">Check Current Job</button>
+        <button onclick="pollJobStatus()">Poll Last Job Status</button>
+        <div id="job-results"></div>
+    </div>
+    
+    <div class="recovery-section">
+        <h2>💾 Download Found Content</h2>
+        <div id="download-section" style="display: none;">
+            <button class="download-btn" onclick="downloadAsText()">📄 Download as Text</button>
+            <button class="download-btn" onclick="downloadAsHTML()">🌐 Download as HTML</button>
+            <button class="download-btn" onclick="copyToClipboard()">📋 Copy to Clipboard</button>
+        </div>
+        <div id="found-content"></div>
+    </div>
+    
+    <script>
+        let recoveredContent = null;
+        
+        function logResult(message, type = 'info') {
+            console.log(message);
+        }
+        
+        function searchLocalStorage() {
+            const results = document.getElementById('storage-results');
+            results.innerHTML = '<p>Searching localStorage...</p>';
+            
+            let found = [];
+            
+            // Check for autoGen data
+            const autoGenData = localStorage.getItem('autoGenData');
+            if (autoGenData) {
+                try {
+                    const parsed = JSON.parse(autoGenData);
+                    found.push({ key: 'autoGenData', data: parsed, type: 'AutoGenerate Data' });
+                } catch (e) {
+                    found.push({ key: 'autoGenData', data: autoGenData, type: 'Raw AutoGenerate Data' });
+                }
+            }
+            
+            // Check for quickGen content
+            const quickGenContent = localStorage.getItem('quickGenContent');
+            if (quickGenContent) {
+                try {
+                    const parsed = JSON.parse(quickGenContent);
+                    found.push({ key: 'quickGenContent', data: parsed, type: 'Quick Generate Content' });
+                } catch (e) {
+                    found.push({ key: 'quickGenContent', data: quickGenContent, type: 'Raw Quick Generate Content' });
+                }
+            }
+            
+            // Search for any keys containing 'novel', 'chapter', 'generate'
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key && (key.includes('novel') || key.includes('chapter') || key.includes('generate'))) {
+                    const value = localStorage.getItem(key);
+                    found.push({ key: key, data: value, type: 'Potential Novel Data' });
+                }
+            }
+            
+            displayFoundData(found, 'storage-results');
+        }
+        
+        function searchSessionStorage() {
+            const results = document.getElementById('storage-results');
+            results.innerHTML = '<p>Searching sessionStorage...</p>';
+            
+            let found = [];
+            
+            for (let i = 0; i < sessionStorage.length; i++) {
+                const key = sessionStorage.key(i);
+                if (key && (key.includes('novel') || key.includes('chapter') || key.includes('generate') || key.includes('job'))) {
+                    const value = sessionStorage.getItem(key);
+                    found.push({ key: key, data: value, type: 'Session Data' });
+                }
+            }
+            
+            displayFoundData(found, 'storage-results');
+        }
+        
+        function searchAllStorage() {
+            const results = document.getElementById('storage-results');
+            results.innerHTML = '<p>Searching all storage...</p>';
+            
+            let found = [];
+            
+            // Search localStorage
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                const value = localStorage.getItem(key);
+                found.push({ key: `localStorage.${key}`, data: value, type: 'Local Storage' });
+            }
+            
+            // Search sessionStorage
+            for (let i = 0; i < sessionStorage.length; i++) {
+                const key = sessionStorage.key(i);
+                const value = sessionStorage.getItem(key);
+                found.push({ key: `sessionStorage.${key}`, data: value, type: 'Session Storage' });
+            }
+            
+            displayFoundData(found, 'storage-results');
+        }
+        
+        async function checkActiveJob() {
+            const results = document.getElementById('job-results');
+            results.innerHTML = '<p>Checking for active jobs...</p>';
+            
+            // Try to get the job ID from the debug info we saw
+            const jobId = 'job_1752272333286_gr1a3dy6'; // From your screenshot
+            
+            try {
+                const response = await fetch('/.netlify/functions/autoGenerateNovel', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        mode: 'status',
+                        jobId: jobId
+                    })
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    results.innerHTML += `<div class="success">✅ Job found! Status: ${data.status}</div>`;
+                    
+                    if (data.novel) {
+                        results.innerHTML += '<div class="success">📚 Novel data found in job!</div>';
+                        recoveredContent = data.novel;
+                        showDownloadOptions(data.novel);
+                    } else {
+                        results.innerHTML += '<div class="info">ℹ️ Job found but no novel data yet</div>';
+                    }
+                    
+                    results.innerHTML += `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+                } else {
+                    results.innerHTML += `<div class="error">❌ Job not found or expired</div>`;
+                }
+            } catch (error) {
+                results.innerHTML += `<div class="error">❌ Error checking job: ${error.message}</div>`;
+            }
+        }
+        
+        function displayFoundData(found, targetId) {
+            const results = document.getElementById(targetId);
+            
+            if (found.length === 0) {
+                results.innerHTML = '<div class="error">❌ No relevant data found</div>';
+                return;
+            }
+            
+            let html = `<div class="success">✅ Found ${found.length} items:</div>`;
+            
+            found.forEach((item, index) => {
+                html += `
+                    <div class="content-preview">
+                        <h4>${item.type}: ${item.key}</h4>
+                        <p><strong>Size:</strong> ${typeof item.data === 'string' ? item.data.length : JSON.stringify(item.data).length} characters</p>
+                        <button onclick="viewFullContent(${index})">👁️ View Full Content</button>
+                        <button onclick="extractNovelContent(${index})">📖 Extract Novel Content</button>
+                        <div style="max-height: 100px; overflow-y: auto; background: #f0f0f0; padding: 5px; margin: 5px 0;">
+                            <pre>${typeof item.data === 'string' ? item.data.substring(0, 500) : JSON.stringify(item.data, null, 2).substring(0, 500)}...</pre>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            results.innerHTML = html;
+            
+            // Store found data globally for other functions
+            window.foundData = found;
+        }
+        
+        function viewFullContent(index) {
+            const item = window.foundData[index];
+            const content = typeof item.data === 'string' ? item.data : JSON.stringify(item.data, null, 2);
+            
+            const newWindow = window.open('', '_blank');
+            newWindow.document.write(`
+                <html>
+                    <head><title>${item.type}: ${item.key}</title></head>
+                    <body style="font-family: monospace; white-space: pre-wrap; padding: 20px;">
+                        <h1>${item.type}: ${item.key}</h1>
+                        <hr>
+                        ${content}
+                    </body>
+                </html>
+            `);
+        }
+        
+        function extractNovelContent(index) {
+            const item = window.foundData[index];
+            let chapters = [];
+            
+            try {
+                let data = typeof item.data === 'string' ? JSON.parse(item.data) : item.data;
+                
+                // Look for chapters in various possible structures
+                if (data.novel && data.novel.chapters) {
+                    chapters = data.novel.chapters;
+                } else if (data.chapters) {
+                    chapters = data.chapters;
+                } else if (data.data && data.data.chapters) {
+                    chapters = data.data.chapters;
+                } else if (Array.isArray(data)) {
+                    chapters = data;
+                }
+                
+                if (chapters.length > 0) {
+                    recoveredContent = { chapters, metadata: data.metadata || {} };
+                    showDownloadOptions(recoveredContent);
+                } else {
+                    alert('No chapter content found in this data');
+                }
+                
+            } catch (error) {
+                alert(`Error extracting content: ${error.message}`);
+            }
+        }
+        
+        function showDownloadOptions(content) {
+            document.getElementById('download-section').style.display = 'block';
+            const contentDiv = document.getElementById('found-content');
+            
+            let preview = '';
+            if (content.chapters) {
+                preview = `<h3>📚 Novel Content Found!</h3>
+                          <p><strong>Chapters:</strong> ${content.chapters.length}</p>
+                          <p><strong>Total Words:</strong> ${content.chapters.reduce((total, ch) => total + (ch.content ? ch.content.split(' ').length : 0), 0).toLocaleString()}</p>`;
+                
+                content.chapters.slice(0, 2).forEach((chapter, i) => {
+                    preview += `
+                        <div class="content-preview">
+                            <h4>Chapter ${chapter.chapterNumber || i + 1}: ${chapter.title || 'Untitled'}</h4>
+                            <p>${chapter.content ? chapter.content.substring(0, 200) + '...' : 'No content'}</p>
+                        </div>
+                    `;
+                });
+            }
+            
+            contentDiv.innerHTML = preview;
+        }
+        
+        function downloadAsText() {
+            if (!recoveredContent || !recoveredContent.chapters) {
+                alert('No content available to download');
+                return;
+            }
+            
+            let content = '';
+            recoveredContent.chapters.forEach(chapter => {
+                content += `Chapter ${chapter.chapterNumber || chapter.number}: ${chapter.title || 'Untitled'}\n\n`;
+                content += chapter.content + '\n\n---\n\n';
+            });
+            
+            const blob = new Blob([content], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `recovered_novel_${new Date().toISOString().split('T')[0]}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+        
+        function downloadAsHTML() {
+            if (!recoveredContent || !recoveredContent.chapters) {
+                alert('No content available to download');
+                return;
+            }
+            
+            let html = `<!DOCTYPE html>
+<html>
+<head>
+    <title>Recovered Novel</title>
+    <style>
+        body { font-family: serif; line-height: 1.6; max-width: 800px; margin: 0 auto; padding: 20px; }
+        .chapter { margin-bottom: 40px; page-break-before: always; }
+        .chapter-title { font-size: 1.5em; font-weight: bold; margin-bottom: 20px; }
+        p { margin-bottom: 1em; }
+    </style>
+</head>
+<body>
+    <h1>Recovered Novel</h1>
+    <p><strong>Generated:</strong> ${new Date().toLocaleDateString()}</p>
+    <p><strong>Chapters:</strong> ${recoveredContent.chapters.length}</p>
+    <hr>
+`;
+            
+            recoveredContent.chapters.forEach(chapter => {
+                html += `
+    <div class="chapter">
+        <h2 class="chapter-title">Chapter ${chapter.chapterNumber || chapter.number}: ${chapter.title || 'Untitled'}</h2>
+        ${chapter.content ? chapter.content.split('\n').filter(p => p.trim()).map(p => `<p>${p.trim()}</p>`).join('') : '<p>No content</p>'}
+    </div>
+`;
+            });
+            
+            html += '</body></html>';
+            
+            const blob = new Blob([html], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `recovered_novel_${new Date().toISOString().split('T')[0]}.html`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+        
+        function copyToClipboard() {
+            if (!recoveredContent || !recoveredContent.chapters) {
+                alert('No content available to copy');
+                return;
+            }
+            
+            let content = '';
+            recoveredContent.chapters.forEach(chapter => {
+                content += `Chapter ${chapter.chapterNumber || chapter.number}: ${chapter.title || 'Untitled'}\n\n`;
+                content += chapter.content + '\n\n---\n\n';
+            });
+            
+            navigator.clipboard.writeText(content).then(() => {
+                alert('✅ Content copied to clipboard!');
+            }).catch(err => {
+                alert('❌ Failed to copy to clipboard: ' + err.message);
+            });
+        }
+        
+        // Auto-run on load
+        window.addEventListener('load', function() {
+            searchLocalStorage();
+        });
+    </script>
+</body>
+</html>
