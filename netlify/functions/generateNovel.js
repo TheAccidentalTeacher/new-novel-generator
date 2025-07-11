@@ -1,7 +1,7 @@
 // Netlify Function: generateNovel
-const { OpenAI } = require('openai');
+import { OpenAI } from 'openai';
 
-exports.handler = async function(event, context) {
+export const handler = async function(event, context) {
   if (event.httpMethod === 'OPTIONS') {
     return {
       statusCode: 200,
