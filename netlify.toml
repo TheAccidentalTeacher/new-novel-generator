@@ -8,8 +8,8 @@
   targetPort = 5173
   functions = "netlify/functions"
 
-[functions]
+[functions."*"]
   # Increase timeout for AI generation functions (5 minutes)
-  timeout = 300
+  timeout = "300s"
   # Increase memory for larger responses
-  memory = 1024
+  memory = "1024MB"
