@@ -3,6 +3,7 @@ import { OpenAI } from 'openai';
 
 export const handler = async function(event, context) {
   console.log('AutoGenerate function called with method:', event.httpMethod);
+  console.log('Request body:', event.body);
   
   if (event.httpMethod === 'OPTIONS') {
     return {
@@ -16,7 +17,11 @@ export const handler = async function(event, context) {
   }
 
   try {
-    const { mode, jobId, synopsis, genre, subgenre, wordCount, userPreferences } = JSON.parse(event.body || '{}');
+    console.log('Parsing request body...');
+    const requestData = JSON.parse(event.body || '{}');
+    const { mode, jobId, synopsis, genre, subgenre, wordCount, userPreferences } = requestData;
+    console.log('Request data parsed:', { mode, genre, subgenre, wordCount, synopsisLength: synopsis?.length });
+    
     
     const apiKey = process.env.OPENAI_API_KEY;
     if (!apiKey) {
@@ -120,6 +125,21 @@ export const handler = async function(event, context) {
 
     // Handle different modes
     switch(mode) {
+      case 'test':
+        console.log('Test mode - returning success');
+        return {
+          statusCode: 200,
+          headers: {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Headers': 'Content-Type'
+          },
+          body: JSON.stringify({
+            status: 'success',
+            message: 'AutoGenerate function is working',
+            timestamp: new Date().toISOString()
+          })
+        };
+        
       case 'start':
         return await startAutoGeneration(synopsis, genre, subgenre, wordCount, userPreferences);
       
@@ -130,7 +150,7 @@ export const handler = async function(event, context) {
         return await cancelJob(jobId);
       
       default:
-        throw new Error('Invalid mode specified');
+        throw new Error(`Invalid mode specified: ${mode}`);
     }
 
     // Start Auto Generation
@@ -437,6 +457,13 @@ Write the complete chapter with proper paragraphs. Do not include chapter number
 
   } catch (mainErr) {
     console.error('Main function error:', mainErr);
+    console.error('Error stack:', mainErr.stack);
+    console.error('Error details:', {
+      message: mainErr.message,
+      name: mainErr.name,
+      code: mainErr.code
+    });
+    
     return {
       statusCode: 500,
       headers: {
@@ -446,7 +473,8 @@ Write the complete chapter with proper paragraphs. Do not include chapter number
       },
       body: JSON.stringify({ 
         error: `AutoGenerate failed: ${mainErr.message}`,
-        details: mainErr.toString()
+        details: mainErr.toString(),
+        stack: mainErr.stack
       })
     };
   }

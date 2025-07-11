@@ -137,7 +137,40 @@ function App() {
       if (!response.ok) {
         const errorText = await response.text()
         console.error('Error response:', errorText)
-        throw new Error(`HTTP ${response.status}: ${errorText}`)
+        
+        let errorDetails;
+        try {
+          errorDetails = JSON.parse(errorText);
+        } catch (e) {
+          errorDetails = { rawError: errorText };
+        }
+
+        const detailedError = `
+🚨 GENERATION ERROR DETAILS:
+
+Function: generateNovel
+Mode: ${type}
+HTTP Status: ${response.status} ${response.statusText}
+URL: ${response.url}
+
+Error Response:
+${JSON.stringify(errorDetails, null, 2)}
+
+Request Data:
+- Type: ${type}
+- Prompt Length: ${prompt?.length || 0} characters
+- Additional Data: ${JSON.stringify(additionalData, null, 2)}
+
+Browser Info:
+- User Agent: ${navigator.userAgent}
+- Timestamp: ${new Date().toISOString()}
+- Network: ${navigator.onLine ? 'Online' : 'Offline'}
+
+Please copy this error and share for debugging.
+        `;
+        
+        alert(detailedError);
+        throw new Error(detailedError);
       }
       
       const data = await response.json()
@@ -153,8 +186,39 @@ function App() {
       }
     } catch (error) {
       console.error('Generation error:', error)
-      const errorMessage = error.message || 'Unknown error occurred'
-      setGeneratedContent(`Error: ${errorMessage}\n\nTroubleshooting:\n- Check if you're using the Netlify live URL (not localhost)\n- Verify OpenAI API key is set in Netlify environment variables\n- Check browser console for detailed error logs`)
+      
+      const detailedErrorInfo = `
+🚨 DETAILED GENERATION ERROR:
+
+Function: generateNovel
+Mode: ${type}
+Error Type: ${error.name || 'Unknown'}
+Error Message: ${error.message}
+
+Stack Trace:
+${error.stack || 'No stack trace available'}
+
+Request Information:
+- Generation Type: ${type}
+- Prompt Length: ${prompt?.length || 0} characters
+- Additional Data: ${JSON.stringify(additionalData, null, 2)}
+
+Browser Information:
+- User Agent: ${navigator.userAgent}
+- Current URL: ${window.location.href}
+- Timestamp: ${new Date().toISOString()}
+- Network Status: ${navigator.onLine ? 'Online' : 'Offline'}
+
+Troubleshooting Steps:
+1. Check Netlify function logs
+2. Verify OpenAI API key is set in environment variables
+3. Check network connectivity
+4. Try again in a few minutes
+
+Please copy this entire error message for debugging.
+      `;
+
+      setGeneratedContent(detailedErrorInfo);
       return null
     } finally {
       setLoading(false)
@@ -1656,6 +1720,18 @@ function App() {
           </div>
 
           <div className="setup-section">
+            <h3>🧪 Test Connection</h3>
+            <p>Test if the AutoGenerate function is working properly:</p>
+            <button 
+              onClick={testAutoGenerate}
+              className="btn-secondary"
+              style={{ marginBottom: '1rem' }}
+            >
+              🔧 Test AutoGenerate Function
+            </button>
+          </div>
+
+          <div className="setup-section">
             <h3>3. Paste Your Detailed Synopsis</h3>
             <p className="synopsis-instructions">
               Provide a comprehensive 2000-5000 word synopsis that includes:
@@ -1874,30 +1950,85 @@ function App() {
     }));
 
     try {
+      console.log('Starting AutoGeneration with data:', {
+        synopsis: autoGenData.synopsis.substring(0, 100) + '...',
+        genre: autoGenData.genre,
+        subgenre: autoGenData.subgenre,
+        wordCount: autoGenData.wordCount
+      });
+
+      const requestBody = {
+        mode: 'start',
+        synopsis: autoGenData.synopsis,
+        genre: autoGenData.genre,
+        subgenre: autoGenData.subgenre,
+        wordCount: autoGenData.wordCount,
+        userPreferences: {
+          writingStyle: 'literary',
+          pacing: 'measured',
+          detailLevel: 'rich'
+        }
+      };
+
+      console.log('Sending request to autoGenerateNovel function...');
+      
       const response = await fetch('/.netlify/functions/autoGenerateNovel', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          mode: 'start',
-          synopsis: autoGenData.synopsis,
-          genre: autoGenData.genre,
-          subgenre: autoGenData.subgenre,
-          wordCount: autoGenData.wordCount,
-          userPreferences: {
-            writingStyle: 'literary',
-            pacing: 'measured',
-            detailLevel: 'rich'
-          }
-        })
+        body: JSON.stringify(requestBody)
+      });
+
+      console.log('Response received:', {
+        status: response.status,
+        statusText: response.statusText,
+        headers: Object.fromEntries(response.headers.entries())
       });
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorText = await response.text();
+        console.error('HTTP Error Response Body:', errorText);
+        
+        let errorDetails;
+        try {
+          errorDetails = JSON.parse(errorText);
+        } catch (e) {
+          errorDetails = { rawError: errorText };
+        }
+
+        const detailedError = `
+🚨 AutoGenerate Error Details:
+
+HTTP Status: ${response.status} ${response.statusText}
+URL: ${response.url}
+Request Mode: ${requestBody.mode}
+
+Error Response:
+${JSON.stringify(errorDetails, null, 2)}
+
+Request Data:
+- Genre: ${autoGenData.genre}
+- Subgenre: ${autoGenData.subgenre}
+- Word Count: ${autoGenData.wordCount}
+- Synopsis Length: ${autoGenData.synopsis.length} characters
+
+Timestamp: ${new Date().toISOString()}
+
+Troubleshooting Steps:
+1. Check Netlify function logs
+2. Verify OpenAI API key is set
+3. Check network connectivity
+4. Verify function deployment
+
+Please copy this entire message and share it for debugging.
+        `;
+
+        throw new Error(detailedError);
       }
 
       const result = await response.json();
+      console.log('Parsed response:', result);
 
       if (result.status === 'complete') {
         setAutoGenData(prev => ({
@@ -1910,15 +2041,66 @@ function App() {
         }));
       } else if (result.status === 'error') {
         throw new Error(result.error || 'Unknown error occurred');
+      } else {
+        // Handle processing or error status
+        console.log('AutoGenerate result status:', result.status);
+        setAutoGenData(prev => ({
+          ...prev,
+          status: result.status || 'error',
+          progress: result.progress || 0,
+          currentPhase: result.currentPhase || 'Processing...',
+          error: result.error || null,
+          jobId: result.jobId || null
+        }));
       }
 
     } catch (error) {
       console.error('AutoGenerate error:', error);
+      
+      const detailedErrorInfo = `
+🚨 DETAILED AUTOGENERATE ERROR:
+
+Error Type: ${error.name || 'Unknown'}
+Error Message: ${error.message}
+
+Stack Trace:
+${error.stack || 'No stack trace available'}
+
+Request Information:
+- Function URL: /.netlify/functions/autoGenerateNovel
+- Method: POST
+- Genre: ${autoGenData.genre}
+- Subgenre: ${autoGenData.subgenre}  
+- Word Count: ${autoGenData.wordCount}
+- Synopsis Length: ${autoGenData.synopsis?.length || 0} characters
+
+Browser Information:
+- User Agent: ${navigator.userAgent}
+- Current URL: ${window.location.href}
+- Timestamp: ${new Date().toISOString()}
+
+Network Status: ${navigator.onLine ? 'Online' : 'Offline'}
+
+Error Details for Debugging:
+${JSON.stringify({
+  errorName: error.name,
+  errorMessage: error.message,
+  errorCause: error.cause,
+  errorFileName: error.fileName,
+  errorLineNumber: error.lineNumber,
+  errorColumnNumber: error.columnNumber
+}, null, 2)}
+
+Please copy this entire error message and share it for troubleshooting.
+      `;
+
+      alert(detailedErrorInfo);
+
       setAutoGenData(prev => ({
         ...prev,
         status: 'error',
-        error: error.message,
-        currentPhase: 'Generation failed'
+        error: detailedErrorInfo,
+        currentPhase: 'Generation failed - See detailed error above'
       }));
     }
   };
@@ -1952,6 +2134,34 @@ function App() {
       exportToPDF(novel.chapters, novel.synopsis);
     } else if (format === 'html') {
       exportToGoogleDocs(novel.chapters, novel.synopsis);
+    }
+  };
+
+  // Test AutoGenerate function
+  const testAutoGenerate = async () => {
+    try {
+      console.log('Testing AutoGenerate function...');
+      const response = await fetch('/.netlify/functions/autoGenerateNovel', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          mode: 'test'
+        })
+      });
+
+      const data = await response.json();
+      console.log('Test response:', data);
+      
+      if (data.status === 'success') {
+        alert('✅ AutoGenerate function is working correctly!');
+      } else {
+        alert('❌ Function responded but with error: ' + JSON.stringify(data));
+      }
+    } catch (error) {
+      console.error('Test error:', error);
+      alert('❌ Function test failed: ' + error.message);
     }
   };
 
