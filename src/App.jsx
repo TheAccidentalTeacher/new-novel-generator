@@ -1,18 +1,33 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import './App.css'
 
 function App() {
   const [activeTab, setActiveTab] = useState('home')
   const [activeWorldTab, setActiveWorldTab] = useState('Locations')
   const [quickGenStep, setQuickGenStep] = useState(1)
-  const [quickGenData, setQuickGenData] = useState({
-    genre: '',
-    subgenre: '',
-    wordCount: '',
-    userInput: '',
-    synopsis: '',
-    outline: [],
-    chapters: []
+  const [quickGenData, setQuickGenData] = useState(() => {
+    // Load from localStorage if available
+    const saved = localStorage.getItem('quickGenData')
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved)
+        // Check if data is less than 72 hours old
+        if (parsed.timestamp && Date.now() - parsed.timestamp < 72 * 60 * 60 * 1000) {
+          return parsed.data
+        }
+      } catch (e) {
+        console.error('Error loading saved data:', e)
+      }
+    }
+    return {
+      genre: '',
+      subgenre: '',
+      wordCount: '',
+      userInput: '',
+      synopsis: '',
+      outline: [],
+      chapters: []
+    }
   })
   const [storyData, setStoryData] = useState({
     title: '',
@@ -25,6 +40,20 @@ function App() {
   })
   const [loading, setLoading] = useState(false)
   const [generatedContent, setGeneratedContent] = useState('')
+
+  // Save quickGenData to localStorage whenever it changes
+  useEffect(() => {
+    const saveData = () => {
+      localStorage.setItem('quickGenData', JSON.stringify({
+        data: quickGenData,
+        timestamp: Date.now()
+      }))
+    }
+    
+    // Debounce saves
+    const timeoutId = setTimeout(saveData, 1000)
+    return () => clearTimeout(timeoutId)
+  }, [quickGenData])
 
   // Genre and subgenre data
   const genres = {
@@ -130,14 +159,44 @@ function App() {
     
     if (result) {
       try {
-        const parsedChapter = JSON.parse(result)
+        // Clean the result to ensure it's valid JSON
+        let cleanResult = result.trim()
+        
+        // Remove any markdown formatting
+        if (cleanResult.startsWith('```json')) {
+          cleanResult = cleanResult.replace(/```json\n?/, '').replace(/\n?```$/, '')
+        }
+        if (cleanResult.startsWith('```')) {
+          cleanResult = cleanResult.replace(/```\n?/, '').replace(/\n?```$/, '')
+        }
+        
+        // Find JSON object if there's extra text
+        const jsonMatch = cleanResult.match(/\{[\s\S]*\}/)
+        if (jsonMatch) {
+          cleanResult = jsonMatch[0]
+        }
+        
+        const parsedChapter = JSON.parse(cleanResult)
+        
+        // Validate the structure
+        if (!parsedChapter.title || !parsedChapter.summary) {
+          throw new Error('Invalid chapter structure')
+        }
+        
         setQuickGenData(prev => ({
           ...prev,
           outline: [...prev.outline, parsedChapter]
         }))
+        
+        // Clear any error messages
+        if (generatedContent.includes('Error:')) {
+          setGeneratedContent('')
+        }
+        
       } catch (e) {
         console.error('Error parsing outline:', e)
-        setGeneratedContent('Error: Could not parse chapter outline. Please try again.')
+        console.error('Raw result:', result)
+        setGeneratedContent(`Error parsing chapter outline: ${e.message}\n\nRaw response: ${result}\n\nPlease try again.`)
       }
     }
   }
@@ -179,6 +238,34 @@ function App() {
       chapters: []
     })
     setGeneratedContent('')
+    localStorage.removeItem('quickGenData')
+  }
+
+  const acceptDraft = () => {
+    // Move data to main story data
+    setStoryData(prev => ({
+      ...prev,
+      title: `${quickGenData.genre} ${quickGenData.wordCount}`,
+      genre: `${quickGenData.genre} - ${quickGenData.subgenre}`,
+      synopsis: quickGenData.synopsis,
+      outline: quickGenData.outline.map((ch, i) => ({
+        id: Date.now() + i,
+        title: ch.title,
+        summary: ch.summary
+      }))
+    }))
+    
+    // Show success message
+    alert(`✅ Draft accepted! Your ${quickGenData.genre} novel has been moved to permanent storage. 
+    
+📊 Final Stats:
+• Genre: ${quickGenData.genre} - ${quickGenData.subgenre}
+• Chapters: ${quickGenData.chapters.length}
+• Total Words: ~${quickGenData.chapters.reduce((total, ch) => total + ch.content.split(' ').length, 0).toLocaleString()}
+• You can now export your novel using the export buttons.`)
+    
+    // Clear temporary storage but keep the data visible for export
+    localStorage.removeItem('quickGenData')
   }
 
   const handleGenerateSynopsis = async () => {
@@ -227,6 +314,195 @@ function App() {
     if (result) {
       setGeneratedContent(result)
     }
+  }
+
+  // Export functions
+  const exportToDocx = async () => {
+    // Dynamic import to avoid build issues
+    const { default: htmlDocx } = await import('html-docx-js/dist/html-docx')
+    const { saveAs } = await import('file-saver')
+    
+    const htmlContent = generateExportHTML()
+    const docxBlob = htmlDocx.asBlob(htmlContent)
+    saveAs(docxBlob, `${quickGenData.genre}-${quickGenData.subgenre}-novel.docx`)
+  }
+
+  const exportToPDF = async () => {
+    const { jsPDF } = await import('jspdf')
+    const pdf = new jsPDF('p', 'mm', 'a4')
+    const { saveAs } = await import('file-saver')
+    
+    // Add title page
+    pdf.setFontSize(24)
+    pdf.text(`${quickGenData.genre} Novel`, 20, 30)
+    pdf.setFontSize(16)
+    pdf.text(`Genre: ${quickGenData.genre} - ${quickGenData.subgenre}`, 20, 50)
+    pdf.text(`Word Count: ${quickGenData.wordCount}`, 20, 65)
+    
+    let yPosition = 90
+    
+    // Add synopsis
+    if (quickGenData.synopsis) {
+      pdf.setFontSize(14)
+      pdf.text('Synopsis', 20, yPosition)
+      yPosition += 10
+      pdf.setFontSize(10)
+      const synopsisLines = pdf.splitTextToSize(quickGenData.synopsis, 170)
+      synopsisLines.forEach(line => {
+        if (yPosition > 270) {
+          pdf.addPage()
+          yPosition = 20
+        }
+        pdf.text(line, 20, yPosition)
+        yPosition += 5
+      })
+      yPosition += 10
+    }
+    
+    // Add chapters
+    quickGenData.chapters.forEach((chapter, index) => {
+      pdf.addPage()
+      yPosition = 20
+      
+      // Chapter title
+      pdf.setFontSize(16)
+      pdf.text(chapter.title, 20, yPosition)
+      yPosition += 15
+      
+      // Chapter content
+      pdf.setFontSize(10)
+      const contentLines = pdf.splitTextToSize(chapter.content, 170)
+      contentLines.forEach(line => {
+        if (yPosition > 270) {
+          pdf.addPage()
+          yPosition = 20
+        }
+        pdf.text(line, 20, yPosition)
+        yPosition += 5
+      })
+    })
+    
+    const pdfBlob = pdf.output('blob')
+    saveAs(pdfBlob, `${quickGenData.genre}-${quickGenData.subgenre}-novel.pdf`)
+  }
+
+  const exportToGoogleDocs = () => {
+    const htmlContent = generateExportHTML()
+    const blob = new Blob([htmlContent], { type: 'text/html' })
+    const url = URL.createObjectURL(blob)
+    
+    // Create a temporary link to download the HTML file
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `${quickGenData.genre}-${quickGenData.subgenre}-novel.html`
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    URL.revokeObjectURL(url)
+    
+    // Show instructions
+    alert(`HTML file downloaded! To import to Google Docs:
+1. Open Google Docs
+2. File > Import
+3. Upload the downloaded HTML file
+4. The document will maintain proper formatting`)
+  }
+
+  const generateExportHTML = () => {
+    const totalWords = quickGenData.chapters.reduce((total, chapter) => 
+      total + chapter.content.split(' ').length, 0)
+    
+    return `
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>${quickGenData.genre} Novel</title>
+    <style>
+        body {
+            font-family: 'Times New Roman', serif;
+            font-size: 12pt;
+            line-height: 1.6;
+            margin: 1in;
+            color: #000;
+        }
+        .title-page {
+            text-align: center;
+            page-break-after: always;
+            margin-top: 2in;
+        }
+        .title {
+            font-size: 24pt;
+            font-weight: bold;
+            margin-bottom: 1in;
+        }
+        .metadata {
+            font-size: 14pt;
+            margin-bottom: 0.5in;
+        }
+        .synopsis {
+            page-break-after: always;
+            margin-top: 1in;
+        }
+        .synopsis-title {
+            font-size: 18pt;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 0.5in;
+        }
+        .chapter {
+            page-break-before: always;
+        }
+        .chapter-title {
+            font-size: 16pt;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 1in;
+            margin-top: 1in;
+        }
+        .chapter-content {
+            text-align: justify;
+            text-indent: 0.5in;
+        }
+        .chapter-content p {
+            margin-bottom: 0.25in;
+        }
+        @page {
+            margin: 1in;
+        }
+        @media print {
+            .chapter {
+                page-break-before: always;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="title-page">
+        <div class="title">${quickGenData.genre} Novel</div>
+        <div class="metadata">Genre: ${quickGenData.genre} - ${quickGenData.subgenre}</div>
+        <div class="metadata">Length: ${quickGenData.wordCount}</div>
+        <div class="metadata">Total Words: ~${totalWords.toLocaleString()}</div>
+        <div class="metadata">Generated: ${new Date().toLocaleDateString()}</div>
+    </div>
+    
+    ${quickGenData.synopsis ? `
+    <div class="synopsis">
+        <div class="synopsis-title">Synopsis</div>
+        <div>${quickGenData.synopsis.split('\n').map(para => `<p>${para}</p>`).join('')}</div>
+    </div>
+    ` : ''}
+    
+    ${quickGenData.chapters.map((chapter, index) => `
+    <div class="chapter">
+        <div class="chapter-title">${chapter.title}</div>
+        <div class="chapter-content">
+            ${chapter.content.split('\n\n').map(para => `<p>${para.replace(/\n/g, '<br>')}</p>`).join('')}
+        </div>
+    </div>
+    `).join('')}
+</body>
+</html>`
   }
 
   // Helper functions
@@ -912,6 +1188,26 @@ function App() {
                 </button>
               )}
               
+              {quickGenData.chapters.length === quickGenData.outline.length && quickGenData.chapters.length > 0 && (
+                <div className="completion-controls">
+                  <button onClick={handleAcceptDraft} className="btn-accept">
+                    ✅ Accept Draft
+                  </button>
+                  <div className="export-controls">
+                    <h4>Export Options:</h4>
+                    <button onClick={exportToDocx} className="btn-export">
+                      📄 Export to .docx
+                    </button>
+                    <button onClick={exportToPDF} className="btn-export">
+                      📕 Export to PDF
+                    </button>
+                    <button onClick={exportToGoogleDocs} className="btn-export">
+                      📝 Export for Google Docs
+                    </button>
+                  </div>
+                </div>
+              )}
+              
               <button onClick={resetQuickGen} className="btn-reset">
                 🔄 Start New Project
               </button>
@@ -925,6 +1221,9 @@ function App() {
                   style={{ width: `${(quickGenData.chapters.length / quickGenData.outline.length) * 100}%` }}
                 ></div>
               </div>
+              {quickGenData.chapters.length === quickGenData.outline.length && (
+                <p className="completion-message">🎉 Novel complete! Total words: ~{quickGenData.chapters.reduce((total, ch) => total + ch.content.split(' ').length, 0).toLocaleString()}</p>
+              )}
             </div>
             
             {quickGenData.chapters.length > 0 && (

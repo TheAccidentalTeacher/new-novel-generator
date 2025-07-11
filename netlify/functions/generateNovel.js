@@ -84,7 +84,9 @@ export const handler = async function(event, context) {
         
         ${chapterNumber ? `Generate Chapter ${chapterNumber} outline.` : 'Generate the first chapter outline.'}
         
-        Provide ONLY a JSON object with this exact structure:
+        You must respond with ONLY a valid JSON object. Do not include any other text, explanations, or markdown formatting.
+        
+        JSON structure:
         {
           "title": "Chapter title",
           "summary": "2-3 sentence chapter summary",
@@ -100,25 +102,46 @@ export const handler = async function(event, context) {
     case 'generate-chapter':
       model = 'gpt-4o-mini'; // Use GPT-4 for chapter generation
       const chapterOutline = outline && outline[chapterNumber - 1] ? outline[chapterNumber - 1] : null;
-      const previousChapterContent = chapters && chapters.length > 0 ? 
-        `Previous chapter summary: ${chapters[chapters.length - 1].summary || 'No previous chapters'}` : '';
+      
+      // Include more comprehensive context from previous chapters
+      let previousContext = '';
+      if (chapters && chapters.length > 0) {
+        previousContext = `Previous chapters for context and consistency:\n\n`;
+        chapters.forEach((ch, i) => {
+          previousContext += `=== Chapter ${i + 1}: ${ch.title} ===\n`;
+          // Include first 1000 characters and last 500 characters of each previous chapter
+          const content = ch.content || '';
+          if (content.length > 1500) {
+            previousContext += content.substring(0, 1000) + '\n\n[... middle content ...]\n\n' + content.substring(content.length - 500);
+          } else {
+            previousContext += content;
+          }
+          previousContext += '\n\n';
+        });
+      } else {
+        previousContext = 'This is the first chapter of the novel.';
+      }
       
       userPrompt = `Write Chapter ${chapterNumber} for a ${genre}${subgenre ? ` (${subgenre})` : ''} ${wordCount || 'novel'}.
         
-        Synopsis: ${synopsis}
-        ${previousChapterContent}
+        SYNOPSIS: ${synopsis}
         
-        Chapter Outline: ${JSON.stringify(chapterOutline)}
+        ${previousContext}
         
-        Write a full chapter (2000-4000 words) that:
-        - Follows the chapter outline
-        - Maintains consistency with previous chapters
-        - Uses appropriate genre conventions
-        - Includes vivid descriptions, realistic dialogue, and character development
-        - Ends with a hook for the next chapter
+        CHAPTER ${chapterNumber} OUTLINE TO FOLLOW: ${JSON.stringify(chapterOutline)}
         
-        Format as a complete chapter with proper paragraphs.`;
-      maxTokens = 5000;
+        REQUIREMENTS:
+        - Write a complete chapter of 2000-4000 words
+        - Follow the provided chapter outline exactly
+        - Maintain perfect consistency with characters, plot, and tone from previous chapters
+        - Use genre-appropriate writing style for ${genre}${subgenre ? ` (${subgenre})` : ''}
+        - Include vivid descriptions, realistic dialogue, and character development
+        - End with a compelling hook that leads naturally to the next chapter
+        - Match the writing style and voice established in previous chapters
+        - Ensure smooth transitions from the previous chapter's ending
+        
+        Format the response as a complete chapter with proper paragraphs. Do not include chapter numbers, titles, or any prefacing text - just the chapter content.`;
+      maxTokens = 6000;
       temperature = 0.8;
       break;
       
