@@ -245,7 +245,7 @@ exports.handler = async function(event, context) {
           status: 'started',
           message: 'Novel generation started in background',
           estimatedTimeMinutes: getEstimatedTime(wordCount),
-          pollUrl: `/.netlify/functions/autoGenerateNovel?mode=status&jobId=${jobId}`
+          pollUrl: `/.netlify/functions/autoGenerateNovel.cjs?mode=status&jobId=${jobId}`
         })
       };
     }

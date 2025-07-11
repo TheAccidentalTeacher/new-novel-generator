@@ -2021,7 +2021,7 @@ Please copy this entire error message for debugging.
 
       console.log('Sending start request to autoGenerateNovel function...');
       
-      const response = await fetch('/.netlify/functions/autoGenerateNovel', {
+      const response = await fetch('/.netlify/functions/autoGenerateNovel.cjs', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -2100,7 +2100,7 @@ Stack Trace:
 ${error.stack || 'No stack trace available'}
 
 Request Information:
-- Function URL: /.netlify/functions/autoGenerateNovel
+- Function URL: /.netlify/functions/autoGenerateNovel.cjs
 - Method: POST
 - Mode: start
 - Genre: ${autoGenData.genre}
@@ -2154,7 +2154,7 @@ Please copy this entire error message and share it for troubleshooting.
     try {
       console.log(`Polling status for job ${jobId}`);
       
-      const response = await fetch('/.netlify/functions/autoGenerateNovel', {
+      const response = await fetch('/.netlify/functions/autoGenerateNovel.cjs', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -2233,7 +2233,7 @@ Please copy this entire error message and share it for troubleshooting.
     try {
       console.log(`Cancelling job ${autoGenData.jobId}`);
       
-      const response = await fetch('/.netlify/functions/autoGenerateNovel', {
+      const response = await fetch('/.netlify/functions/autoGenerateNovel.cjs', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -2311,7 +2311,7 @@ Please copy this entire error message and share it for troubleshooting.
   const testAutoGenerate = async () => {
     try {
       console.log('Testing AutoGenerate function...');
-      const response = await fetch('/.netlify/functions/autoGenerateNovel', {
+      const response = await fetch('/.netlify/functions/autoGenerateNovel.cjs', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
