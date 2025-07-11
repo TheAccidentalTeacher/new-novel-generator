@@ -149,18 +149,36 @@ function App() {
 
   const handleQuickGenOutlineNext = async () => {
     const chapterNumber = quickGenData.outline.length + 1
-    const result = await generateContent('outline', '', {
-      genre: quickGenData.genre,
-      subgenre: quickGenData.subgenre,
-      synopsis: quickGenData.synopsis,
-      outline: quickGenData.outline,
-      chapterNumber: chapterNumber
-    })
+    setLoading(true)
     
-    if (result) {
-      try {
+    try {
+      console.log(`Generating outline for chapter ${chapterNumber}`)
+      
+      const response = await fetch('/.netlify/functions/generateNovel', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          mode: 'outline',
+          genre: quickGenData.genre,
+          subgenre: quickGenData.subgenre,
+          synopsis: quickGenData.synopsis,
+          outline: quickGenData.outline,
+          chapterNumber: chapterNumber
+        })
+      })
+      
+      if (!response.ok) {
+        const errorText = await response.text()
+        throw new Error(`HTTP ${response.status}: ${errorText}`)
+      }
+      
+      const data = await response.json()
+      
+      if (data.result) {
         // Clean the result to ensure it's valid JSON
-        let cleanResult = result.trim()
+        let cleanResult = data.result.trim()
         
         // Remove any markdown formatting
         if (cleanResult.startsWith('```json')) {
@@ -180,7 +198,7 @@ function App() {
         
         // Validate the structure
         if (!parsedChapter.title || !parsedChapter.summary) {
-          throw new Error('Invalid chapter structure')
+          throw new Error('Invalid chapter structure - missing title or summary')
         }
         
         setQuickGenData(prev => ({
@@ -188,16 +206,19 @@ function App() {
           outline: [...prev.outline, parsedChapter]
         }))
         
-        // Clear any error messages
-        if (generatedContent.includes('Error:')) {
-          setGeneratedContent('')
-        }
+        console.log(`Successfully added chapter ${chapterNumber} to outline:`, parsedChapter.title)
         
-      } catch (e) {
-        console.error('Error parsing outline:', e)
-        console.error('Raw result:', result)
-        setGeneratedContent(`Error parsing chapter outline: ${e.message}\n\nRaw response: ${result}\n\nPlease try again.`)
+      } else if (data.error) {
+        throw new Error(data.error)
+      } else {
+        throw new Error('No result in response')
       }
+      
+    } catch (error) {
+      console.error('Outline generation error:', error)
+      setGeneratedContent(`Error generating chapter ${chapterNumber} outline: ${error.message}\n\nPlease try again.`)
+    } finally {
+      setLoading(false)
     }
   }
 
