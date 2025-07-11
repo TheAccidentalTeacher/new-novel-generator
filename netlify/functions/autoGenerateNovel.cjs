@@ -24,8 +24,11 @@ exports.handler = async function(event, context) {
   try {
     console.log('Step 1: Parsing request body...');
     const requestData = JSON.parse(event.body || '{}');
-    const { mode, jobId, synopsis, genre, subgenre, wordCount, userPreferences } = requestData;
-    console.log('Step 2: Request data parsed successfully:', { mode, genre, subgenre, wordCount, synopsisLength: synopsis?.length });
+    const { mode, jobId, synopsis, genre, subgenre, wordCount, userPreferences, useBatch } = requestData;
+    console.log('Step 2: Request data parsed successfully:', { 
+      mode, genre, subgenre, wordCount, useBatch,
+      synopsisLength: synopsis?.length 
+    });
     
     console.log('Step 3: Checking environment variables...');
     const apiKey = process.env.OPENAI_API_KEY;
@@ -228,7 +231,7 @@ exports.handler = async function(event, context) {
         
       case 'start':
         console.log('Step 9: Start mode - calling startAutoGeneration');
-        return await startAutoGeneration(synopsis, genre, subgenre, wordCount, userPreferences);
+        return await startAutoGeneration(synopsis, genre, subgenre, wordCount, userPreferences, useBatch);
       
       case 'status':
         console.log('Step 9: Status mode - calling getJobStatus');
@@ -244,15 +247,15 @@ exports.handler = async function(event, context) {
     }
 
     // Start Auto Generation - Returns immediately with job ID
-    async function startAutoGeneration(synopsis, genre, subgenre, wordCount, prefs = {}) {
+    async function startAutoGeneration(synopsis, genre, subgenre, wordCount, prefs = {}, useBatch = false) {
       const jobId = generateJobId();
-      console.log(`Starting new AutoGenerate job: ${jobId}`);
+      console.log(`Starting new AutoGenerate job: ${jobId} (batch: ${useBatch})`);
       
       // Create job in storage
-      const job = jobManager.createJob(jobId, synopsis, genre, subgenre, wordCount, prefs);
+      const job = jobManager.createJob(jobId, synopsis, genre, subgenre, wordCount, { ...prefs, useBatch });
       
       // Start background processing (non-blocking)
-      processNovelGeneration(jobId).catch(error => {
+      processNovelGeneration(jobId, useBatch).catch(error => {
         console.error(`Background job ${jobId} failed:`, error);
         jobManager.updateJob(jobId, {
           status: 'error',

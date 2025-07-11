@@ -70,6 +70,163 @@ function App() {
   // Polling interval for AutoGenerate jobs
   const [pollingInterval, setPollingInterval] = useState(null)
 
+  // Comprehensive Error Logging Utility
+  const generateDetailedErrorReport = (error, context = {}) => {
+    const timestamp = new Date().toISOString();
+    const errorReport = {
+      timestamp,
+      error: {
+        name: error.name || 'Unknown Error',
+        message: error.message || 'No error message available',
+        stack: error.stack || 'No stack trace available',
+        toString: error.toString()
+      },
+      context: {
+        function: context.function || 'Unknown function',
+        operation: context.operation || 'Unknown operation',
+        userAgent: navigator.userAgent,
+        currentURL: window.location.href,
+        networkStatus: navigator.onLine ? 'Online' : 'Offline',
+        timestamp: timestamp,
+        ...context
+      },
+      browserInfo: {
+        language: navigator.language,
+        platform: navigator.platform,
+        cookieEnabled: navigator.cookieEnabled,
+        javaEnabled: navigator.javaEnabled?.() || false,
+        screenResolution: `${screen.width}x${screen.height}`,
+        colorDepth: screen.colorDepth
+      },
+      appState: {
+        activeTab,
+        autoGenStatus: autoGenData.status,
+        autoGenJobId: autoGenData.jobId,
+        quickGenStep,
+        loadingState: loading
+      }
+    };
+
+    const formattedReport = `
+🚨 DETAILED ERROR REPORT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📅 TIMESTAMP: ${timestamp}
+
+🔴 ERROR DETAILS:
+• Type: ${errorReport.error.name}
+• Message: ${errorReport.error.message}
+• String Representation: ${errorReport.error.toString}
+
+📍 CONTEXT:
+• Function: ${errorReport.context.function}
+• Operation: ${errorReport.context.operation}
+• Network Status: ${errorReport.context.networkStatus}
+• Current URL: ${errorReport.context.currentURL}
+
+🖥️ BROWSER INFORMATION:
+• User Agent: ${errorReport.browserInfo.userAgent}
+• Language: ${errorReport.browserInfo.language}
+• Platform: ${errorReport.browserInfo.platform}
+• Screen: ${errorReport.browserInfo.screenResolution} (${errorReport.browserInfo.colorDepth}-bit)
+• Cookies Enabled: ${errorReport.browserInfo.cookieEnabled}
+
+📱 APPLICATION STATE:
+• Active Tab: ${errorReport.appState.activeTab}
+• AutoGen Status: ${errorReport.appState.autoGenStatus}
+• AutoGen Job ID: ${errorReport.appState.autoGenJobId || 'None'}
+• Quick Gen Step: ${errorReport.appState.quickGenStep}
+• Loading State: ${errorReport.appState.loadingState}
+
+🔍 STACK TRACE:
+${errorReport.error.stack}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📋 COPY THIS ENTIRE ERROR REPORT FOR DEBUGGING
+`;
+
+    // Log to console for debugging
+    console.group(`🚨 Error in ${errorReport.context.function}`);
+    console.error('Error Object:', error);
+    console.error('Context:', errorReport.context);
+    console.error('Full Report:', errorReport);
+    console.groupEnd();
+
+    return formattedReport;
+  };
+
+  // Enhanced alert function with detailed logging
+  const showDetailedError = (error, context = {}) => {
+    const report = generateDetailedErrorReport(error, context);
+    alert(report);
+    return report;
+  };
+
+  // Cost estimation and batch processing utilities
+  const calculateEstimatedCost = (wordCount, useBatch = false) => {
+    // OpenAI API pricing (per 1M tokens)
+    const pricing = {
+      'gpt-4o': { input: 2.50, output: 10.00 },
+      'gpt-4o-mini': { input: 0.150, output: 0.600 }
+    };
+    
+    // Rough token estimates (1 word ≈ 1.3 tokens)
+    const getWordCountValue = (wcId) => {
+      const ranges = {
+        'flash-fiction': 750,
+        'short-story': 4000,
+        'novelette': 12500,
+        'novella': 28750,
+        'novel': 70000,
+        'epic': 120000
+      };
+      return ranges[wcId] || 70000;
+    };
+    
+    const words = getWordCountValue(wordCount);
+    const tokens = words * 1.3;
+    
+    // Cost breakdown
+    const costs = {
+      synopsis: {
+        model: 'gpt-4o-mini',
+        inputTokens: 1000,
+        outputTokens: 1000,
+        cost: (1000 * pricing['gpt-4o-mini'].input + 1000 * pricing['gpt-4o-mini'].output) / 1000000
+      },
+      outline: {
+        model: 'gpt-4o-mini', 
+        inputTokens: 2000,
+        outputTokens: 3000,
+        cost: (2000 * pricing['gpt-4o-mini'].input + 3000 * pricing['gpt-4o-mini'].output) / 1000000
+      },
+      chapters: {
+        model: 'gpt-4o',
+        inputTokens: tokens * 0.1, // Context for each chapter
+        outputTokens: tokens * 0.9, // Generated content
+        cost: (tokens * 0.1 * pricing['gpt-4o'].input + tokens * 0.9 * pricing['gpt-4o'].output) / 1000000
+      }
+    };
+    
+    const totalCost = costs.synopsis.cost + costs.outline.cost + costs.chapters.cost;
+    const batchDiscount = useBatch ? 0.5 : 1; // 50% discount for batch processing
+    
+    return {
+      breakdown: costs,
+      subtotal: totalCost,
+      batchDiscount: useBatch ? totalCost * 0.5 : 0,
+      total: totalCost * batchDiscount,
+      useBatch
+    };
+  };
+
+  // Get estimated cost for current selection
+  const currentCostEstimate = autoGenData.wordCount ? 
+    calculateEstimatedCost(autoGenData.wordCount, false) : null;
+  const batchCostEstimate = autoGenData.wordCount ? 
+    calculateEstimatedCost(autoGenData.wordCount, true) : null;
+
   // Save only generated content to localStorage whenever it changes
   useEffect(() => {
     const saveData = () => {
@@ -718,7 +875,13 @@ Please copy this entire error message for debugging.
       saveAs(blob, `${quickGenData.genre}-${quickGenData.subgenre}-novel.docx`)
     } catch (error) {
       console.error('Error exporting to DOCX:', error)
-      alert('Error exporting to DOCX. Please try the PDF or HTML export instead.')
+      showDetailedError(
+        'DOCX Export Failed',
+        'Failed to export your novel to DOCX format',
+        error,
+        'Try using the PDF or HTML export options instead. This error may occur due to browser compatibility issues with the DOCX library.',
+        'exportToDOCX'
+      )
     }
   }
 
@@ -786,7 +949,13 @@ Please copy this entire error message for debugging.
       saveAs(pdfBlob, `${quickGenData.genre}-${quickGenData.subgenre}-novel.pdf`)
     } catch (error) {
       console.error('Error exporting to PDF:', error)
-      alert('Error exporting to PDF. Please try the HTML export instead.')
+      showDetailedError(
+        'PDF Export Failed',
+        'Failed to export your novel to PDF format',
+        error,
+        'Try using the HTML export option instead. This error may occur due to browser compatibility issues with the PDF library or very large documents.',
+        'exportToPDF'
+      )
     }
   }
 
@@ -818,7 +987,13 @@ Please copy this entire error message for debugging.
 💡 The HTML file contains your complete novel with professional formatting and will maintain proper chapter breaks when imported.`)
     } catch (error) {
       console.error('Error exporting HTML:', error)
-      alert('Error creating HTML export. Please try again.')
+      showDetailedError(
+        'HTML Export Failed',
+        'Failed to create HTML export for Google Docs import',
+        error,
+        'This error is unusual as HTML export is the most compatible format. Check if your browser allows file downloads and try again.',
+        'exportToGoogleDocs'
+      )
     }
   }
 
@@ -1726,6 +1901,79 @@ Please copy this entire error message for debugging.
             </div>
           </div>
 
+          {/* Cost Estimation Section */}
+          {autoGenData.wordCount && (
+            <div className="setup-section">
+              <h3>💰 Cost Estimation</h3>
+              <div className="cost-estimation">
+                <div className="cost-options">
+                  <div className="cost-option standard">
+                    <h4>🚀 Standard Processing</h4>
+                    <div className="cost-breakdown">
+                      <div className="cost-item">
+                        <span>Synopsis (GPT-4o-mini):</span>
+                        <span>${currentCostEstimate?.breakdown.synopsis.cost.toFixed(3)}</span>
+                      </div>
+                      <div className="cost-item">
+                        <span>Outline (GPT-4o-mini):</span>
+                        <span>${currentCostEstimate?.breakdown.outline.cost.toFixed(3)}</span>
+                      </div>
+                      <div className="cost-item">
+                        <span>Chapters (GPT-4o):</span>
+                        <span>${currentCostEstimate?.breakdown.chapters.cost.toFixed(2)}</span>
+                      </div>
+                      <div className="cost-total">
+                        <span><strong>Total Cost:</strong></span>
+                        <span><strong>${currentCostEstimate?.total.toFixed(2)}</strong></span>
+                      </div>
+                    </div>
+                    <p className="processing-time">⏱️ ~15-20 minutes</p>
+                  </div>
+
+                  <div className="cost-option batch">
+                    <h4>📦 Batch Processing (50% Off!)</h4>
+                    <div className="cost-breakdown">
+                      <div className="cost-item">
+                        <span>Standard Cost:</span>
+                        <span>${batchCostEstimate?.subtotal.toFixed(2)}</span>
+                      </div>
+                      <div className="cost-item discount">
+                        <span>Batch Discount (50%):</span>
+                        <span>-${batchCostEstimate?.batchDiscount.toFixed(2)}</span>
+                      </div>
+                      <div className="cost-total">
+                        <span><strong>Total Cost:</strong></span>
+                        <span><strong>${batchCostEstimate?.total.toFixed(2)}</strong></span>
+                      </div>
+                    </div>
+                    <p className="processing-time">⏱️ ~24-48 hours (queued processing)</p>
+                    <p className="batch-info">💡 Uses OpenAI's batch API for significant cost savings</p>
+                  </div>
+                </div>
+                
+                <div className="processing-choice">
+                  <label>
+                    <input 
+                      type="radio" 
+                      name="processingType" 
+                      value="standard" 
+                      defaultChecked 
+                    />
+                    Standard Processing (Immediate)
+                  </label>
+                  <label>
+                    <input 
+                      type="radio" 
+                      name="processingType" 
+                      value="batch" 
+                    />
+                    Batch Processing (50% Off, Slower)
+                  </label>
+                </div>
+              </div>
+            </div>
+          )}
+
           <div className="setup-section">
             <h3>🧪 Test Connection</h3>
             <p>Test if the AutoGenerate function is working properly:</p>
@@ -1981,7 +2229,13 @@ Please copy this entire error message for debugging.
   // AutoGenerate API Functions with Polling
   const startAutoGeneration = async () => {
     if (!autoGenData.synopsis.trim() || !autoGenData.genre || !autoGenData.subgenre || !autoGenData.wordCount) {
-      alert('Please fill in all required fields: Synopsis, Genre, Subgenre, and Word Count');
+      showDetailedError(
+        'Validation Error',
+        'Missing required fields for novel generation',
+        new Error('Required fields not filled'),
+        'Please fill in all required fields: Synopsis, Genre, Subgenre, and Word Count',
+        'startAutoGeneration'
+      );
       return;
     }
 
@@ -2006,12 +2260,17 @@ Please copy this entire error message for debugging.
         wordCount: autoGenData.wordCount
       });
 
+      // Get batch processing preference
+      const processingType = document.querySelector('input[name="processingType"]:checked')?.value || 'standard';
+      const useBatch = processingType === 'batch';
+
       const requestBody = {
         mode: 'start',
         synopsis: autoGenData.synopsis,
         genre: autoGenData.genre,
         subgenre: autoGenData.subgenre,
         wordCount: autoGenData.wordCount,
+        useBatch: useBatch,
         userPreferences: {
           writingStyle: 'literary',
           pacing: 'measured',
@@ -2088,43 +2347,25 @@ Timestamp: ${new Date().toISOString()}
       }
 
     } catch (error) {
-      console.error('AutoGenerate start error:', error);
-      
-      const detailedErrorInfo = `
-🚨 DETAILED AUTOGENERATE START ERROR:
-
-Error Type: ${error.name || 'Unknown'}
-Error Message: ${error.message}
-
-Stack Trace:
-${error.stack || 'No stack trace available'}
-
-Request Information:
-- Function URL: /.netlify/functions/autoGenerateNovel
-- Method: POST
-- Mode: start
-- Genre: ${autoGenData.genre}
-- Subgenre: ${autoGenData.subgenre}  
-- Word Count: ${autoGenData.wordCount}
-- Synopsis Length: ${autoGenData.synopsis?.length || 0} characters
-
-Browser Information:
-- User Agent: ${navigator.userAgent}
-- Current URL: ${window.location.href}
-- Timestamp: ${new Date().toISOString()}
-
-Network Status: ${navigator.onLine ? 'Online' : 'Offline'}
-
-Please copy this entire error message and share it for troubleshooting.
-      `;
-
-      alert(detailedErrorInfo);
+      const errorReport = showDetailedError(error, {
+        function: 'startAutoGeneration',
+        operation: 'Starting AutoGenerate job',
+        requestData: {
+          mode: 'start',
+          genre: autoGenData.genre,
+          subgenre: autoGenData.subgenre,
+          wordCount: autoGenData.wordCount,
+          synopsisLength: autoGenData.synopsis?.length || 0,
+          useBatch: document.querySelector('input[name="processingType"]:checked')?.value === 'batch'
+        },
+        apiEndpoint: '/.netlify/functions/autoGenerateNovel'
+      });
 
       setAutoGenData(prev => ({
         ...prev,
         status: 'error',
-        error: detailedErrorInfo,
-        currentPhase: 'Generation failed - See detailed error above'
+        error: errorReport,
+        currentPhase: 'Generation failed - See detailed error report'
       }));
     }
   };
@@ -2211,6 +2452,13 @@ Please copy this entire error message and share it for troubleshooting.
 
     } catch (error) {
       console.error('Polling error:', error);
+      generateDetailedErrorReport(error, {
+        function: 'pollJobStatus',
+        operation: 'Polling job status',
+        jobId: jobId,
+        currentStatus: autoGenData.status,
+        note: 'Polling will continue despite error'
+      });
       // Don't stop polling on network errors, just log and continue
     }
   };
@@ -2256,8 +2504,12 @@ Please copy this entire error message and share it for troubleshooting.
       }));
 
     } catch (error) {
-      console.error('Cancel error:', error);
-      alert('Failed to cancel job: ' + error.message);
+      const errorReport = showDetailedError(error, {
+        function: 'cancelAutoGenerate',
+        operation: 'Cancelling AutoGenerate job',
+        jobId: autoGenData.jobId,
+        currentStatus: autoGenData.status
+      });
     }
   };
 
@@ -2292,7 +2544,13 @@ Please copy this entire error message and share it for troubleshooting.
 
   const exportAutoGeneratedNovel = (format) => {
     if (!autoGenData.novel || !autoGenData.novel.chapters) {
-      alert('No novel to export');
+      showDetailedError(
+        'Export Error',
+        'No novel available to export',
+        new Error('Novel data not found'),
+        'Please generate a novel first before attempting to export.',
+        'exportAutoGeneratedNovel'
+      );
       return;
     }
 
@@ -2327,11 +2585,23 @@ Please copy this entire error message and share it for troubleshooting.
       if (data.status === 'success') {
         alert('✅ AutoGenerate function is working correctly!');
       } else {
-        alert('❌ Function responded but with error: ' + JSON.stringify(data));
+        showDetailedError(
+          'Function Test Error',
+          'AutoGenerate function responded with error',
+          new Error('Function test failed'),
+          `Function responded but with error: ${JSON.stringify(data)}`,
+          'testAutoGenerateFunction'
+        );
       }
     } catch (error) {
       console.error('Test error:', error);
-      alert('❌ Function test failed: ' + error.message);
+      showDetailedError(
+        'Function Test Failed',
+        'AutoGenerate function test failed',
+        error,
+        'Unable to connect to or test the AutoGenerate function. This may indicate a deployment or configuration issue.',
+        'testAutoGenerateFunction'
+      );
     }
   };
 

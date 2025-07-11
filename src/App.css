@@ -1548,3 +1548,124 @@ textarea {
   justify-content: center;
   flex-wrap: wrap;
 }
+
+/* Cost Estimation Styles */
+.cost-estimation {
+  background: #f8f9fa;
+  border-radius: 12px;
+  padding: 1.5rem;
+  border: 1px solid #e9ecef;
+}
+
+.cost-options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.cost-option {
+  background: white;
+  border-radius: 8px;
+  padding: 1.25rem;
+  border: 2px solid transparent;
+  transition: all 0.3s ease;
+}
+
+.cost-option.standard {
+  border-color: #007bff;
+}
+
+.cost-option.batch {
+  border-color: #28a745;
+  position: relative;
+}
+
+.cost-option.batch::before {
+  content: "🔥 SAVE 50%";
+  position: absolute;
+  top: -8px;
+  right: 8px;
+  background: #28a745;
+  color: white;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: bold;
+}
+
+.cost-option h4 {
+  margin-bottom: 1rem;
+  color: #2c3e50;
+  font-size: 1.1rem;
+}
+
+.cost-breakdown {
+  margin-bottom: 1rem;
+}
+
+.cost-item {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.cost-item.discount {
+  color: #28a745;
+  font-weight: 600;
+}
+
+.cost-total {
+  display: flex;
+  justify-content: space-between;
+  padding-top: 0.5rem;
+  border-top: 1px solid #e9ecef;
+  margin-top: 0.5rem;
+  font-size: 1.1rem;
+}
+
+.processing-time {
+  color: #6c757d;
+  font-size: 0.85rem;
+  margin-bottom: 0.5rem;
+}
+
+.batch-info {
+  color: #28a745;
+  font-size: 0.8rem;
+  font-style: italic;
+}
+
+.processing-choice {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  background: white;
+  padding: 1rem;
+  border-radius: 8px;
+}
+
+.processing-choice label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.processing-choice label:hover {
+  background-color: #f8f9fa;
+}
+
+.processing-choice input[type="radio"] {
+  margin: 0;
+}
+
+@media (max-width: 768px) {
+  .cost-options {
+    grid-template-columns: 1fr;
+  }
+}
