@@ -668,6 +668,390 @@ textarea {
   line-height: 1.6;
 }
 
+/* Quick Generate Workflow Styles */
+.genre-selection {
+  padding: 1rem 0;
+}
+
+.genre-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.genre-card {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  transition: transform 0.2s ease;
+}
+
+.genre-card:hover {
+  transform: translateY(-2px);
+}
+
+.genre-card h3 {
+  color: #2c3e50;
+  margin-bottom: 1rem;
+  font-size: 1.2rem;
+  border-bottom: 2px solid #3498db;
+  padding-bottom: 0.5rem;
+}
+
+.subgenre-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.subgenre-btn {
+  padding: 0.5rem 1rem;
+  border: 2px solid #ecf0f1;
+  background: #f8f9fa;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.9rem;
+}
+
+.subgenre-btn:hover {
+  border-color: #3498db;
+  background: #e3f2fd;
+}
+
+.subgenre-btn.selected {
+  background: #3498db;
+  color: white;
+  border-color: #2980b9;
+}
+
+.word-count-selection {
+  padding: 1rem 0;
+}
+
+.word-count-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.word-count-card {
+  background: white;
+  border: 2px solid #ecf0f1;
+  border-radius: 12px;
+  padding: 1.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+}
+
+.word-count-card:hover {
+  border-color: #3498db;
+  transform: translateY(-2px);
+}
+
+.word-count-card.selected {
+  border-color: #3498db;
+  background: #e3f2fd;
+}
+
+.word-count-card h3 {
+  color: #2c3e50;
+  margin-bottom: 0.5rem;
+}
+
+.word-count-card .range {
+  color: #3498db;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.word-count-card .description {
+  color: #7f8c8d;
+  font-size: 0.9rem;
+}
+
+.user-input-section {
+  padding: 1rem 0;
+}
+
+.selected-options {
+  background: #e8f5e8;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  border-left: 4px solid #27ae60;
+}
+
+.input-group {
+  margin-bottom: 1.5rem;
+}
+
+.input-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.story-input {
+  width: 100%;
+  padding: 1rem;
+  border: 2px solid #ecf0f1;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 1rem;
+  resize: vertical;
+}
+
+.story-input:focus {
+  outline: none;
+  border-color: #3498db;
+}
+
+.synopsis-section {
+  padding: 1rem 0;
+}
+
+.synopsis-controls {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.synopsis-editor {
+  margin-bottom: 1.5rem;
+}
+
+.synopsis-text {
+  width: 100%;
+  padding: 1rem;
+  border: 2px solid #ecf0f1;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 1rem;
+  resize: vertical;
+}
+
+.synopsis-text:focus {
+  outline: none;
+  border-color: #3498db;
+}
+
+.outline-section {
+  padding: 1rem 0;
+}
+
+.outline-controls {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.outline-preview {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.outline-chapter {
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  border-left: 4px solid #3498db;
+}
+
+.outline-chapter h4 {
+  color: #2c3e50;
+  margin-bottom: 0.5rem;
+}
+
+.outline-chapter p {
+  margin-bottom: 0.25rem;
+  font-size: 0.9rem;
+}
+
+.chapter-section {
+  padding: 1rem 0;
+}
+
+.chapter-controls {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.chapter-progress {
+  background: white;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 8px;
+  background: #ecf0f1;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-top: 0.5rem;
+}
+
+.progress-fill {
+  height: 100%;
+  background: #27ae60;
+  transition: width 0.3s ease;
+}
+
+.chapters-list {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.chapter-preview {
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  border-left: 4px solid #3498db;
+}
+
+.chapter-preview h4 {
+  color: #2c3e50;
+  margin-bottom: 0.5rem;
+}
+
+.chapter-preview .word-count {
+  color: #7f8c8d;
+  font-size: 0.9rem;
+  margin-bottom: 0.5rem;
+}
+
+.chapter-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.step-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 2rem;
+  padding-top: 1rem;
+  border-top: 1px solid #ecf0f1;
+}
+
+.btn-back, .btn-next, .btn-reset, .btn-regenerate, .btn-view {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.btn-back {
+  background: #95a5a6;
+  color: white;
+}
+
+.btn-back:hover {
+  background: #7f8c8d;
+}
+
+.btn-next {
+  background: #3498db;
+  color: white;
+}
+
+.btn-next:hover {
+  background: #2980b9;
+}
+
+.btn-next:disabled {
+  background: #bdc3c7;
+  cursor: not-allowed;
+}
+
+.btn-reset {
+  background: #e74c3c;
+  color: white;
+}
+
+.btn-reset:hover {
+  background: #c0392b;
+}
+
+.btn-regenerate {
+  background: #f39c12;
+  color: white;
+}
+
+.btn-regenerate:hover {
+  background: #e67e22;
+}
+
+.btn-view {
+  background: #9b59b6;
+  color: white;
+}
+
+.btn-view:hover {
+  background: #8e44ad;
+}
+
+.generated-content-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 2rem;
+}
+
+.generated-content-overlay .generated-content {
+  background: white;
+  border-radius: 12px;
+  padding: 2rem;
+  max-width: 80vw;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+}
+
+.content-actions {
+  display: flex;
+  gap: 1rem;
+}
+
+.btn-close {
+  background: #e74c3c;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.btn-close:hover {
+  background: #c0392b;
+}
+
 /* Responsive design */
 @media (max-width: 1024px) {
   .sidebar {

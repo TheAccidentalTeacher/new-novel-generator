@@ -4,6 +4,16 @@ import './App.css'
 function App() {
   const [activeTab, setActiveTab] = useState('home')
   const [activeWorldTab, setActiveWorldTab] = useState('Locations')
+  const [quickGenStep, setQuickGenStep] = useState(1)
+  const [quickGenData, setQuickGenData] = useState({
+    genre: '',
+    subgenre: '',
+    wordCount: '',
+    userInput: '',
+    synopsis: '',
+    outline: [],
+    chapters: []
+  })
   const [storyData, setStoryData] = useState({
     title: '',
     genre: '',
@@ -15,6 +25,35 @@ function App() {
   })
   const [loading, setLoading] = useState(false)
   const [generatedContent, setGeneratedContent] = useState('')
+
+  // Genre and subgenre data
+  const genres = {
+    'Fantasy': ['High Fantasy', 'Urban Fantasy', 'Dark Fantasy', 'Epic Fantasy', 'Sword & Sorcery', 'Paranormal Fantasy'],
+    'Science Fiction': ['Space Opera', 'Cyberpunk', 'Dystopian', 'Time Travel', 'Alien Contact', 'Post-Apocalyptic'],
+    'Romance': ['Contemporary Romance', 'Historical Romance', 'Paranormal Romance', 'Romantic Suspense', 'Erotic Romance', 'LGBTQ+ Romance'],
+    'Mystery': ['Cozy Mystery', 'Police Procedural', 'Detective Fiction', 'Noir', 'Psychological Thriller', 'True Crime'],
+    'Thriller': ['Psychological Thriller', 'Medical Thriller', 'Legal Thriller', 'Espionage', 'Action Thriller', 'Conspiracy'],
+    'Horror': ['Gothic Horror', 'Supernatural Horror', 'Psychological Horror', 'Body Horror', 'Cosmic Horror', 'Slasher'],
+    'Historical Fiction': ['Medieval', 'Victorian', 'World War Era', 'Ancient Civilizations', 'Wild West', 'Renaissance'],
+    'Contemporary Fiction': ['Literary Fiction', 'Women\'s Fiction', 'Family Saga', 'Coming of Age', 'Social Issues', 'Slice of Life'],
+    'Young Adult': ['YA Fantasy', 'YA Romance', 'YA Dystopian', 'YA Contemporary', 'YA Sci-Fi', 'YA Mystery'],
+    'Children\'s': ['Picture Books', 'Early Readers', 'Middle Grade', 'Educational', 'Adventure', 'Fantasy'],
+    'Christian Fiction': ['Inspirational Romance', 'Biblical Fiction', 'Amish Romance', 'Christian Suspense', 'End Times', 'Christian Fantasy'],
+    'Adventure': ['Action Adventure', 'Survival', 'Treasure Hunt', 'Exploration', 'Military', 'Spy Fiction'],
+    'Crime': ['Heist', 'Organized Crime', 'Serial Killer', 'Courtroom Drama', 'Private Detective', 'Forensic'],
+    'Western': ['Traditional Western', 'Weird Western', 'Modern Western', 'Outlaw', 'Frontier', 'Native American'],
+    'Literary Fiction': ['Experimental', 'Metafiction', 'Magical Realism', 'Biographical', 'Social Commentary', 'Stream of Consciousness'],
+    'Biographical': ['Autobiography', 'Historical Biography', 'Celebrity', 'Political', 'Scientific', 'Artistic']
+  }
+
+  const wordCounts = [
+    { id: 'flash-fiction', name: 'Flash Fiction', range: '500-1,000 words', description: 'Very short story' },
+    { id: 'short-story', name: 'Short Story', range: '1,000-7,500 words', description: 'Single sitting read' },
+    { id: 'novelette', name: 'Novelette', range: '7,500-17,500 words', description: 'Extended short story' },
+    { id: 'novella', name: 'Novella', range: '17,500-40,000 words', description: 'Short novel' },
+    { id: 'novel', name: 'Novel', range: '40,000-100,000 words', description: 'Standard novel length' },
+    { id: 'epic', name: 'Epic Novel', range: '100,000+ words', description: 'Extended novel' }
+  ]
 
   const generateContent = async (type, prompt, additionalData = {}) => {
     setLoading(true)
@@ -46,6 +85,83 @@ function App() {
     } finally {
       setLoading(false)
     }
+  }
+
+  // Quick Generate workflow functions
+  const handleQuickGenSynopsis = async () => {
+    const result = await generateContent('synopsis', '', {
+      genre: quickGenData.genre,
+      subgenre: quickGenData.subgenre,
+      wordCount: quickGenData.wordCount,
+      userInput: quickGenData.userInput
+    })
+    
+    if (result) {
+      setQuickGenData(prev => ({ ...prev, synopsis: result }))
+    }
+  }
+
+  const handleQuickGenOutlineNext = async () => {
+    const chapterNumber = quickGenData.outline.length + 1
+    const result = await generateContent('outline', '', {
+      genre: quickGenData.genre,
+      subgenre: quickGenData.subgenre,
+      synopsis: quickGenData.synopsis,
+      outline: quickGenData.outline,
+      chapterNumber: chapterNumber
+    })
+    
+    if (result) {
+      try {
+        const parsedChapter = JSON.parse(result)
+        setQuickGenData(prev => ({
+          ...prev,
+          outline: [...prev.outline, parsedChapter]
+        }))
+      } catch (e) {
+        console.error('Error parsing outline:', e)
+        setGeneratedContent('Error: Could not parse chapter outline. Please try again.')
+      }
+    }
+  }
+
+  const handleQuickGenChapter = async (chapterNumber) => {
+    const result = await generateContent('generate-chapter', '', {
+      genre: quickGenData.genre,
+      subgenre: quickGenData.subgenre,
+      synopsis: quickGenData.synopsis,
+      outline: quickGenData.outline,
+      chapters: quickGenData.chapters,
+      chapterNumber: chapterNumber
+    })
+    
+    if (result) {
+      const newChapter = {
+        number: chapterNumber,
+        title: quickGenData.outline[chapterNumber - 1]?.title || `Chapter ${chapterNumber}`,
+        content: result,
+        summary: quickGenData.outline[chapterNumber - 1]?.summary || ''
+      }
+      
+      setQuickGenData(prev => ({
+        ...prev,
+        chapters: [...prev.chapters, newChapter]
+      }))
+    }
+  }
+
+  const resetQuickGen = () => {
+    setQuickGenStep(1)
+    setQuickGenData({
+      genre: '',
+      subgenre: '',
+      wordCount: '',
+      userInput: '',
+      synopsis: '',
+      outline: [],
+      chapters: []
+    })
+    setGeneratedContent('')
   }
 
   const handleGenerateSynopsis = async () => {
@@ -519,69 +635,325 @@ function App() {
     </div>
   )
 
-  const renderGenerator = () => (
-    <div className="content-panel">
-      <div className="panel-header">
-        <h2>⚡ Quick Generate</h2>
-        <p>Generate complete novels, chapters, or story elements instantly</p>
-      </div>
-      
-      <div className="generator-options">
-        <div className="generator-card">
-          <h3>📖 Complete Novel</h3>
-          <p>Generate a full novel premise with characters and plot</p>
-          <button 
-            onClick={() => generateContent('quick', 'Generate a complete novel premise with characters, plot, and setting')}
-            className="btn-generate"
-            disabled={loading}
-          >
-            {loading ? 'Generating...' : 'Generate Novel'}
-          </button>
-        </div>
-        
-        <div className="generator-card">
-          <h3>📋 Story Outline</h3>
-          <p>Create a detailed chapter-by-chapter outline</p>
-          <button 
-            onClick={handleGenerateOutline}
-            className="btn-generate"
-            disabled={loading}
-          >
-            {loading ? 'Generating...' : 'Generate Outline'}
-          </button>
-        </div>
-        
-        <div className="generator-card">
-          <h3>📝 First Chapter</h3>
-          <p>Write an engaging opening chapter</p>
-          <button 
-            onClick={() => generateContent('chapter', 'Write an engaging first chapter with compelling characters and plot hook')}
-            className="btn-generate"
-            disabled={loading}
-          >
-            {loading ? 'Generating...' : 'Generate Chapter'}
-          </button>
-        </div>
-      </div>
-      
-      {generatedContent && (
-        <div className="generated-content">
-          <div className="content-header">
-            <h3>Generated Content</h3>
-            <button 
-              onClick={() => navigator.clipboard.writeText(generatedContent)}
-              className="btn-copy"
-            >
-              📋 Copy
-            </button>
+  const renderGenerator = () => {
+    // Step 1: Genre Selection
+    if (quickGenStep === 1) {
+      return (
+        <div className="content-panel">
+          <div className="panel-header">
+            <h2>⚡ Quick Generate - Step 1/6</h2>
+            <p>Choose your genre and subgenre</p>
           </div>
-          <div className="content-text">
-            <pre>{generatedContent}</pre>
+          
+          <div className="genre-selection">
+            <div className="genre-grid">
+              {Object.keys(genres).map(genre => (
+                <div key={genre} className="genre-card">
+                  <h3>{genre}</h3>
+                  <div className="subgenre-list">
+                    {genres[genre].map(subgenre => (
+                      <button
+                        key={subgenre}
+                        className={`subgenre-btn ${quickGenData.genre === genre && quickGenData.subgenre === subgenre ? 'selected' : ''}`}
+                        onClick={() => setQuickGenData(prev => ({ ...prev, genre, subgenre }))}
+                      >
+                        {subgenre}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+            
+            {quickGenData.genre && quickGenData.subgenre && (
+              <div className="step-controls">
+                <p>Selected: <strong>{quickGenData.genre} - {quickGenData.subgenre}</strong></p>
+                <button 
+                  onClick={() => setQuickGenStep(2)}
+                  className="btn-next"
+                >
+                  Next: Word Count →
+                </button>
+              </div>
+            )}
           </div>
         </div>
-      )}
-    </div>
-  )
+      )
+    }
+
+    // Step 2: Word Count Selection
+    if (quickGenStep === 2) {
+      return (
+        <div className="content-panel">
+          <div className="panel-header">
+            <h2>⚡ Quick Generate - Step 2/6</h2>
+            <p>Choose your target word count</p>
+          </div>
+          
+          <div className="word-count-selection">
+            <div className="word-count-grid">
+              {wordCounts.map(wc => (
+                <div 
+                  key={wc.id}
+                  className={`word-count-card ${quickGenData.wordCount === wc.id ? 'selected' : ''}`}
+                  onClick={() => setQuickGenData(prev => ({ ...prev, wordCount: wc.id }))}
+                >
+                  <h3>{wc.name}</h3>
+                  <p className="range">{wc.range}</p>
+                  <p className="description">{wc.description}</p>
+                </div>
+              ))}
+            </div>
+            
+            <div className="step-controls">
+              <button onClick={() => setQuickGenStep(1)} className="btn-back">
+                ← Back
+              </button>
+              {quickGenData.wordCount && (
+                <button onClick={() => setQuickGenStep(3)} className="btn-next">
+                  Next: Story Details →
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )
+    }
+
+    // Step 3: User Input
+    if (quickGenStep === 3) {
+      return (
+        <div className="content-panel">
+          <div className="panel-header">
+            <h2>⚡ Quick Generate - Step 3/6</h2>
+            <p>Tell us about your story idea</p>
+          </div>
+          
+          <div className="user-input-section">
+            <div className="selected-options">
+              <p><strong>Genre:</strong> {quickGenData.genre} - {quickGenData.subgenre}</p>
+              <p><strong>Length:</strong> {wordCounts.find(wc => wc.id === quickGenData.wordCount)?.name}</p>
+            </div>
+            
+            <div className="input-group">
+              <label>Describe your story idea:</label>
+              <textarea
+                value={quickGenData.userInput}
+                onChange={(e) => setQuickGenData(prev => ({ ...prev, userInput: e.target.value }))}
+                placeholder="Enter your story concept, characters, setting, plot ideas, themes, or any other details you want to include..."
+                rows={8}
+                className="story-input"
+              />
+            </div>
+            
+            <div className="step-controls">
+              <button onClick={() => setQuickGenStep(2)} className="btn-back">
+                ← Back
+              </button>
+              <button 
+                onClick={() => setQuickGenStep(4)} 
+                className="btn-next"
+                disabled={!quickGenData.userInput.trim()}
+              >
+                Next: Generate Synopsis →
+              </button>
+            </div>
+          </div>
+        </div>
+      )
+    }
+
+    // Step 4: Synopsis Generation
+    if (quickGenStep === 4) {
+      return (
+        <div className="content-panel">
+          <div className="panel-header">
+            <h2>⚡ Quick Generate - Step 4/6</h2>
+            <p>AI-generated synopsis (250 words)</p>
+          </div>
+          
+          <div className="synopsis-section">
+            <div className="synopsis-controls">
+              <button 
+                onClick={handleQuickGenSynopsis}
+                className="btn-generate"
+                disabled={loading}
+              >
+                {loading ? 'Generating Synopsis...' : 'Generate Synopsis'}
+              </button>
+              
+              {quickGenData.synopsis && (
+                <button 
+                  onClick={handleQuickGenSynopsis}
+                  className="btn-regenerate"
+                  disabled={loading}
+                >
+                  🔄 Regenerate
+                </button>
+              )}
+            </div>
+            
+            {quickGenData.synopsis && (
+              <div className="synopsis-editor">
+                <label>Edit your synopsis:</label>
+                <textarea
+                  value={quickGenData.synopsis}
+                  onChange={(e) => setQuickGenData(prev => ({ ...prev, synopsis: e.target.value }))}
+                  rows={10}
+                  className="synopsis-text"
+                />
+              </div>
+            )}
+            
+            <div className="step-controls">
+              <button onClick={() => setQuickGenStep(3)} className="btn-back">
+                ← Back
+              </button>
+              {quickGenData.synopsis && (
+                <button onClick={() => setQuickGenStep(5)} className="btn-next">
+                  Next: Generate Outline →
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )
+    }
+
+    // Step 5: Outline Generation
+    if (quickGenStep === 5) {
+      return (
+        <div className="content-panel">
+          <div className="panel-header">
+            <h2>⚡ Quick Generate - Step 5/6</h2>
+            <p>Chapter-by-chapter outline generation</p>
+          </div>
+          
+          <div className="outline-section">
+            <div className="outline-controls">
+              <button 
+                onClick={handleQuickGenOutlineNext}
+                className="btn-generate"
+                disabled={loading}
+              >
+                {loading ? 'Generating Chapter...' : `Generate Chapter ${quickGenData.outline.length + 1}`}
+              </button>
+              
+              {quickGenData.outline.length > 0 && (
+                <button 
+                  onClick={() => setQuickGenStep(6)}
+                  className="btn-next"
+                >
+                  Start Writing Chapters →
+                </button>
+              )}
+            </div>
+            
+            {quickGenData.outline.length > 0 && (
+              <div className="outline-preview">
+                <h3>Generated Outline ({quickGenData.outline.length} chapters)</h3>
+                {quickGenData.outline.map((chapter, index) => (
+                  <div key={index} className="outline-chapter">
+                    <h4>Chapter {index + 1}: {chapter.title}</h4>
+                    <p><strong>Summary:</strong> {chapter.summary}</p>
+                    <p><strong>Key Events:</strong> {chapter.keyEvents?.join(', ')}</p>
+                    <p><strong>Characters:</strong> {chapter.characters?.join(', ')}</p>
+                    <p><strong>Setting:</strong> {chapter.setting}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+            
+            <div className="step-controls">
+              <button onClick={() => setQuickGenStep(4)} className="btn-back">
+                ← Back
+              </button>
+            </div>
+          </div>
+        </div>
+      )
+    }
+
+    // Step 6: Chapter Generation
+    if (quickGenStep === 6) {
+      return (
+        <div className="content-panel">
+          <div className="panel-header">
+            <h2>⚡ Quick Generate - Step 6/6</h2>
+            <p>Generate your chapters</p>
+          </div>
+          
+          <div className="chapter-section">
+            <div className="chapter-controls">
+              {quickGenData.chapters.length < quickGenData.outline.length && (
+                <button 
+                  onClick={() => handleQuickGenChapter(quickGenData.chapters.length + 1)}
+                  className="btn-generate"
+                  disabled={loading}
+                >
+                  {loading ? 'Writing Chapter...' : `Write Chapter ${quickGenData.chapters.length + 1}`}
+                </button>
+              )}
+              
+              <button onClick={resetQuickGen} className="btn-reset">
+                🔄 Start New Project
+              </button>
+            </div>
+            
+            <div className="chapter-progress">
+              <p>Progress: {quickGenData.chapters.length} of {quickGenData.outline.length} chapters written</p>
+              <div className="progress-bar">
+                <div 
+                  className="progress-fill"
+                  style={{ width: `${(quickGenData.chapters.length / quickGenData.outline.length) * 100}%` }}
+                ></div>
+              </div>
+            </div>
+            
+            {quickGenData.chapters.length > 0 && (
+              <div className="chapters-list">
+                <h3>Written Chapters</h3>
+                {quickGenData.chapters.map((chapter, index) => (
+                  <div key={index} className="chapter-preview">
+                    <h4>{chapter.title}</h4>
+                    <p className="word-count">~{chapter.content.split(' ').length} words</p>
+                    <div className="chapter-actions">
+                      <button 
+                        onClick={() => setGeneratedContent(chapter.content)}
+                        className="btn-view"
+                      >
+                        📖 View Full Chapter
+                      </button>
+                      <button 
+                        onClick={() => navigator.clipboard.writeText(chapter.content)}
+                        className="btn-copy"
+                      >
+                        📋 Copy
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+            
+            <div className="step-controls">
+              <button onClick={() => setQuickGenStep(5)} className="btn-back">
+                ← Back to Outline
+              </button>
+            </div>
+          </div>
+        </div>
+      )
+    }
+
+    // Fallback
+    return (
+      <div className="content-panel">
+        <h2>Quick Generate</h2>
+        <button onClick={() => setQuickGenStep(1)}>Start Quick Generate</button>
+      </div>
+    )
+  }
 
   const renderContent = () => {
     switch(activeTab) {
@@ -601,6 +973,33 @@ function App() {
       {renderSidebar()}
       <main className="main-content">
         {renderContent()}
+        
+        {generatedContent && (
+          <div className="generated-content-overlay">
+            <div className="generated-content">
+              <div className="content-header">
+                <h3>Generated Content</h3>
+                <div className="content-actions">
+                  <button 
+                    onClick={() => navigator.clipboard.writeText(generatedContent)}
+                    className="btn-copy"
+                  >
+                    📋 Copy
+                  </button>
+                  <button 
+                    onClick={() => setGeneratedContent('')}
+                    className="btn-close"
+                  >
+                    ✕ Close
+                  </button>
+                </div>
+              </div>
+              <div className="content-text">
+                <pre>{generatedContent}</pre>
+              </div>
+            </div>
+          </div>
+        )}
       </main>
     </div>
   )
