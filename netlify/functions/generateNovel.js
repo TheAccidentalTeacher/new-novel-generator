@@ -2,6 +2,9 @@
 import { OpenAI } from 'openai';
 
 export const handler = async function(event, context) {
+  console.log('Function called with method:', event.httpMethod);
+  console.log('Request body length:', event.body ? event.body.length : 0);
+  
   if (event.httpMethod === 'OPTIONS') {
     return {
       statusCode: 200,
@@ -13,27 +16,36 @@ export const handler = async function(event, context) {
     };
   }
 
-  const { mode, prompt, storyData, genre, subgenre, wordCount, synopsis, outline, chapters, chapterNumber, userInput } = JSON.parse(event.body || '{}');
-  const apiKey = process.env.OPENAI_API_KEY;
-  if (!apiKey) {
-    return {
-      statusCode: 500,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Headers': 'Content-Type',
-        'Access-Control-Allow-Methods': 'POST, OPTIONS'
-      },
-      body: JSON.stringify({ error: 'OpenAI API key not set' })
-    };
-  }
-  const openai = new OpenAI({ apiKey });
+  try {
+    const { mode, prompt, storyData, genre, subgenre, wordCount, synopsis, outline, chapters, chapterNumber, userInput } = JSON.parse(event.body || '{}');
+    console.log('Parsed request data:', { mode, genre, subgenre, wordCount, chapterNumber });
+    
+    const apiKey = process.env.OPENAI_API_KEY;
+    if (!apiKey) {
+      console.error('OpenAI API key not found in environment variables');
+      return {
+        statusCode: 500,
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Headers': 'Content-Type',
+          'Access-Control-Allow-Methods': 'POST, OPTIONS'
+        },
+        body: JSON.stringify({ 
+          error: 'OpenAI API key not set in Netlify environment variables',
+          details: 'Please add OPENAI_API_KEY to your Netlify site environment variables'
+        })
+      };
+    }
+    
+    console.log('OpenAI API key found, initializing client');
+    const openai = new OpenAI({ apiKey });
 
-  // Enhanced prompts for different content types
-  let userPrompt = '';
-  let systemPrompt = '';
-  let maxTokens = 1500;
-  let temperature = 0.8;
-  let model = 'gpt-3.5-turbo';
+    // Enhanced prompts for different content types
+    let userPrompt = '';
+    let systemPrompt = '';
+    let maxTokens = 1500;
+    let temperature = 0.8;
+    let model = 'gpt-3.5-turbo';
 
   // Helper function to get word count context
   const getWordCountContext = (wordCount) => {
@@ -228,6 +240,21 @@ export const handler = async function(event, context) {
         error: `${mode} generation failed: ${err.message}`,
         details: err.toString(),
         stack: err.stack
+      })
+    };
+  }
+  } catch (mainErr) {
+    console.error('Main function error:', mainErr);
+    return {
+      statusCode: 500,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Headers': 'Content-Type',
+        'Access-Control-Allow-Methods': 'POST, OPTIONS'
+      },
+      body: JSON.stringify({ 
+        error: `Function failed: ${mainErr.message}`,
+        details: mainErr.toString()
       })
     };
   }
