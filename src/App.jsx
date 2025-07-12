@@ -1985,6 +1985,26 @@ Please copy this entire error message for debugging.
     console.log('🔧 RENDERING AutoGenerate - Status:', autoGenData.status);
     console.log('🔧 AutoGenerate data:', autoGenData);
     
+    // DEBUG: Add visible state display
+    const debugInfo = (
+      <div style={{ 
+        position: 'fixed', 
+        top: '10px', 
+        right: '10px', 
+        background: 'rgba(0,0,0,0.8)', 
+        color: 'white', 
+        padding: '10px', 
+        borderRadius: '5px',
+        fontSize: '12px',
+        zIndex: 9999,
+        maxWidth: '300px'
+      }}>
+        <div>Status: {autoGenData.status}</div>
+        <div>Genre: {autoGenData.genre || 'none'}</div>
+        <div>Word Count: {autoGenData.wordCount || 'none'}</div>
+      </div>
+    );
+    
     // Calculate time estimates
     const getTimeEstimate = (wordCount) => {
       const estimates = {
@@ -2006,12 +2026,13 @@ Please copy this entire error message for debugging.
 
     return (
       <div className="content-panel">
+        {debugInfo}
         <div className="panel-header">
           <h2>🤖 AutoGenerate - Set It and Forget It</h2>
           <p>Generate a complete novel from a detailed synopsis automatically</p>
         </div>
 
-        {autoGenData.status === 'idle' && (
+        {(autoGenData.status === 'idle' || !autoGenData.status) && (
           <div className="auto-generate-setup">
             <div className="setup-section">
               <h3>🎭 1. Select Genre & Subgenre</h3>
@@ -2499,6 +2520,21 @@ Maya's story begins when..."
                 ✕ Close
               </button>
             </div>
+          </div>
+        )}
+
+        {/* Debug/Fallback Section */}
+        {!['idle', 'processing', 'complete', 'error', 'cancelled'].includes(autoGenData.status) && (
+          <div className="setup-section">
+            <h3>🔧 Debug Information</h3>
+            <p>Current status: <strong>{autoGenData.status || 'undefined'}</strong></p>
+            <p>This is a fallback display for debugging. The status should be 'idle'.</p>
+            <button 
+              onClick={() => setAutoGenData(prev => ({ ...prev, status: 'idle' }))}
+              className="btn-primary"
+            >
+              Reset to Idle Status
+            </button>
           </div>
         )}
       </div>
