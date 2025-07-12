@@ -2542,29 +2542,38 @@ Maya's story begins when..."
                 <svg width="400" height="300" viewBox="0 0 400 300" className="constellation-svg">
                   {/* Generate constellation stars based on estimated chapters */}
                   {(() => {
-                    const estimatedChapters = autoGenData.estimatedChapters || 12;
+                    const estimatedChapters = autoGenData.estimatedChapters || autoGenData.totalChapters || 12;
                     const stars = [];
                     const connections = [];
                     
-                    // Create star positions in a constellation pattern
-                    const positions = [
-                      { x: 50, y: 50, label: "Start" },
-                      { x: 120, y: 80, label: "Ch1" },
-                      { x: 180, y: 60, label: "Ch2" },
-                      { x: 240, y: 90, label: "Ch3" },
-                      { x: 300, y: 70, label: "Ch4" },
-                      { x: 350, y: 100, label: "Ch5" },
-                      { x: 320, y: 160, label: "Ch6" },
-                      { x: 260, y: 180, label: "Ch7" },
-                      { x: 200, y: 200, label: "Ch8" },
-                      { x: 140, y: 180, label: "Ch9" },
-                      { x: 80, y: 160, label: "Ch10" },
-                      { x: 40, y: 120, label: "Ch11" },
-                      { x: 200, y: 250, label: "End" }
-                    ];
+                    // Generate dynamic star positions in a constellation pattern
+                    const generatePositions = (numChapters) => {
+                      const positions = [{ x: 200, y: 30, label: "Start" }];
+                      
+                      // Calculate positions in a spiral/constellation pattern
+                      const centerX = 200;
+                      const centerY = 150;
+                      const radiusBase = 80;
+                      const spiralFactor = 1.2;
+                      
+                      for (let i = 1; i <= numChapters; i++) {
+                        const angle = (i - 1) * (2 * Math.PI / Math.max(6, numChapters * 0.8));
+                        const radius = radiusBase + (i - 1) * (spiralFactor * 10);
+                        const x = Math.max(30, Math.min(370, centerX + radius * Math.cos(angle)));
+                        const y = Math.max(50, Math.min(250, centerY + radius * Math.sin(angle)));
+                        
+                        positions.push({
+                          x: x,
+                          y: y,
+                          label: `Ch${i}`
+                        });
+                      }
+                      
+                      positions.push({ x: 200, y: 280, label: "End" });
+                      return positions;
+                    };
                     
-                    // Limit to actual estimated chapters + start/end
-                    const activePositions = positions.slice(0, Math.min(estimatedChapters + 2, positions.length));
+                    const activePositions = generatePositions(estimatedChapters);
                     
                     // Create connections between consecutive stars
                     for (let i = 0; i < activePositions.length - 1; i++) {
@@ -2960,7 +2969,8 @@ Timestamp: ${new Date().toISOString()}
           progress: 5,
           currentPhase: 'Job started, waiting for progress...',
           estimatedTimeMinutes: result.estimatedTimeMinutes || 0,
-          pollUrl: result.pollUrl
+          pollUrl: result.pollUrl,
+          startTime: Date.now()
         }));
 
         // Start polling for job status
@@ -3042,10 +3052,18 @@ Timestamp: ${new Date().toISOString()}
         ...prev,
         status: result.status,
         progress: result.progress || prev.progress,
-        currentPhase: result.message || prev.currentPhase,
+        currentPhase: result.currentPhase || result.message || prev.currentPhase,
         lastUpdate: result.lastUpdate,
         error: result.error || prev.error,
-        novel: result.novel || prev.novel
+        novel: result.novel || prev.novel,
+        // Add detailed progress tracking
+        currentChapter: result.currentChapter || prev.currentChapter,
+        currentChapterTitle: result.currentChapterTitle || prev.currentChapterTitle,
+        chaptersOutlined: result.chaptersOutlined || prev.chaptersOutlined,
+        chaptersWritten: result.chaptersWritten || prev.chaptersWritten,
+        estimatedChapters: result.estimatedChapters || prev.estimatedChapters,
+        totalChapters: result.totalChapters || prev.totalChapters,
+        estimatedWordsWritten: result.estimatedWordsWritten || prev.estimatedWordsWritten
       }));
 
       // Check if job is complete or failed
