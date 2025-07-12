@@ -2524,7 +2524,7 @@ Maya's story begins when..."
         )}
 
         {/* Writing Status with Constellation Animation */}
-        {autoGenData.status === 'writing' && (
+        {(autoGenData.status === 'writing' || autoGenData.status === 'outlining') && (
           <div className="auto-generate-writing">
             <div className="writing-header">
               <h3>✨ Constellation of Stories</h3>
@@ -2798,7 +2798,7 @@ Maya's story begins when..."
         )}
 
         {/* Debug/Fallback Section */}
-        {!['idle', 'processing', 'complete', 'error', 'cancelled', 'writing'].includes(autoGenData.status) && (
+        {!['idle', 'processing', 'complete', 'error', 'cancelled', 'writing', 'outlining'].includes(autoGenData.status) && (
           <div className="setup-section">
             <h3>🔧 Debug Information</h3>
             <p>Current status: <strong>{autoGenData.status || 'undefined'}</strong></p>
