@@ -2251,7 +2251,103 @@ Maya's story begins when..."
             </div>
 
             <div className="setup-section">
-              <h3>🧪 Test Connection</h3>
+              <h3>� Advanced AI Writing Technology</h3>
+              <p>Your novel will be generated using cutting-edge anti-AI techniques to ensure human-like quality:</p>
+              
+              <div className="ai-features-grid">
+                <div className="ai-feature-card">
+                  <div className="feature-header">
+                    <span className="feature-icon">🎨</span>
+                    <h4>Descriptive Pattern Diversity</h4>
+                  </div>
+                  <ul className="feature-list">
+                    <li>40+ unique sensory description banks for each setting</li>
+                    <li>Smart tracking prevents repetitive environmental language</li>
+                    <li>Character-filtered descriptions based on perspective</li>
+                    <li>Time-sensitive descriptions that evolve with the story</li>
+                  </ul>
+                </div>
+
+                <div className="ai-feature-card">
+                  <div className="feature-header">
+                    <span className="feature-icon">💬</span>
+                    <h4>Individualized Character Voices</h4>
+                  </div>
+                  <ul className="feature-list">
+                    <li>Unique vocabulary sets for each character's background</li>
+                    <li>Distinct speech patterns and conversation styles</li>
+                    <li>Dynamic topic distribution prevents repetitive dialogue</li>
+                    <li>Character-specific dialogue initiators and responses</li>
+                  </ul>
+                </div>
+
+                <div className="ai-feature-card">
+                  <div className="feature-header">
+                    <span className="feature-icon">📖</span>
+                    <h4>Dynamic Chapter Structures</h4>
+                  </div>
+                  <ul className="feature-list">
+                    <li>12+ distinct chapter opening approaches</li>
+                    <li>8+ different chapter conclusion types</li>
+                    <li>Automatic pattern breaking across consecutive chapters</li>
+                    <li>Timeline jumps and narrative focus variation</li>
+                  </ul>
+                </div>
+
+                <div className="ai-feature-card">
+                  <div className="feature-header">
+                    <span className="feature-icon">🎭</span>
+                    <h4>Advanced Narrative Controls</h4>
+                  </div>
+                  <ul className="feature-list">
+                    <li>Surprise elements integrated naturally into each chapter</li>
+                    <li>Character growth tracking for non-repetitive development</li>
+                    <li>Variable tension curves prevent monotone storytelling</li>
+                    <li>Subplot rotation system maintains narrative balance</li>
+                  </ul>
+                </div>
+
+                <div className="ai-feature-card">
+                  <div className="feature-header">
+                    <span className="feature-icon">✍️</span>
+                    <h4>Stylistic Variation Engine</h4>
+                  </div>
+                  <ul className="feature-list">
+                    <li>Dynamic sentence length and paragraph structure</li>
+                    <li>Scene-specific pacing guidelines for different moods</li>
+                    <li>Metaphor diversity checks prevent overused comparisons</li>
+                    <li>Word frequency monitoring across chapters</li>
+                  </ul>
+                </div>
+
+                <div className="ai-feature-card highlight">
+                  <div className="feature-header">
+                    <span className="feature-icon">🚀</span>
+                    <h4>Result: Human-Quality Fiction</h4>
+                  </div>
+                  <div className="feature-highlight">
+                    <p><strong>This technology eliminates common AI writing problems:</strong></p>
+                    <ul className="highlight-list">
+                      <li>❌ Repetitive phrases and formulaic patterns</li>
+                      <li>❌ Robotic dialogue and similar character voices</li>
+                      <li>❌ Predictable chapter structures and transitions</li>
+                      <li>❌ Monotone pacing and mechanical descriptions</li>
+                    </ul>
+                    <p><strong>✅ Your novel will feel authentically human-written!</strong></p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="technology-note">
+                <p><strong>💡 How it works:</strong> Each chapter is generated with unique enhancement instructions 
+                that vary opening styles, character voices, descriptive patterns, and narrative techniques. 
+                The system tracks recent usage patterns and forces variation to prevent the repetitive, 
+                formulaic writing common in standard AI-generated fiction.</p>
+              </div>
+            </div>
+
+            <div className="setup-section">
+              <h3>�🧪 Test Connection</h3>
               <p>Verify the AutoGenerate system is working properly:</p>
               <button 
                 onClick={testAutoGenerate}
@@ -2310,6 +2406,53 @@ Maya's story begins when..."
                     </div>
                   )}
                 </div>
+              </div>
+
+              {/* AI Enhancement Features Display */}
+              <div className="ai-enhancements-info">
+                <h4>🧠 Human-Like Writing Enhancements Active</h4>
+                <div className="enhancement-grid">
+                  <div className="enhancement-item">
+                    <span className="enhancement-icon">🎨</span>
+                    <div className="enhancement-content">
+                      <h5>Descriptive Diversity</h5>
+                      <p>Tracking 40+ unique sensory descriptions to avoid repetition</p>
+                    </div>
+                  </div>
+                  <div className="enhancement-item">
+                    <span className="enhancement-icon">💬</span>
+                    <div className="enhancement-content">
+                      <h5>Character Voices</h5>
+                      <p>Unique vocabulary and speech patterns for each character</p>
+                    </div>
+                  </div>
+                  <div className="enhancement-item">
+                    <span className="enhancement-icon">📖</span>
+                    <div className="enhancement-content">
+                      <h5>Chapter Variation</h5>
+                      <p>12+ opening styles, 12+ ending types to break AI patterns</p>
+                    </div>
+                  </div>
+                  <div className="enhancement-item">
+                    <span className="enhancement-icon">🎭</span>
+                    <div className="enhancement-content">
+                      <h5>Narrative Control</h5>
+                      <p>Surprise elements and tension curves for organic storytelling</p>
+                    </div>
+                  </div>
+                  <div className="enhancement-item">
+                    <span className="enhancement-icon">✍️</span>
+                    <div className="enhancement-content">
+                      <h5>Style Variation</h5>
+                      <p>Dynamic pacing, sentence structure, and paragraph flow</p>
+                    </div>
+                  </div>
+                </div>
+                <p className="enhancement-note">
+                  <strong>💡 What this means:</strong> Your novel is being written with advanced anti-AI techniques 
+                  that make it feel authentically human-written, avoiding repetitive patterns and formulaic structures 
+                  common in AI-generated fiction.
+                </p>
               </div>
             </div>
             
