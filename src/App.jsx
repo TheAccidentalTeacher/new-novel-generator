@@ -2523,8 +2523,282 @@ Maya's story begins when..."
           </div>
         )}
 
+        {/* Writing Status with Constellation Animation */}
+        {autoGenData.status === 'writing' && (
+          <div className="auto-generate-writing">
+            <div className="writing-header">
+              <h3>✨ Constellation of Stories</h3>
+              <p>
+                {autoGenData.currentPhase === 'outlining'
+                  ? `📋 Outlining Chapter ${autoGenData.currentChapter || 1}: ${autoGenData.currentChapterTitle || 'Mapping the story structure...'}` 
+                  : autoGenData.currentPhase === 'writing'
+                    ? `✍️ Writing Chapter ${autoGenData.currentChapter || 1}: ${autoGenData.currentChapterTitle || 'Crafting the narrative...'}` 
+                    : `Your ${autoGenData.genre} ${autoGenData.subgenre} novel is being woven among the stars...`}
+              </p>
+            </div>
+            
+            <div className="constellation-container">
+              <div className="constellation-spinner">
+                <svg width="400" height="300" viewBox="0 0 400 300" className="constellation-svg">
+                  {/* Generate constellation stars based on estimated chapters */}
+                  {(() => {
+                    const estimatedChapters = autoGenData.estimatedChapters || 12;
+                    const stars = [];
+                    const connections = [];
+                    
+                    // Create star positions in a constellation pattern
+                    const positions = [
+                      { x: 50, y: 50, label: "Start" },
+                      { x: 120, y: 80, label: "Ch1" },
+                      { x: 180, y: 60, label: "Ch2" },
+                      { x: 240, y: 90, label: "Ch3" },
+                      { x: 300, y: 70, label: "Ch4" },
+                      { x: 350, y: 100, label: "Ch5" },
+                      { x: 320, y: 160, label: "Ch6" },
+                      { x: 260, y: 180, label: "Ch7" },
+                      { x: 200, y: 200, label: "Ch8" },
+                      { x: 140, y: 180, label: "Ch9" },
+                      { x: 80, y: 160, label: "Ch10" },
+                      { x: 40, y: 120, label: "Ch11" },
+                      { x: 200, y: 250, label: "End" }
+                    ];
+                    
+                    // Limit to actual estimated chapters + start/end
+                    const activePositions = positions.slice(0, Math.min(estimatedChapters + 2, positions.length));
+                    
+                    // Create connections between consecutive stars
+                    for (let i = 0; i < activePositions.length - 1; i++) {
+                      const current = activePositions[i];
+                      const next = activePositions[i + 1];
+                      const isActive = (autoGenData.currentChapter || 0) > i;
+                      const isAnimating = (autoGenData.currentChapter || 0) === i + 1 && autoGenData.currentPhase;
+                      
+                      connections.push(
+                        <line
+                          key={`connection-${i}`}
+                          x1={current.x}
+                          y1={current.y}
+                          x2={next.x}
+                          y2={next.y}
+                          stroke={isActive ? "#4CAF50" : isAnimating ? "#FFD700" : "#444"}
+                          strokeWidth={isAnimating ? "3" : "2"}
+                          className={`constellation-line ${isActive ? 'active' : ''} ${isAnimating ? 'animating' : ''}`}
+                          opacity={isActive ? 1 : isAnimating ? 0.8 : 0.3}
+                          style={{
+                            transition: "stroke 0.5s ease, stroke-width 0.5s ease, opacity 0.5s ease",
+                            filter: isAnimating ? "drop-shadow(0 0 6px #FFD700)" : isActive ? "drop-shadow(0 0 4px #4CAF50)" : "none"
+                          }}
+                        />
+                      );
+                    }
+                    
+                    // Create stars
+                    activePositions.forEach((pos, index) => {
+                      const isActive = (autoGenData.currentChapter || 0) >= index;
+                      const isWritten = (autoGenData.chaptersWritten || 0) > index;
+                      const isOutlined = (autoGenData.chaptersOutlined || 0) > index;
+                      const isCurrent = (autoGenData.currentChapter || 0) === index;
+                      const isCurrentlyOutlining = isCurrent && autoGenData.currentPhase === 'outlining';
+                      const isCurrentlyWriting = isCurrent && autoGenData.currentPhase === 'writing';
+                      
+                      // Determine star color and size
+                      let fillColor = "#666"; // Default
+                      let radius = "6"; // Default
+                      let className = "constellation-star";
+                      
+                      if (isWritten) {
+                        fillColor = "#4CAF50"; // Green for written
+                        className += " written";
+                      } else if (isCurrentlyWriting) {
+                        fillColor = "#FF6B35"; // Orange for currently writing
+                        radius = "10";
+                        className += " current writing pulse-writing";
+                      } else if (isOutlined) {
+                        fillColor = "#2196F3"; // Blue for outlined
+                        className += " outlined";
+                      } else if (isCurrentlyOutlining) {
+                        fillColor = "#FFD700"; // Gold for currently outlining
+                        radius = "9";
+                        className += " current outlining pulse-outlining";
+                      } else if (isActive) {
+                        fillColor = "#FFD700"; // Gold for active
+                        className += " active";
+                      }
+                      
+                      stars.push(
+                        <g key={`star-${index}`}>
+                          <circle
+                            cx={pos.x}
+                            cy={pos.y}
+                            r={radius}
+                            fill={fillColor}
+                            className={className}
+                            style={{
+                              transition: "r 0.3s ease, fill 0.3s ease",
+                              filter: (isCurrentlyWriting || isCurrentlyOutlining) 
+                                ? `drop-shadow(0 0 12px ${fillColor})` 
+                                : isWritten 
+                                  ? "drop-shadow(0 0 6px #4CAF50)"
+                                  : "none"
+                            }}
+                          />
+                          <text
+                            x={pos.x}
+                            y={pos.y - 15}
+                            textAnchor="middle"
+                            fontSize="10"
+                            fill={isActive ? "#fff" : "#888"}
+                            className="constellation-label"
+                            style={{
+                              fontWeight: isCurrent ? "bold" : "normal",
+                              transition: "fill 0.3s ease"
+                            }}
+                          >
+                            {pos.label}
+                          </text>
+                          
+                          {/* Add progress indicator for current chapter */}
+                          {isCurrent && (
+                            <circle
+                              cx={pos.x}
+                              cy={pos.y}
+                              r="14"
+                              fill="none"
+                              stroke={isCurrentlyWriting ? "#FF6B35" : "#FFD700"}
+                              strokeWidth="2"
+                              opacity="0.6"
+                              className="progress-ring"
+                              style={{
+                                animation: "pulse-ring 2s infinite"
+                              }}
+                            />
+                          )}
+                        </g>
+                      );
+                    });
+                    
+                    return [...connections, ...stars];
+                  })()}
+                  
+                  {/* Twinkling effect */}
+                  <circle
+                    cx="200"
+                    cy="30"
+                    r="2"
+                    fill="#fff"
+                    className="twinkle-star"
+                    style={{ animationDelay: '0s' }}
+                  />
+                  <circle
+                    cx="350"
+                    cy="40"
+                    r="1.5"
+                    fill="#fff"
+                    className="twinkle-star"
+                    style={{ animationDelay: '1s' }}
+                  />
+                  <circle
+                    cx="30"
+                    cy="80"
+                    r="1"
+                    fill="#fff"
+                    className="twinkle-star"
+                    style={{ animationDelay: '2s' }}
+                  />
+                </svg>
+              </div>
+              
+              <div className="constellation-status">
+                <div className="current-phase">
+                  {autoGenData.currentPhase === 'outlining' && (
+                    <p className="phase-text">
+                      📋 <span className="highlight pulsing">Outlining Chapter {autoGenData.currentChapter || 1}</span>
+                      {autoGenData.currentChapterTitle && (
+                        <><br/><span className="chapter-title">"{autoGenData.currentChapterTitle}"</span></>
+                      )}
+                    </p>
+                  )}
+                  {autoGenData.currentPhase === 'writing' && (
+                    <p className="phase-text">
+                      ✍️ <span className="highlight pulsing">Writing Chapter {autoGenData.currentChapter || 1}</span>
+                      {autoGenData.currentChapterTitle && (
+                        <><br/><span className="chapter-title">"{autoGenData.currentChapterTitle}"</span></>
+                      )}
+                    </p>
+                  )}
+                  {autoGenData.currentPhase === 'analyzing' && (
+                    <p className="phase-text">
+                      🧠 <span className="highlight pulsing">Analyzing story structure...</span>
+                    </p>
+                  )}
+                  {!autoGenData.currentPhase && (
+                    <p className="phase-text">
+                      🌌 <span className="highlight">Mapping your story constellation...</span>
+                    </p>
+                  )}
+                </div>
+                
+                <div className="progress-stats">
+                  <div className="stat">
+                    <span className="stat-icon">�</span>
+                    <span className="stat-text">Outlined: {autoGenData.chaptersOutlined || 0}</span>
+                  </div>
+                  <div className="stat">
+                    <span className="stat-icon">✍️</span>
+                    <span className="stat-text">Written: {autoGenData.chaptersWritten || 0}</span>
+                  </div>
+                  <div className="stat">
+                    <span className="stat-icon">⏱️</span>
+                    <span className="stat-text">Time: {elapsedTime}m</span>
+                  </div>
+                </div>
+                
+                {timeEstimate && (
+                  <p className="time-estimate">
+                    Estimated completion: {timeEstimate.min}-{timeEstimate.max} minutes
+                    {remainingTime !== null && (
+                      <span className="remaining-time"> • ~{remainingTime} min remaining</span>
+                    )}
+                  </p>
+                )}
+              </div>
+            </div>
+
+            <div className="writing-details">
+              <div className="detail-card">
+                <h4>📖 Novel Details</h4>
+                <p><strong>Genre:</strong> {autoGenData.genre} - {autoGenData.subgenre}</p>
+                <p><strong>Length:</strong> {autoGenData.wordCount}</p>
+                <p><strong>Started:</strong> {autoGenData.startTime ? new Date(autoGenData.startTime).toLocaleTimeString() : 'Unknown'}</p>
+              </div>
+              
+              <div className="detail-card">
+                <h4>⚙️ System Status</h4>
+                <p><strong>Status:</strong> <span className="status-writing">Writing</span></p>
+                <p><strong>Phase:</strong> {autoGenData.currentPhase || 'Chapter Generation'}</p>
+                <p><strong>Progress:</strong> {autoGenData.progress || 0}%</p>
+              </div>
+            </div>
+
+            <div className="writing-actions">
+              <button 
+                onClick={() => setAutoGenData(prev => ({ ...prev, status: 'idle' }))}
+                className="btn-secondary"
+              >
+                🛑 Cancel Generation
+              </button>
+              <button 
+                onClick={() => window.location.reload()}
+                className="btn-tertiary"
+              >
+                🔄 Refresh Page
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Debug/Fallback Section */}
-        {!['idle', 'processing', 'complete', 'error', 'cancelled'].includes(autoGenData.status) && (
+        {!['idle', 'processing', 'complete', 'error', 'cancelled', 'writing'].includes(autoGenData.status) && (
           <div className="setup-section">
             <h3>🔧 Debug Information</h3>
             <p>Current status: <strong>{autoGenData.status || 'undefined'}</strong></p>
@@ -3004,22 +3278,6 @@ Timestamp: ${new Date().toISOString()}
               })
             )
           }
-        })
-        
-        children.push(new Paragraph({ children: [new PageBreak()] }))
-      }
-      
-      // Chapters
-      novel.chapters.forEach((chapter, index) => {
-        // Chapter title
-        children.push(
-          new Paragraph({
-            heading: HeadingLevel.HEADING_1,
-            alignment: AlignmentType.CENTER,
-            spacing: { before: 720, after: 480 },
-            children: [
-              new TextRun({
-                text: `Chapter ${chapter.chapterNumber}: ${chapter.title}`,
                 size: 32,
                 bold: true
               })
@@ -3037,6 +3295,22 @@ Timestamp: ${new Date().toISOString()}
                 alignment: AlignmentType.JUSTIFIED,
                 indent: { firstLine: 360 }, // 0.25 inch first line indent
                 children: [
+                  new TextRun({
+                    text: para.trim(),
+                    size: 24
+                  })
+                ]
+              })
+            )
+          }
+        })
+        
+        // Page break after each chapter except the last
+        if (index < novel.chapters.length - 1) {
+          children.push(new Paragraph({ children: [new PageBreak()] }))
+        }
+      })
+      
                   new TextRun({
                     text: para.trim(),
                     size: 24

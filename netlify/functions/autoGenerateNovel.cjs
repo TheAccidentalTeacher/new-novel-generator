@@ -446,7 +446,11 @@ Provide a JSON response with:
         jobManager.updateJob(jobId, {
           status: 'writing',
           progress: 30,
-          message: `Generated outline for ${outline.length} chapters. Starting chapter generation...`
+          message: `Generated outline for ${outline.length} chapters. Starting chapter generation...`,
+          currentPhase: 'writing',
+          chaptersOutlined: outline.length,
+          chaptersWritten: 0,
+          estimatedChapters: outline.length
         });
 
         // Step 3: Generate all chapters
@@ -573,7 +577,14 @@ Provide a JSON response with an array of chapters:
         jobManager.updateJob(jobId, {
           status: 'writing',
           progress: progressPercent,
-          message: `Writing Chapter ${chapterNumber}: ${chapterData.title}`
+          message: `Writing Chapter ${chapterNumber}: ${chapterData.title}`,
+          currentPhase: 'writing',
+          currentChapter: chapterNumber,
+          currentChapterTitle: chapterData.title,
+          chaptersOutlined: totalChapters,
+          chaptersWritten: i,
+          estimatedChapters: totalChapters,
+          estimatedWordsWritten: chapters.reduce((sum, ch) => sum + (ch.wordCount || 0), 0)
         });
 
         // Check if job was cancelled
@@ -584,14 +595,24 @@ Provide a JSON response with an array of chapters:
         }
 
         try {
+
           const context = contextManager.buildContext(synopsis, outline, chapters, chapterNumber);
-          
-          const systemPrompt = `You are a professional novelist writing a ${genre} novel. You excel at:
-- Creating immersive scenes with rich sensory details
-- Writing authentic dialogue that reveals character
-- Building tension and emotional resonance
-- Maintaining consistency across the narrative
-- Following genre conventions while being original`;
+
+          const systemPrompt = `You are a professional novelist and developmental editor writing a ${genre} novel. Your goals:
+- Craft immersive, emotionally authentic fiction that feels human-written
+- Vary sentence structure, rhythm, and tone to match the scene's mood
+- Avoid repetition of unique character traits, phrases, and descriptions
+- Develop character arcs and plot with meaningful change and tension
+- Maintain strict internal logic and world consistency
+- Reveal themes through action, dialogue, and character choices (not exposition)
+- Use callbacks to earlier details only for narrative effect, not as filler
+- Limit adjectives and avoid purple prose; focus on vivid, concise details
+- Ensure each chapter advances the plot or deepens a character's journey
+- Explore faith, acceptance, and purpose with nuance and depth (for Christian fiction)
+- Occasionally break patterns with surprising sentences or emotional beats
+- Never resolve major conflicts too quickly; build and escalate tension
+- Avoid formulaic chapter endings; vary how each chapter closes
+- Write with a unique, organic voice, not a mechanical or predictable style`;
 
           const userPrompt = `Write Chapter ${chapterNumber} of this ${genre} novel.
 
@@ -608,15 +629,20 @@ Purpose: ${chapterData.purpose}
 Target Words: ${chapterData.estimatedWords}
 
 WRITING REQUIREMENTS:
-- SHOW, DON'T TELL: Replace exposition with immersive scenes
-- RICH DIALOGUE: Authentic conversations with subtext and character-specific voices  
-- SENSORY DETAIL: Use all five senses to ground readers in the scene
-- SCENE STRUCTURE: Clear objectives, rising tension, meaningful change
-- GENRE CONVENTIONS: Honor ${genre} expectations while bringing fresh perspective
-- CONTINUITY: Maintain perfect consistency with previous chapters
-- PACING: Match the overall story rhythm and build toward climactic moments
+- SHOW, DON'T TELL: Use immersive scenes, not exposition
+- DIALOGUE: Write authentic, character-specific conversations with subtext
+- SENSORY DETAIL: Use all five senses, but only when it serves the story
+- SCENE STRUCTURE: Each scene must have clear objectives, rising tension, and meaningful change
+- CONTINUITY: Maintain perfect consistency with previous chapters and world rules
+- PACING: Vary rhythm and build toward climactic moments
+- STYLE: Vary sentence length and structure; break patterns occasionally
+- REPETITION: Do NOT repeat unique character traits, phrases, or descriptions unless for deliberate callback
+- THEME: Reveal themes through action and character choices, not narration
+- CONFLICT: Introduce, escalate, and resolve conflicts with genuine tension; avoid quick or circular resolutions
+- DESCRIPTION: Use concise, vivid details; avoid overuse of adjectives and sensory overload
+- ENDINGS: Vary how chapters end; avoid formulaic or repetitive closings
 
-Write the complete chapter with proper paragraphs. Do not include chapter numbers or titles - just the chapter content.`;
+After writing, review the chapter and revise any repeated phrases, formulaic patterns, or excessive description. Do not include chapter numbers or titles - just the chapter content.`;
 
           enhancedLog('info', 'Making OpenAI request for chapter', {
             jobId,
@@ -648,11 +674,30 @@ Write the complete chapter with proper paragraphs. Do not include chapter number
           };
 
           chapters.push(chapter);
+          
+          // Update progress after each chapter is completed
+          const updatedProgressPercent = 30 + Math.floor(((i + 1) / totalChapters) * 65);
+          const totalWordsWritten = chapters.reduce((sum, ch) => sum + (ch.wordCount || 0), 0);
+          
+          jobManager.updateJob(jobId, {
+            status: 'writing',
+            progress: updatedProgressPercent,
+            message: `Completed Chapter ${chapterNumber}: ${chapterData.title}`,
+            currentPhase: 'writing',
+            currentChapter: chapterNumber + 1 <= totalChapters ? chapterNumber + 1 : chapterNumber,
+            currentChapterTitle: chapterNumber + 1 <= totalChapters ? outline[chapterNumber]?.title : 'Finishing up...',
+            chaptersOutlined: totalChapters,
+            chaptersWritten: i + 1,
+            estimatedChapters: totalChapters,
+            estimatedWordsWritten: totalWordsWritten
+          });
+          
           enhancedLog('info', `Chapter ${chapterNumber} generated successfully`, {
             jobId,
             chapterNumber,
             wordCount,
-            progress: progressPercent
+            progress: updatedProgressPercent,
+            totalWordsWritten
           });
           
         } catch (chapterError) {
