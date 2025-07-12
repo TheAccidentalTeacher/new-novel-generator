@@ -2439,7 +2439,7 @@ REQUIREMENTS:
 - Generate exactly ${analysis.recommendedChapterCount} chapters
 - Each chapter should be approximately ${analysis.estimatedWordsPerChapter} words
 - Follow ${analysis.storyStructure} structure
-- Include these story beats: ${analysis.keyStoryBeats.join(', ')}
+- Include these story beats: ${analysis.keyStoryBeats?.join(', ') || 'Opening, development, climax, resolution'}
 - Maintain ${analysis.pacing} pacing
 
 Provide a JSON response with an array of chapters:
@@ -2546,14 +2546,14 @@ Your writing must eliminate ALL artificial patterns and feel completely human-au
 === CHARACTER VOICE CONSISTENCY FRAMEWORK ===
 ${enhancements.characterVoiceFramework ? `
 CHARACTER VOICE MAPS - MANDATORY for every dialogue:
-${enhancements.characterVoiceFramework.characters.map(char => `
+${enhancements.characterVoiceFramework.characters?.map(char => `
 ${char.characterName}: 
 - Background: ${char.background} (age ${char.ageGroup})
 - Speech Pattern: ${char.speechPattern}
-- Vocabulary: ${char.vocabulary.join(', ')}
+- Vocabulary: ${char.vocabulary?.join(', ') || 'Character-appropriate vocabulary'}
 - Sentence Style: ${char.sentenceStructure}
 - Regional Touch: ${char.regionalInfluence}
-`).join('')}
+`).join('') || 'Main characters with authentic Pacific Northwest voices'}
 CRITICAL: Every dialogue line must reflect these voice maps exactly.
 ` : ''}
 
@@ -2561,10 +2561,10 @@ CRITICAL: Every dialogue line must reflect these voice maps exactly.
 ${enhancements.settingSensoryDetails ? `
 SETTING TYPE: ${enhancements.settingSensoryDetails.type}
 REQUIRED SENSORY ELEMENTS (select 2-3 that advance plot/character):
-- Smells: ${enhancements.settingSensoryDetails.smells.join(' | ')}
-- Sounds: ${enhancements.settingSensoryDetails.sounds.join(' | ')}
-- Sights: ${enhancements.settingSensoryDetails.sights.join(' | ')}
-- Textures: ${enhancements.settingSensoryDetails.textures.join(' | ')}
+- Smells: ${enhancements.settingSensoryDetails.smells?.join(' | ') || 'Various atmospheric scents'}
+- Sounds: ${enhancements.settingSensoryDetails.sounds?.join(' | ') || 'Environmental sounds'}
+- Sights: ${enhancements.settingSensoryDetails.sights?.join(' | ') || 'Visual details'}
+- Textures: ${enhancements.settingSensoryDetails.textures?.join(' | ') || 'Tactile sensations'}
 USAGE: ${enhancements.settingSensoryDetails.usage}
 ` : ''}
 
@@ -2586,7 +2586,7 @@ USAGE GUIDANCE: ${enhancements.metaphorDomainControl.usageGuidance}
 
 === PLOT THREAD MANAGEMENT PROTOCOL ===
 ${enhancements.plotThreadManagement ? `
-THREADS TO DEVELOP: ${enhancements.plotThreadManagement.threadsNeedingDevelopment.map(t => t.name).join(', ')}
+THREADS TO DEVELOP: ${enhancements.plotThreadManagement.threadsNeedingDevelopment?.map(t => t.name).join(', ') || 'Character development, plot progression'}
 ${enhancements.plotThreadManagement.shouldIntroduceNew ? 'REQUIREMENT: Introduce new plot thread this chapter' : ''}
 ${enhancements.plotThreadManagement.implementation ? `HOW TO DEVELOP: ${enhancements.plotThreadManagement.implementation}` : ''}
 ` : ''}
@@ -2608,7 +2608,7 @@ INTEGRATION GUIDANCE: ${enhancements.faithIntegrationBalance.guidance}
 
 === 1999 TECHNOLOGY AUTHENTICITY FRAMEWORK ===
 ${enhancements.technologyAuthenticity ? `
-REQUIRED TECH ELEMENTS: ${enhancements.technologyAuthenticity.elements.join(', ')}
+REQUIRED TECH ELEMENTS: ${enhancements.technologyAuthenticity.elements?.join(', ') || '1999-era technology elements'}
 CHARACTER TECH INTERACTION: ${enhancements.technologyAuthenticity.characterAdjustment}
 IMPLEMENTATION: ${enhancements.technologyAuthenticity.guidance}
 ERA CONTEXT: ${enhancements.technologyAuthenticity.era}
@@ -2625,15 +2625,15 @@ RESOLUTION TIMING: ${enhancements.tensionCalibration.resolutionTimeframe}
 
 === ENHANCED QUALITY CONTROL FRAMEWORK ===
 ${enhancements.qualityChecks ? `
-CHARACTER CONSISTENCY CHECKS: ${enhancements.qualityChecks.characterConsistency.join(' | ')}
-AUTHENTICITY MARKERS: ${enhancements.qualityChecks.authenticityMarkers.join(' | ')}
-NARRATIVE FLOW CHECKS: ${enhancements.qualityChecks.narrativeFlow.join(' | ')}
-STYLISTIC REQUIREMENTS: ${enhancements.qualityChecks.stylistic.join(' | ')}
+CHARACTER CONSISTENCY CHECKS: ${enhancements.qualityChecks.characterConsistency?.join(' | ') || 'Voice consistency, motivation tracking'}
+AUTHENTICITY MARKERS: ${enhancements.qualityChecks.authenticityMarkers?.join(' | ') || 'Regional accuracy, era authenticity'}
+NARRATIVE FLOW CHECKS: ${enhancements.qualityChecks.narrativeFlow?.join(' | ') || 'Pacing, tension, plot development'}
+STYLISTIC REQUIREMENTS: ${enhancements.qualityChecks.stylistic?.join(' | ') || 'Sentence variety, natural flow'}
 ` : ''}
 
 === IMPLEMENTATION PRIORITY ORDER ===
 ${enhancements.implementationPriority ? `
-${enhancements.implementationPriority.join('\n')}
+${enhancements.implementationPriority?.join('\n') || 'Focus on character development and authentic setting details'}
 ` : ''}
 
 === CRITICAL ANTI-AI PATTERN ELIMINATION ===
@@ -2670,8 +2670,8 @@ ${context}
 CHAPTER PLAN:
 Title: ${chapterData.title}
 Summary: ${chapterData.summary}
-Key Events: ${chapterData.keyEvents.join(', ')}
-Characters: ${chapterData.characters.join(', ')}
+Key Events: ${chapterData.keyEvents?.join(', ') || 'Story progression'}
+Characters: ${chapterData.characters?.join(', ') || 'Main characters'}
 Setting: ${chapterData.setting}
 Purpose: ${chapterData.purpose}
 Target Words: ${chapterData.estimatedWords}
@@ -2696,13 +2696,13 @@ STYLE EXECUTION:
 - SENTENCE STRUCTURE: ${enhancements.qualityChecks.variationChecks[0]}
 
 CHARACTER VOICE IMPLEMENTATION:
-${enhancements.characterVoices.map(cv => `
+${enhancements.characterVoices?.map(cv => `
 - ${cv.name}: 
   * Speech: ${cv.voice.speechPattern} pattern with ${cv.voice.sentenceLength} sentences
-  * Words: Include "${cv.voice.vocabulary.slice(0, 3).join('", "')}" type vocabulary
+  * Words: Include "${cv.voice.vocabulary?.slice(0, 3).join('", "') || 'authentic'}" type vocabulary
   * Style: ${cv.voice.conversationStyle[0]}
-  * NEVER discuss: ${cv.dialogueGuidance.avoidTopics.join(', ')}
-`).join('')}
+  * NEVER discuss: ${cv.dialogueGuidance.avoidTopics?.join(', ') || 'inappropriate topics'}
+`).join('') || 'Character voices with consistent speech patterns'}
 
 PROHIBITION LIST (ABSOLUTELY AVOID):
 - Opening phrases: ${JSON.stringify(enhancements.avoidancePatterns.repetitiveOpenings)}
