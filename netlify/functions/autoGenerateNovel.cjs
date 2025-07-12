@@ -1069,7 +1069,16 @@ exports.handler = async function(event, context) {
           lastUpdate: job.lastUpdate,
           startTime: job.startTime,
           novel: job.novel,
-          error: job.error
+          error: job.error,
+          // Add detailed progress tracking fields
+          currentPhase: job.currentPhase,
+          currentChapter: job.currentChapter,
+          currentChapterTitle: job.currentChapterTitle,
+          chaptersOutlined: job.chaptersOutlined,
+          chaptersWritten: job.chaptersWritten,
+          estimatedChapters: job.estimatedChapters,
+          totalChapters: job.totalChapters,
+          estimatedWordsWritten: job.estimatedWordsWritten
         })
       };
     }
