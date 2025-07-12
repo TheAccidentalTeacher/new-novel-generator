@@ -394,7 +394,8 @@ exports.handler = async function(event, context) {
       try {
         // Step 1: Analyze synopsis and determine chapter count
         jobManager.updateJob(jobId, {
-          status: 'analyzing',
+          status: 'processing',
+          currentPhase: 'analyzing',
           progress: 5,
           message: 'Analyzing synopsis and planning novel structure'
         });
