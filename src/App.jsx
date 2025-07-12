@@ -1935,22 +1935,95 @@ Please copy this entire error message for debugging.
             <h3>1. Select Genre & Subgenre</h3>
             <div className="genre-selection">
               <div className="genre-grid">
-                {Object.keys(genres).map(genre => (
-                  <div key={genre} className="genre-card">
-                    <h4>{genre}</h4>
-                    <div className="subgenre-list">
-                      {genres[genre].map(subgenre => (
-                        <button
-                          key={subgenre}
-                          className={`subgenre-btn ${autoGenData.genre === genre && autoGenData.subgenre === subgenre ? 'selected' : ''}`}
-                          onClick={() => setAutoGenData(prev => ({ ...prev, genre, subgenre }))}
-                        >
-                          {subgenre}
-                        </button>
-                      ))}
-                    </div>
+                <div className="genre-card">
+                  <h4>Fantasy</h4>
+                  <div className="subgenre-list">
+                    {['High Fantasy', 'Urban Fantasy', 'Dark Fantasy', 'Epic Fantasy', 'Sword & Sorcery', 'Paranormal Fantasy'].map(subgenre => (
+                      <button
+                        key={subgenre}
+                        className={`subgenre-btn ${autoGenData.genre === 'Fantasy' && autoGenData.subgenre === subgenre ? 'selected' : ''}`}
+                        onClick={() => setAutoGenData(prev => ({ ...prev, genre: 'Fantasy', subgenre }))}
+                      >
+                        {subgenre}
+                      </button>
+                    ))}
                   </div>
-                ))}
+                </div>
+
+                <div className="genre-card">
+                  <h4>Science Fiction</h4>
+                  <div className="subgenre-list">
+                    {['Space Opera', 'Cyberpunk', 'Dystopian', 'Time Travel', 'Alien Contact', 'Post-Apocalyptic'].map(subgenre => (
+                      <button
+                        key={subgenre}
+                        className={`subgenre-btn ${autoGenData.genre === 'Science Fiction' && autoGenData.subgenre === subgenre ? 'selected' : ''}`}
+                        onClick={() => setAutoGenData(prev => ({ ...prev, genre: 'Science Fiction', subgenre }))}
+                      >
+                        {subgenre}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="genre-card">
+                  <h4>Romance</h4>
+                  <div className="subgenre-list">
+                    {['Contemporary Romance', 'Historical Romance', 'Paranormal Romance', 'Romantic Suspense', 'Erotic Romance', 'LGBTQ+ Romance'].map(subgenre => (
+                      <button
+                        key={subgenre}
+                        className={`subgenre-btn ${autoGenData.genre === 'Romance' && autoGenData.subgenre === subgenre ? 'selected' : ''}`}
+                        onClick={() => setAutoGenData(prev => ({ ...prev, genre: 'Romance', subgenre }))}
+                      >
+                        {subgenre}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="genre-card">
+                  <h4>Mystery</h4>
+                  <div className="subgenre-list">
+                    {['Cozy Mystery', 'Police Procedural', 'Detective Fiction', 'Noir', 'Psychological Thriller', 'True Crime'].map(subgenre => (
+                      <button
+                        key={subgenre}
+                        className={`subgenre-btn ${autoGenData.genre === 'Mystery' && autoGenData.subgenre === subgenre ? 'selected' : ''}`}
+                        onClick={() => setAutoGenData(prev => ({ ...prev, genre: 'Mystery', subgenre }))}
+                      >
+                        {subgenre}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="genre-card">
+                  <h4>Thriller</h4>
+                  <div className="subgenre-list">
+                    {['Psychological Thriller', 'Medical Thriller', 'Legal Thriller', 'Espionage', 'Action Thriller', 'Conspiracy'].map(subgenre => (
+                      <button
+                        key={subgenre}
+                        className={`subgenre-btn ${autoGenData.genre === 'Thriller' && autoGenData.subgenre === subgenre ? 'selected' : ''}`}
+                        onClick={() => setAutoGenData(prev => ({ ...prev, genre: 'Thriller', subgenre }))}
+                      >
+                        {subgenre}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="genre-card">
+                  <h4>Horror</h4>
+                  <div className="subgenre-list">
+                    {['Gothic Horror', 'Supernatural Horror', 'Psychological Horror', 'Body Horror', 'Cosmic Horror', 'Slasher'].map(subgenre => (
+                      <button
+                        key={subgenre}
+                        className={`subgenre-btn ${autoGenData.genre === 'Horror' && autoGenData.subgenre === subgenre ? 'selected' : ''}`}
+                        onClick={() => setAutoGenData(prev => ({ ...prev, genre: 'Horror', subgenre }))}
+                      >
+                        {subgenre}
+                      </button>
+                    ))}
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -1958,17 +2031,54 @@ Please copy this entire error message for debugging.
           <div className="setup-section">
             <h3>2. Choose Word Count</h3>
             <div className="word-count-selection">
-              {wordCounts.map(wc => (
-                <div 
-                  key={wc.id}
-                  className={`word-count-card ${autoGenData.wordCount === wc.id ? 'selected' : ''}`}
-                  onClick={() => setAutoGenData(prev => ({ ...prev, wordCount: wc.id }))}
-                >
-                  <h4>{wc.name}</h4>
-                  <p className="range">{wc.range}</p>
-                  <p className="description">{wc.description}</p>
-                </div>
-              ))}
+              <div 
+                className={`word-count-card ${autoGenData.wordCount === 'flash-fiction' ? 'selected' : ''}`}
+                onClick={() => setAutoGenData(prev => ({ ...prev, wordCount: 'flash-fiction' }))}
+              >
+                <h4>Flash Fiction</h4>
+                <p className="range">500-1,000 words</p>
+                <p className="description">Very short story</p>
+              </div>
+              <div 
+                className={`word-count-card ${autoGenData.wordCount === 'short-story' ? 'selected' : ''}`}
+                onClick={() => setAutoGenData(prev => ({ ...prev, wordCount: 'short-story' }))}
+              >
+                <h4>Short Story</h4>
+                <p className="range">1,000-7,500 words</p>
+                <p className="description">Single sitting read</p>
+              </div>
+              <div 
+                className={`word-count-card ${autoGenData.wordCount === 'novelette' ? 'selected' : ''}`}
+                onClick={() => setAutoGenData(prev => ({ ...prev, wordCount: 'novelette' }))}
+              >
+                <h4>Novelette</h4>
+                <p className="range">7,500-17,500 words</p>
+                <p className="description">Extended short story</p>
+              </div>
+              <div 
+                className={`word-count-card ${autoGenData.wordCount === 'novella' ? 'selected' : ''}`}
+                onClick={() => setAutoGenData(prev => ({ ...prev, wordCount: 'novella' }))}
+              >
+                <h4>Novella</h4>
+                <p className="range">17,500-40,000 words</p>
+                <p className="description">Short novel</p>
+              </div>
+              <div 
+                className={`word-count-card ${autoGenData.wordCount === 'novel' ? 'selected' : ''}`}
+                onClick={() => setAutoGenData(prev => ({ ...prev, wordCount: 'novel' }))}
+              >
+                <h4>Novel</h4>
+                <p className="range">40,000-100,000 words</p>
+                <p className="description">Standard novel length</p>
+              </div>
+              <div 
+                className={`word-count-card ${autoGenData.wordCount === 'epic' ? 'selected' : ''}`}
+                onClick={() => setAutoGenData(prev => ({ ...prev, wordCount: 'epic' }))}
+              >
+                <h4>Epic Novel</h4>
+                <p className="range">100,000+ words</p>
+                <p className="description">Extended novel</p>
+              </div>
             </div>
           </div>
 
@@ -2085,7 +2195,14 @@ Please copy this entire error message for debugging.
             {autoGenData.genre && autoGenData.subgenre && autoGenData.wordCount && (
               <div className="generation-summary">
                 <p><strong>Selected:</strong> {autoGenData.genre} - {autoGenData.subgenre}</p>
-                <p><strong>Target Length:</strong> {wordCounts.find(wc => wc.id === autoGenData.wordCount)?.name}</p>
+                        <span><strong>Target Length:</strong> {
+                          autoGenData.wordCount === 'flash-fiction' ? 'Flash Fiction' :
+                          autoGenData.wordCount === 'short-story' ? 'Short Story' :
+                          autoGenData.wordCount === 'novelette' ? 'Novelette' :
+                          autoGenData.wordCount === 'novella' ? 'Novella' :
+                          autoGenData.wordCount === 'novel' ? 'Novel' :
+                          autoGenData.wordCount === 'epic' ? 'Epic Novel' : 'Unknown'
+                        }</span>
                 <p><strong>Synopsis:</strong> {getWordCount(autoGenData.synopsis)} words</p>
               </div>
             )}
