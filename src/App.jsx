@@ -2251,98 +2251,186 @@ Maya's story begins when..."
             </div>
 
             <div className="setup-section">
-              <h3>🔬 Advanced AI Writing Technology</h3>
-              <p>Your novel will be generated using cutting-edge anti-AI techniques to ensure human-like quality:</p>
+              <h3>� Advanced Human-Quality Writing Framework v2.0</h3>
+              <p>Your novel will be generated using 10 sophisticated anti-AI strategies that eliminate artificial patterns and create authentically human-feeling fiction:</p>
               
               <div className="ai-features-grid">
-                <div className="ai-feature-card">
+                <div className="ai-feature-card strategy-1">
+                  <div className="feature-header">
+                    <span className="feature-icon">�</span>
+                    <h4>Strategy 1: Character Voice Consistency</h4>
+                  </div>
+                  <ul className="feature-list">
+                    <li>Detailed voice maps with background, age, and speech patterns</li>
+                    <li>Pacific Northwest regional influence tracking</li>
+                    <li>Character-specific vocabulary and sentence structures</li>
+                    <li>Dialogue consistency verification across all chapters</li>
+                  </ul>
+                </div>
+
+                <div className="ai-feature-card strategy-2">
+                  <div className="feature-header">
+                    <span className="feature-icon">🏡</span>
+                    <h4>Strategy 2: Setting-Specific Sensory Database</h4>
+                  </div>
+                  <ul className="feature-list">
+                    <li>Church: Incense, organ music, stained glass reflections</li>
+                    <li>1999 Home: Dial-up sounds, CRT static, landline rings</li>
+                    <li>Small Town: Fresh bread, gravel crunching, church bells</li>
+                    <li>Office: Coffee brewing, fax machines, fluorescent hum</li>
+                  </ul>
+                </div>
+
+                <div className="ai-feature-card strategy-3">
+                  <div className="feature-header">
+                    <span className="feature-icon">🎬</span>
+                    <h4>Strategy 3: Dynamic Scene Structure</h4>
+                  </div>
+                  <ul className="feature-list">
+                    <li>8 distinct opening techniques (action, dialogue, memory, etc.)</li>
+                    <li>Mood-based scene selection (tense, reflective, dramatic)</li>
+                    <li>Chapter-specific structure guidance and implementation</li>
+                    <li>Automatic pattern breaking across consecutive chapters</li>
+                  </ul>
+                </div>
+
+                <div className="ai-feature-card strategy-4">
                   <div className="feature-header">
                     <span className="feature-icon">🎨</span>
-                    <h4>Descriptive Pattern Diversity</h4>
+                    <h4>Strategy 4: Metaphor Domain Control</h4>
                   </div>
                   <ul className="feature-list">
-                    <li>40+ unique sensory description banks for each setting</li>
-                    <li>Smart tracking prevents repetitive environmental language</li>
-                    <li>Character-filtered descriptions based on perspective</li>
-                    <li>Time-sensitive descriptions that evolve with the story</li>
+                    <li>Faith concepts: Foundation, harvest, journey metaphors</li>
+                    <li>Technology mechanical: Clockwork, circuits, connections</li>
+                    <li>Musical relationships: Harmony, rhythm, discord themes</li>
+                    <li>Community cooking: Recipe, ingredient, flavor dynamics</li>
                   </ul>
                 </div>
 
-                <div className="ai-feature-card">
+                <div className="ai-feature-card strategy-5">
                   <div className="feature-header">
-                    <span className="feature-icon">💬</span>
-                    <h4>Individualized Character Voices</h4>
+                    <span className="feature-icon">🧵</span>
+                    <h4>Strategy 5: Plot Thread Management</h4>
                   </div>
                   <ul className="feature-list">
-                    <li>Unique vocabulary sets for each character's background</li>
-                    <li>Distinct speech patterns and conversation styles</li>
-                    <li>Dynamic topic distribution prevents repetitive dialogue</li>
-                    <li>Character-specific dialogue initiators and responses</li>
+                    <li>Character development tracking (growth, relationships, conflicts)</li>
+                    <li>Faith journey progression monitoring and balance</li>
+                    <li>Mystery/revelation timing and intensity control</li>
+                    <li>Community dynamics evolution throughout story</li>
                   </ul>
                 </div>
 
-                <div className="ai-feature-card">
+                <div className="ai-feature-card strategy-6">
                   <div className="feature-header">
-                    <span className="feature-icon">📖</span>
-                    <h4>Dynamic Chapter Structures</h4>
+                    <span className="feature-icon">🗺️</span>
+                    <h4>Strategy 6: Regional Dialect Authenticity</h4>
                   </div>
                   <ul className="feature-list">
-                    <li>12+ distinct chapter opening approaches</li>
-                    <li>8+ different chapter conclusion types</li>
-                    <li>Automatic pattern breaking across consecutive chapters</li>
-                    <li>Timeline jumps and narrative focus variation</li>
+                    <li>Pacific Northwest 1999 expressions and local terms</li>
+                    <li>Character-specific usage based on native vs. newcomer status</li>
+                    <li>Authentic regional phrases used sparingly for realism</li>
+                    <li>Historical accuracy for late 90s Pacific Northwest culture</li>
                   </ul>
                 </div>
 
-                <div className="ai-feature-card">
+                <div className="ai-feature-card strategy-7">
                   <div className="feature-header">
-                    <span className="feature-icon">🎭</span>
-                    <h4>Advanced Narrative Controls</h4>
+                    <span className="feature-icon">⛪</span>
+                    <h4>Strategy 7: Faith Integration Depth Model</h4>
                   </div>
                   <ul className="feature-list">
-                    <li>Surprise elements integrated naturally into each chapter</li>
-                    <li>Character growth tracking for non-repetitive development</li>
-                    <li>Variable tension curves prevent monotone storytelling</li>
-                    <li>Subplot rotation system maintains narrative balance</li>
+                    <li>Lived faith: Actions, decisions, quiet moments of prayer</li>
+                    <li>Conversational faith: Natural discussions, questions, doubts</li>
+                    <li>Formal faith: Church services, scripture, structured worship</li>
+                    <li>Three-tier balance creates authentic spiritual journey</li>
                   </ul>
                 </div>
 
-                <div className="ai-feature-card">
+                <div className="ai-feature-card strategy-8">
                   <div className="feature-header">
-                    <span className="feature-icon">✍️</span>
-                    <h4>Stylistic Variation Engine</h4>
+                    <span className="feature-icon">💾</span>
+                    <h4>Strategy 8: 1999 Technology Authenticity</h4>
                   </div>
                   <ul className="feature-list">
-                    <li>Dynamic sentence length and paragraph structure</li>
-                    <li>Scene-specific pacing guidelines for different moods</li>
-                    <li>Metaphor diversity checks prevent overused comparisons</li>
-                    <li>Word frequency monitoring across chapters</li>
+                    <li>Home: Dial-up internet, answering machines, VHS tapes</li>
+                    <li>Office: Fax machines, early email, Windows 98 systems</li>
+                    <li>Communication: Landlines, pagers, early cell phones</li>
+                    <li>Character tech comfort levels based on age and background</li>
                   </ul>
                 </div>
 
-                <div className="ai-feature-card highlight">
+                <div className="ai-feature-card strategy-9">
                   <div className="feature-header">
-                    <span className="feature-icon">🚀</span>
-                    <h4>Result: Human-Quality Fiction</h4>
+                    <span className="feature-icon">⚡</span>
+                    <h4>Strategy 9: Narrative Tension Calibration</h4>
+                  </div>
+                  <ul className="feature-list">
+                    <li>Dynamic tension types: Internal conflict, relationship, mystery</li>
+                    <li>Story position-based intensity (low/medium/high)</li>
+                    <li>Balancing elements: Humor, reflection, community warmth</li>
+                    <li>Resolution timeframes tailored to chapter function</li>
+                  </ul>
+                </div>
+
+                <div className="ai-feature-card strategy-10">
+                  <div className="feature-header">
+                    <span className="feature-icon">👥</span>
+                    <h4>Strategy 10: Beta Reader Simulation</h4>
+                  </div>
+                  <ul className="feature-list">
+                    <li>Character consistency: Voice, motivation, growth verification</li>
+                    <li>Authenticity markers: Setting, era, regional accuracy</li>
+                    <li>Narrative flow: Pacing, tension, plot development</li>
+                    <li>Stylistic quality: Sentence variety, AI pattern elimination</li>
+                  </ul>
+                </div>
+
+                <div className="ai-feature-card highlight-result">
+                  <div className="feature-header">
+                    <span className="feature-icon">✨</span>
+                    <h4>Result: Maximum Human Authenticity</h4>
                   </div>
                   <div className="feature-highlight">
-                    <p><strong>This technology eliminates common AI writing problems:</strong></p>
+                    <p><strong>🚀 Revolutionary Anti-AI Technology:</strong></p>
                     <ul className="highlight-list">
-                      <li>❌ Repetitive phrases and formulaic patterns</li>
-                      <li>❌ Robotic dialogue and similar character voices</li>
-                      <li>❌ Predictable chapter structures and transitions</li>
-                      <li>❌ Monotone pacing and mechanical descriptions</li>
+                      <li>✅ 10 sophisticated strategies working together seamlessly</li>
+                      <li>✅ Every chapter uses different techniques and patterns</li>
+                      <li>✅ Character voices completely distinct and consistent</li>
+                      <li>✅ Setting details researched and period-accurate</li>
+                      <li>✅ Faith integration feels natural, never forced</li>
+                      <li>✅ Regional authenticity enhances without overwhelming</li>
                     </ul>
-                    <p><strong>✅ Your novel will feel authentically human-written!</strong></p>
+                    <p className="result-emphasis"><strong>🎯 Your novel will be indistinguishable from professional human-authored fiction!</strong></p>
+                  </div>
+                </div>
+
+                <div className="ai-feature-card legacy-features">
+                  <div className="feature-header">
+                    <span className="feature-icon">�️</span>
+                    <h4>Enhanced Original System Features</h4>
+                  </div>
+                  <div className="feature-highlight">
+                    <p><strong>📚 Preserved & Enhanced from Original v1.0:</strong></p>
+                    <ul className="highlight-list">
+                      <li>🎨 40+ sensory description banks for environmental diversity</li>
+                      <li>💬 Character voice libraries with speech pattern tracking</li>
+                      <li>📖 12+ chapter opening/ending structure combinations</li>
+                      <li>🎭 Surprise element integration for organic plot development</li>
+                      <li>✍️ Stylistic variation engines (pacing, metaphors, word choice)</li>
+                      <li>🔍 Anti-repetition controls and quality verification systems</li>
+                    </ul>
+                    <p><strong>🚀 Now integrated with 10 advanced strategies for unprecedented human authenticity!</strong></p>
                   </div>
                 </div>
               </div>
 
               <div className="technology-note">
-                <p><strong>💡 How it works:</strong> Each chapter is generated with unique enhancement instructions 
-                that vary opening styles, character voices, descriptive patterns, and narrative techniques. 
-                The system tracks recent usage patterns and forces variation to prevent the repetitive, 
-                formulaic writing common in standard AI-generated fiction.</p>
+                <h4>💡 How the Enhanced Framework Works:</h4>
+                <p><strong>🧠 Unified Integration:</strong> All 10 advanced strategies work together seamlessly with the original 736-line antiAI system. Each chapter receives comprehensive instructions covering character voice consistency, setting-specific sensory details, scene structure templates, metaphor domain control, plot thread management, regional dialect authenticity, faith integration balance, 1999 technology accuracy, narrative tension calibration, and beta reader simulation quality checks.</p>
+                
+                <p><strong>🎯 Dynamic Adaptation:</strong> The system automatically adjusts strategy implementation based on chapter position, character backgrounds, setting types, and story progression. This creates natural variation that eliminates predictable AI patterns while maintaining narrative coherence.</p>
+                
+                <p><strong>✨ Human Quality Verification:</strong> Every chapter passes through multiple quality control layers including voice map verification, authenticity marker checking, and beta reader simulation to ensure the final output feels genuinely human-authored.</p>
               </div>
             </div>
 

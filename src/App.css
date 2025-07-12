@@ -2238,3 +2238,239 @@ textarea {
     opacity: 1;
   }
 }
+
+/* ===== ADVANCED FRAMEWORK v2.0 FEATURE CARDS ===== */
+
+.ai-features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  gap: 1.5rem;
+  margin: 2rem 0;
+}
+
+.ai-feature-card {
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.ai-feature-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+  border-color: #667eea;
+}
+
+.ai-feature-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background: linear-gradient(90deg, #667eea, #764ba2, #f093fb);
+  background-size: 200% 100%;
+  animation: gradient-flow 3s ease infinite;
+}
+
+@keyframes gradient-flow {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+.feature-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.feature-icon {
+  font-size: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+}
+
+.feature-header h4 {
+  color: #2d3748;
+  font-size: 1.1rem;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.feature-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.feature-list li {
+  padding: 0.5rem 0;
+  color: #4a5568;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  position: relative;
+  padding-left: 1.25rem;
+}
+
+.feature-list li::before {
+  content: '✨';
+  position: absolute;
+  left: 0;
+  top: 0.5rem;
+  font-size: 0.8rem;
+}
+
+/* Strategy-specific color themes */
+.ai-feature-card.strategy-1::before {
+  background: linear-gradient(90deg, #667eea, #764ba2);
+}
+
+.ai-feature-card.strategy-2::before {
+  background: linear-gradient(90deg, #f093fb, #f5576c);
+}
+
+.ai-feature-card.strategy-3::before {
+  background: linear-gradient(90deg, #4facfe, #00f2fe);
+}
+
+.ai-feature-card.strategy-4::before {
+  background: linear-gradient(90deg, #43e97b, #38f9d7);
+}
+
+.ai-feature-card.strategy-5::before {
+  background: linear-gradient(90deg, #fa709a, #fee140);
+}
+
+.ai-feature-card.strategy-6::before {
+  background: linear-gradient(90deg, #a8edea, #fed6e3);
+}
+
+.ai-feature-card.strategy-7::before {
+  background: linear-gradient(90deg, #ffecd2, #fcb69f);
+}
+
+.ai-feature-card.strategy-8::before {
+  background: linear-gradient(90deg, #e0c3fc, #9bb5ff);
+}
+
+.ai-feature-card.strategy-9::before {
+  background: linear-gradient(90deg, #fbc2eb, #a6c1ee);
+}
+
+.ai-feature-card.strategy-10::before {
+  background: linear-gradient(90deg, #fdbb2d, #22c1c3);
+}
+
+/* Highlight cards for results */
+.ai-feature-card.highlight-result {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-color: #667eea;
+  grid-column: 1 / -1; /* Full width */
+}
+
+.ai-feature-card.highlight-result .feature-header h4,
+.ai-feature-card.highlight-result .feature-highlight p {
+  color: white;
+}
+
+.ai-feature-card.highlight-result .feature-icon {
+  background: rgba(255,255,255,0.2);
+  backdrop-filter: blur(10px);
+}
+
+.ai-feature-card.highlight-result .highlight-list li {
+  color: rgba(255,255,255,0.9);
+}
+
+.ai-feature-card.highlight-result .highlight-list li::before {
+  content: '🚀';
+}
+
+.result-emphasis {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: rgba(255,255,255,0.1);
+  border-radius: 8px;
+  text-align: center;
+  font-size: 1.1rem;
+  backdrop-filter: blur(10px);
+}
+
+/* Legacy features card */
+.ai-feature-card.legacy-features {
+  background: linear-gradient(135deg, #f8fafc 0%, #edf2f7 100%);
+  border-color: #cbd5e0;
+  grid-column: 1 / -1; /* Full width */
+}
+
+.ai-feature-card.legacy-features .feature-icon {
+  background: linear-gradient(135deg, #718096, #4a5568);
+}
+
+.ai-feature-card.legacy-features .highlight-list li::before {
+  content: '⚙️';
+}
+
+/* Technology note section */
+.technology-note {
+  background: linear-gradient(135deg, #edf2f7 0%, #e2e8f0 100%);
+  border: 1px solid #cbd5e0;
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-top: 2rem;
+}
+
+.technology-note h4 {
+  color: #2d3748;
+  margin-bottom: 1rem;
+  font-size: 1.1rem;
+}
+
+.technology-note p {
+  color: #4a5568;
+  margin-bottom: 1rem;
+  line-height: 1.6;
+}
+
+.technology-note p:last-child {
+  margin-bottom: 0;
+}
+
+/* Responsive design for strategy cards */
+@media (max-width: 768px) {
+  .ai-features-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .ai-feature-card {
+    padding: 1rem;
+  }
+  
+  .feature-header {
+    flex-direction: column;
+    text-align: center;
+    gap: 0.5rem;
+  }
+  
+  .feature-icon {
+    width: 2.5rem;
+    height: 2.5rem;
+    font-size: 1.2rem;
+  }
+}
