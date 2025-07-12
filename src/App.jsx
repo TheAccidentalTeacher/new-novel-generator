@@ -3278,6 +3278,22 @@ Timestamp: ${new Date().toISOString()}
               })
             )
           }
+        })
+        
+        // Add page break after synopsis
+        children.push(new Paragraph({ children: [new PageBreak()] }))
+      }
+      
+      // Chapters
+      novel.chapters.forEach((chapter, index) => {
+        // Chapter title
+        children.push(
+          new Paragraph({
+            heading: HeadingLevel.HEADING_1,
+            spacing: { before: 720, after: 480 },
+            children: [
+              new TextRun({
+                text: `Chapter ${chapter.chapterNumber || chapter.number || index + 1}: ${chapter.title}`,
                 size: 32,
                 bold: true
               })
@@ -3295,22 +3311,6 @@ Timestamp: ${new Date().toISOString()}
                 alignment: AlignmentType.JUSTIFIED,
                 indent: { firstLine: 360 }, // 0.25 inch first line indent
                 children: [
-                  new TextRun({
-                    text: para.trim(),
-                    size: 24
-                  })
-                ]
-              })
-            )
-          }
-        })
-        
-        // Page break after each chapter except the last
-        if (index < novel.chapters.length - 1) {
-          children.push(new Paragraph({ children: [new PageBreak()] }))
-        }
-      })
-      
                   new TextRun({
                     text: para.trim(),
                     size: 24
