@@ -1859,34 +1859,75 @@ Please copy this entire error message for debugging.
     console.log('🔧 RENDERING AutoGenerate - Status:', autoGenData.status);
     console.log('🔧 AutoGenerate data:', autoGenData);
     
-    return (
-      <div className="content-panel" style={{ minHeight: '600px', background: 'white', padding: '20px' }}>
-        <div className="panel-header">
-          <h2 style={{ color: '#333', marginBottom: '10px' }}>🤖 AutoGenerate - Set It and Forget It</h2>
-          <p style={{ color: '#666', marginBottom: '20px' }}>Generate a complete novel from a detailed synopsis automatically</p>
-          
-          {/* Debug Info - Force Visible */}
-          <div style={{ 
-            background: '#e8f4fd', 
-            border: '2px solid #007acc',
-            padding: '15px', 
-            margin: '10px 0', 
-            borderRadius: '8px',
-            fontSize: '14px',
-            fontFamily: 'monospace',
-            color: '#333'
+    try {
+      return (
+        <div className="content-panel" style={{ 
+          minHeight: '600px', 
+          background: '#f0f8ff', 
+          padding: '20px',
+          border: '3px solid red',
+          position: 'relative'
+        }}>
+          {/* MEGA DEBUG - SUPER VISIBLE */}
+          <div style={{
+            position: 'fixed',
+            top: '20px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            background: 'red',
+            color: 'white',
+            padding: '20px',
+            fontSize: '16px',
+            fontWeight: 'bold',
+            zIndex: 9999,
+            border: '3px solid yellow',
+            borderRadius: '10px',
+            maxWidth: '90vw'
           }}>
-            <strong>🔧 DEBUG INFO (This should be visible!):</strong><br/>
-            Status: <strong>{autoGenData.status}</strong><br/>
-            Job ID: <strong>{autoGenData.jobId || 'None'}</strong><br/>
-            Progress: <strong>{autoGenData.progress}%</strong><br/>
-            Current Phase: <strong>{autoGenData.currentPhase || 'None'}</strong><br/>
-            Last Update: <strong>{autoGenData.lastUpdate ? new Date(autoGenData.lastUpdate).toLocaleString() : 'None'}</strong><br/>
-            Genre: <strong>{autoGenData.genre || 'Not selected'}</strong><br/>
-            Subgenre: <strong>{autoGenData.subgenre || 'Not selected'}</strong><br/>
-            Word Count: <strong>{autoGenData.wordCount || 'Not selected'}</strong>
+            🚨 AUTO-GENERATE UI IS LOADING! 🚨<br/>
+            Status: {autoGenData.status}<br/>
+            If you see this, the function is working!
           </div>
-        </div>
+
+          <div className="panel-header" style={{ marginTop: '80px' }}>
+            <h1 style={{ 
+              color: 'red', 
+              fontSize: '32px',
+              textAlign: 'center',
+              background: 'yellow',
+              padding: '20px',
+              border: '3px solid blue'
+            }}>🤖 AutoGenerate - Set It and Forget It</h1>
+            <p style={{ 
+              color: 'blue', 
+              fontSize: '18px',
+              textAlign: 'center',
+              background: 'lightgreen',
+              padding: '10px'
+            }}>Generate a complete novel from a detailed synopsis automatically</p>
+            
+            {/* Debug Info - Force Visible */}
+            <div style={{ 
+              background: '#e8f4fd', 
+              border: '5px solid #007acc',
+              padding: '20px', 
+              margin: '20px 0', 
+              borderRadius: '8px',
+              fontSize: '16px',
+              fontFamily: 'monospace',
+              color: '#333'
+            }}>
+              <strong style={{ fontSize: '18px' }}>🔧 DEBUG INFO (This should be visible!):</strong><br/>
+              Status: <strong style={{ color: 'red' }}>{autoGenData.status}</strong><br/>
+              Job ID: <strong>{autoGenData.jobId || 'None'}</strong><br/>
+              Progress: <strong>{autoGenData.progress}%</strong><br/>
+              Current Phase: <strong>{autoGenData.currentPhase || 'None'}</strong><br/>
+              Last Update: <strong>{autoGenData.lastUpdate ? new Date(autoGenData.lastUpdate).toLocaleString() : 'None'}</strong><br/>
+              Genre: <strong>{autoGenData.genre || 'Not selected'}</strong><br/>
+              Subgenre: <strong>{autoGenData.subgenre || 'Not selected'}</strong><br/>
+              Word Count: <strong>{autoGenData.wordCount || 'Not selected'}</strong>
+            </div>
+          </div>
 
       {autoGenData.status === 'idle' && (
         <div className="auto-generate-setup">
@@ -2264,6 +2305,22 @@ Please copy this entire error message for debugging.
       )}
     </div>
     )
+    } catch (error) {
+      console.error('🚨 AutoGenerate render error:', error);
+      return (
+        <div style={{
+          background: 'red',
+          color: 'white',
+          padding: '20px',
+          margin: '20px',
+          fontSize: '18px',
+          fontWeight: 'bold'
+        }}>
+          🚨 AUTOGENERATE ERROR: {error.message}<br/>
+          Check console for details (F12)
+        </div>
+      );
+    }
   }
 
   const renderContent = () => {
