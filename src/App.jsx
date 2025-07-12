@@ -2667,7 +2667,7 @@ Maya's story begins when..."
         )}
 
         {/* Writing Status with Constellation Animation */}
-        {(autoGenData.status === 'writing' || autoGenData.status === 'outlining') && (
+        {(autoGenData.status === 'writing' || autoGenData.status === 'outlining' || autoGenData.status === 'analyzing' || autoGenData.status === 'processing') && (
           <div className="auto-generate-writing">
             <div className="writing-header">
               <h3>✨ Constellation of Stories</h3>
@@ -2684,7 +2684,7 @@ Maya's story begins when..."
               <div className="constellation-spinner">
                 <svg width="400" height="300" viewBox="0 0 400 300" className="constellation-svg">
                   {/* Supernova Animation during Analysis Phase */}
-                  {(autoGenData.currentPhase === 'analyzing' || autoGenData.currentPhase === 'Analyzing story structure...' || !autoGenData.estimatedChapters) && (
+                  {(autoGenData.currentPhase === 'analyzing' || autoGenData.currentPhase === 'Analyzing story structure...' || autoGenData.status === 'processing' || !autoGenData.estimatedChapters) && (
                     <g className="supernova-animation">
                       {/* Central supernova */}
                       <circle
@@ -2971,7 +2971,12 @@ Maya's story begins when..."
                       🧠 <span className="highlight pulsing">Analyzing story structure...</span>
                     </p>
                   )}
-                  {!autoGenData.currentPhase && (
+                  {(autoGenData.status === 'processing' && !autoGenData.currentPhase) && (
+                    <p className="phase-text">
+                      🧠 <span className="highlight pulsing">Processing your synopsis...</span>
+                    </p>
+                  )}
+                  {!autoGenData.currentPhase && autoGenData.status !== 'processing' && (
                     <p className="phase-text">
                       🌌 <span className="highlight">Mapping your story constellation...</span>
                     </p>
@@ -3038,7 +3043,7 @@ Maya's story begins when..."
         )}
 
         {/* Debug/Fallback Section */}
-        {!['idle', 'processing', 'complete', 'error', 'cancelled', 'writing', 'outlining'].includes(autoGenData.status) && (
+        {!['idle', 'processing', 'complete', 'error', 'cancelled', 'writing', 'outlining', 'analyzing'].includes(autoGenData.status) && (
           <div className="setup-section">
             <h3>🔧 Debug Information</h3>
             <p>Current status: <strong>{autoGenData.status || 'undefined'}</strong></p>
