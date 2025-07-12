@@ -2683,8 +2683,96 @@ Maya's story begins when..."
             <div className="constellation-container">
               <div className="constellation-spinner">
                 <svg width="400" height="300" viewBox="0 0 400 300" className="constellation-svg">
-                  {/* Generate constellation stars based on estimated chapters */}
-                  {(() => {
+                  {/* Supernova Animation during Analysis Phase */}
+                  {(autoGenData.currentPhase === 'analyzing' || autoGenData.currentPhase === 'Analyzing story structure...' || !autoGenData.estimatedChapters) && (
+                    <g className="supernova-animation">
+                      {/* Central supernova */}
+                      <circle
+                        cx="200"
+                        cy="150"
+                        r="8"
+                        fill="#FFD700"
+                        className="supernova-core"
+                        style={{
+                          filter: "drop-shadow(0 0 20px #FFD700)",
+                          animation: "supernova-pulse 2s ease-in-out infinite"
+                        }}
+                      />
+                      {/* Expanding rings */}
+                      <circle
+                        cx="200"
+                        cy="150"
+                        r="25"
+                        fill="none"
+                        stroke="#FFD700"
+                        strokeWidth="2"
+                        opacity="0.6"
+                        className="supernova-ring-1"
+                        style={{ animation: "supernova-expand 3s ease-out infinite" }}
+                      />
+                      <circle
+                        cx="200"
+                        cy="150"
+                        r="40"
+                        fill="none"
+                        stroke="#FF6B35"
+                        strokeWidth="1"
+                        opacity="0.4"
+                        className="supernova-ring-2"
+                        style={{ animation: "supernova-expand 3s ease-out infinite 0.5s" }}
+                      />
+                      <circle
+                        cx="200"
+                        cy="150"
+                        r="60"
+                        fill="none"
+                        stroke="#FF1744"
+                        strokeWidth="1"
+                        opacity="0.2"
+                        className="supernova-ring-3"
+                        style={{ animation: "supernova-expand 3s ease-out infinite 1s" }}
+                      />
+                      {/* Radiating particles */}
+                      {[0, 45, 90, 135, 180, 225, 270, 315].map((angle, i) => {
+                        const radian = (angle * Math.PI) / 180;
+                        const x = 200 + Math.cos(radian) * 80;
+                        const y = 150 + Math.sin(radian) * 80;
+                        return (
+                          <circle
+                            key={`particle-${i}`}
+                            cx={x}
+                            cy={y}
+                            r="3"
+                            fill="#FFD700"
+                            opacity="0.8"
+                            className="supernova-particle"
+                            style={{
+                              animation: `supernova-particle-${i % 4} 2s ease-in-out infinite`,
+                              animationDelay: `${i * 0.2}s`
+                            }}
+                          />
+                        );
+                      })}
+                      <text
+                        x="200"
+                        y="200"
+                        textAnchor="middle"
+                        fontSize="14"
+                        fill="#FFD700"
+                        className="supernova-text"
+                        style={{ 
+                          fontWeight: "bold",
+                          filter: "drop-shadow(0 0 6px #FFD700)",
+                          animation: "text-glow 2s ease-in-out infinite"
+                        }}
+                      >
+                        🧠 Analyzing Story Structure...
+                      </text>
+                    </g>
+                  )}
+                  
+                  {/* Constellation Stars (only show after outline is generated) */}
+                  {autoGenData.estimatedChapters && autoGenData.currentPhase !== 'analyzing' && (() => {
                     const estimatedChapters = autoGenData.estimatedChapters || autoGenData.totalChapters || 12;
                     const stars = [];
                     const connections = [];

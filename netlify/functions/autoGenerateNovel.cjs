@@ -4,6 +4,748 @@ const { OpenAI } = require('openai');
 // In-memory job storage (in production, use a database)
 const jobStorage = new Map();
 
+// Anti-AI Enhancement System - Makes Generated Fiction Feel Human-Written
+const antiAISystem = {
+  // 1. Diversify Descriptive Patterns - Enhanced Implementation
+  sensoryBank: {
+    sky: [
+      'azure canopy stretching endlessly', 'weathered pewter dome overhead', 'cobalt expanse dotted with clouds',
+      'mottled gray ceiling pressing down', 'pearl-white vastness above', 'storm-bruised heavens',
+      'amber-tinged backdrop of evening', 'velvet darkness studded with stars', 'dawn-painted horizon',
+      'silver-streaked morning sky', 'copper-burnished sunset dome', 'indigo twilight ceiling',
+      'rain-heavy clouds gathering', 'wind-swept azure emptiness', 'haze-softened blue expanse',
+      'crystal-clear winter sky', 'humid summer canopy', 'crisp autumn atmosphere',
+      'overcast gray blanket', 'brilliant midday glare', 'dusky purple evening',
+      'star-pricked midnight canvas', 'moon-washed nocturnal sky', 'sun-bleached afternoon dome',
+      'misty morning veil', 'storm-torn cloudscape', 'gentle blue embrace above',
+      'threatening dark ceiling', 'serene cloudless expanse', 'dramatic cloud formations',
+      'pastel dawn awakening', 'fiery sunset display', 'peaceful evening glow',
+      'wild storm-tossed heavens', 'calm steady blue', 'shifting cloud patterns',
+      'luminous twilight canopy', 'harsh glaring brightness', 'soft filtered light above',
+      'ominous gathering darkness', 'refreshing blue openness', 'majestic cloud cathedral'
+    ],
+    ground: [
+      'weathered stone path winding ahead', 'soft earth cushioning each step', 'cracked pavement telling stories',
+      'mossy forest floor springy underfoot', 'sandy trail shifting beneath boots', 'muddy track from recent rain',
+      'gravel crunching with each stride', 'wooden planks worn smooth', 'grass-covered meadow ground',
+      'rocky terrain challenging balance', 'smooth marble flooring', 'rough concrete surface',
+      'leaf-strewn pathway', 'dusty dirt road', 'polished hardwood floors',
+      'carpeted hallway muffling sounds', 'tile flooring cool to touch', 'rubber matting providing grip',
+      'cobblestone street uneven', 'asphalt parking lot heated', 'brick walkway precisely laid',
+      'snow-covered ground crunching', 'ice-slicked surface treacherous', 'warm sand between toes',
+      'pebbled beach shifting', 'boardwalk creaking slightly', 'metal grating echoing steps',
+      'linoleum floor squeaking', 'parquet pattern beneath feet', 'stone steps worn by time',
+      'grassy hill sloping down', 'mountain trail winding up', 'valley floor spreading wide',
+      'desert sand endless', 'stream bed rocky', 'garden path neatly kept',
+      'alley pavement gritty', 'plaza stones geometric', 'deck boards weathered gray',
+      'basement floor concrete cold', 'attic flooring creaking old', 'porch steps painted white',
+      'sidewalk familiar routine', 'trail disappearing ahead', 'ground solid and reassuring'
+    ],
+    interior: [
+      'dim corners hiding secrets', 'filtered light creating patterns', 'warm shadows embracing space',
+      'cluttered environment telling stories', 'bare walls echoing emptiness', 'cozy nook inviting rest',
+      'spacious room allowing breath', 'cramped quarters forcing closeness', 'high ceiling soaring above',
+      'low beams creating intimacy', 'large windows flooding light', 'small apertures filtering glow',
+      'rich tapestries warming walls', 'stark surfaces reflecting sound', 'comfortable furniture arranged',
+      'antique pieces holding history', 'modern fixtures gleaming new', 'rustic elements grounding space',
+      'elegant details catching eye', 'simple design calming mind', 'chaotic arrangement reflecting life',
+      'organized shelves displaying order', 'empty spaces feeling lonely', 'crowded areas buzzing energy',
+      'soft lighting creating mood', 'harsh fluorescents revealing all', 'candles flickering warmth',
+      'natural light shifting throughout day', 'artificial illumination steady', 'shadowy recesses mysterious',
+      'polished surfaces reflecting images', 'textured walls inviting touch', 'smooth finishes easy maintenance',
+      'wooden elements bringing nature inside', 'metal accents adding modern touch', 'fabric softening hard edges',
+      'plants breathing life into room', 'books filling shelves knowledge', 'artwork adorning walls beauty',
+      'mirrors expanding perceived space', 'curtains framing outdoor views', 'rugs defining separate areas',
+      'ceiling fans circulating air gently', 'heating vents warming space', 'open doorways connecting rooms',
+      'closed doors ensuring privacy', 'staircases leading to mystery', 'hallways stretching distances',
+      'alcoves providing retreat', 'bay windows creating reading nooks', 'fireplaces gathering social warmth'
+    ],
+    sounds: [
+      'distant murmur of conversation', 'sharp crack breaking silence', 'gentle rustle of movement',
+      'muffled voices through walls', 'echoing footsteps in hallway', 'soft whisper barely audible',
+      'sudden silence falling heavy', 'rhythmic tapping maintaining beat', 'wind whistling through gaps',
+      'rain pattering on roof', 'thunder rumbling overhead', 'birds chirping morning songs',
+      'traffic humming constant background', 'machinery grinding mechanical', 'children laughing distant playground',
+      'clock ticking steady rhythm', 'paper rustling as pages turn', 'keyboard clicking rapid typing',
+      'phone ringing interrupting quiet', 'doorbell chiming visitor arrival', 'refrigerator humming kitchen',
+      'water dripping slow leak', 'pipes creaking old building', 'floorboards groaning under weight',
+      'music playing soft background', 'television murmuring other room', 'radio static between stations',
+      'dog barking neighborhood alert', 'cat purring contentment', 'insects buzzing summer evening',
+      'leaves rustling autumn breeze', 'fire crackling warm hearth', 'ice cubes clinking cold drink',
+      'engine starting morning routine', 'brakes squealing sudden stop', 'tires screeching sharp turn',
+      'sirens wailing emergency distance', 'construction noise urban backdrop', 'school bell ringing period change',
+      'lawnmower cutting suburban grass', 'chainsaw clearing fallen tree', 'hammer striking nail precise',
+      'typewriter keys mechanical rhythm', 'pencil scratching paper surface', 'eraser rubbing removing mistakes',
+      'scissors cutting clean line', 'zipper sliding smooth closure', 'button clicking satisfying snap',
+      'fabric tearing unexpected rip', 'glass breaking sharp crash', 'metal clanging hollow ring'
+    ],
+    smells: [
+      'earthy scent after rain', 'sharp tang of cleaning solution', 'sweet fragrance of blooming flowers',
+      'musty odor of old books', 'clean air mountain fresh', 'acrid smoke from distant fire',
+      'floral notes drifting garden', 'metallic taste in air', 'coffee brewing morning ritual',
+      'bread baking warm kitchen', 'vanilla candle soft sweetness', 'pine needles forest fresh',
+      'ocean salt spray carried wind', 'grass newly cut suburban', 'leather chair well-worn',
+      'woodsmoke fireplace cozy', 'gasoline station pungent', 'paint fumes renovation project',
+      'perfume lingering after departure', 'soap clean bathroom', 'shampoo fruity shower',
+      'cooking spices exotic blend', 'garlic sautéing dinner prep', 'onions caramelizing slow heat',
+      'chocolate melting sweet temptation', 'citrus zest bright kitchen', 'herbs garden fresh picked',
+      'fish market oceanic strong', 'cheese aging complex notes', 'wine fermentation rich deep',
+      'beer hops bitter sharp', 'whiskey oak barrel aged', 'tobacco pipe grandfather comfort',
+      'incense meditation peaceful', 'candle wax warm melted', 'oil paint artist studio',
+      'glue craft project sticky', 'marker ink permanent sharp', 'chalk dust classroom memory',
+      'sweat gymnasium exertion', 'chlorine pool chemical clean', 'sunscreen summer protection',
+      'campfire smoke adventure outdoor', 'barbecue meat grilling social', 'popcorn movie theater classic',
+      'hospital antiseptic sterile clean', 'library books knowledge musty', 'garage motor oil mechanical',
+      'garden soil rich fertile', 'compost decomposition natural cycle', 'fertilizer spring growth preparation'
+    ],
+    textures: [
+      'rough surface requiring careful touch', 'smooth finish inviting caress', 'coarse fabric scratching skin',
+      'silky material flowing through fingers', 'grainy texture catching fingertips', 'polished wood warm natural',
+      'cold metal shocking contact', 'warm skin comforting human', 'bumpy surface creating friction',
+      'sleek design slipping easily', 'ribbed pattern providing grip', 'soft cushion yielding pressure',
+      'hard surface resisting force', 'elastic material stretching then returning', 'brittle substance threatening break',
+      'flexible bend without damage', 'sticky surface clinging stubbornly', 'slippery coating avoiding grasp',
+      'porous material absorbing moisture', 'waterproof barrier repelling liquid', 'absorbent fabric soaking spill',
+      'glossy finish reflecting light', 'matte surface absorbing illumination', 'textured pattern creating visual interest',
+      'embossed design raised tactile', 'engraved letters carved deep', 'painted surface smooth applied',
+      'varnished wood protected preserved', 'raw timber natural unfinished', 'sanded smoothness preparation complete',
+      'woven fabric interlaced threads', 'knitted material stretched loops', 'crocheted pattern hooked design',
+      'leather hide natural processed', 'vinyl artificial substitute', 'rubber bouncing resilient',
+      'plastic hard petroleum product', 'ceramic fired clay hardened', 'glass transparent fragile beauty',
+      'paper fibrous flat medium', 'cardboard corrugated strength', 'foam cushioning air filled',
+      'gel semi-solid viscous', 'liquid flowing taking shape', 'powder fine particles loose',
+      'crystal hard mineral formation', 'stone natural earth hardness', 'concrete artificial stone mixture',
+      'brick fired clay rectangular', 'tile ceramic square fitted', 'slate natural stone split',
+      'marble metamorphic rock polished', 'granite igneous rock speckled', 'sandstone sedimentary rough natural'
+    ]
+  },
+
+  // Track usage across last 3 chapters
+  recentUsage: {
+    descriptions: new Map(),
+    metaphors: new Map(),
+    openings: new Map(),
+    phrases: new Map()
+  },
+
+  // Enhanced description tracker with filtering
+  getSensoryDescription(type, chapterNumber, characterPerspective = null, timeOfDay = null) {
+    const bank = this.sensoryBank[type] || [];
+    const recentKey = `${type}_recent`;
+    const recent = this.recentUsage.descriptions.get(recentKey) || new Set();
+    
+    // Character-filtered descriptions
+    let availableDescriptions = bank;
+    if (characterPerspective) {
+      availableDescriptions = this.filterByCharacterPerspective(bank, characterPerspective);
+    }
+    
+    // Time-sensitive descriptions
+    if (timeOfDay) {
+      availableDescriptions = this.filterByTimeOfDay(availableDescriptions, timeOfDay, type);
+    }
+    
+    // Remove recently used (last 3 chapters)
+    const unused = availableDescriptions.filter(desc => !recent.has(desc));
+    
+    if (unused.length === 0) {
+      // If all used, reset and pick randomly
+      recent.clear();
+      this.recentUsage.descriptions.set(recentKey, recent);
+    }
+    
+    const available = unused.length > 0 ? unused : availableDescriptions;
+    const selected = available[Math.floor(Math.random() * available.length)];
+    
+    // Track usage
+    recent.add(selected);
+    if (recent.size > 15) { // Keep last 15 descriptions
+      const first = recent.values().next().value;
+      recent.delete(first);
+    }
+    this.recentUsage.descriptions.set(recentKey, recent);
+    
+    return selected;
+  },
+
+  filterByCharacterPerspective(descriptions, character) {
+    // Character-specific filtering logic
+    const characterTraits = {
+      nature_lover: ['forest', 'earth', 'natural', 'organic', 'wild'],
+      urban_dweller: ['concrete', 'asphalt', 'building', 'street', 'city'],
+      artist: ['color', 'texture', 'pattern', 'design', 'visual'],
+      practical: ['functional', 'useful', 'efficient', 'working'],
+      romantic: ['gentle', 'soft', 'warm', 'beautiful', 'elegant']
+    };
+    
+    const traits = characterTraits[character] || [];
+    if (traits.length === 0) return descriptions;
+    
+    // Prefer descriptions that match character traits
+    const matching = descriptions.filter(desc => 
+      traits.some(trait => desc.toLowerCase().includes(trait))
+    );
+    
+    return matching.length > 0 ? matching.concat(descriptions).slice(0, descriptions.length) : descriptions;
+  },
+
+  filterByTimeOfDay(descriptions, timeOfDay, type) {
+    const timeKeywords = {
+      morning: ['dawn', 'morning', 'early', 'fresh', 'new', 'bright'],
+      afternoon: ['noon', 'bright', 'clear', 'warm', 'blazing'],
+      evening: ['dusk', 'evening', 'twilight', 'amber', 'golden'],
+      night: ['night', 'dark', 'moon', 'star', 'shadow', 'dim']
+    };
+    
+    const keywords = timeKeywords[timeOfDay] || [];
+    if (keywords.length === 0) return descriptions;
+    
+    // Prefer time-appropriate descriptions
+    const timeAppropriate = descriptions.filter(desc =>
+      keywords.some(keyword => desc.toLowerCase().includes(keyword))
+    );
+    
+    return timeAppropriate.length > 0 ? 
+      timeAppropriate.concat(descriptions).slice(0, descriptions.length) : 
+      descriptions;
+  },
+
+  // 2. Enhanced Character Voice System
+  characterVoiceLibrary: {
+    speech_patterns: {
+      direct: ['states facts plainly', 'asks direct questions', 'uses short sentences'],
+      meandering: ['circles back to topics', 'uses longer explanations', 'includes tangents'],
+      formal: ['uses complete sentences', 'avoids contractions', 'precise word choice'],
+      casual: ['uses contractions freely', 'informal vocabulary', 'relaxed grammar'],
+      humorous: ['makes jokes', 'uses wordplay', 'lightens serious moments'],
+      serious: ['thoughtful responses', 'considers implications', 'measured speech']
+    },
+    regional_vocabularies: {
+      southern: ['y\'all', 'fixin\' to', 'might could', 'over yonder', 'bless your heart'],
+      northeastern: ['wicked', 'no worries', 'regular coffee', 'the T', 'rotary'],
+      midwest: ['ope', 'you betcha', 'pop', 'casserole', 'uff da'],
+      western: ['hella', 'the 405', 'marine layer', 'no way', 'totally'],
+      rural: ['holler', 'creek', 'fixing', 'reckon', 'might be'],
+      urban: ['subway', 'block', 'bodega', 'avenue', 'downtown']
+    },
+    conversational_styles: {
+      questioner: ['What do you think?', 'Have you considered?', 'Why do you suppose?'],
+      observer: ['I noticed that', 'It seems like', 'The way I see it'],
+      storyteller: ['That reminds me of', 'You know what happened?', 'Let me tell you'],
+      advisor: ['You might want to', 'Have you tried', 'In my experience'],
+      challenger: ['But what if', 'Are you sure?', 'That doesn\'t make sense'],
+      supporter: ['That\'s a great point', 'I understand', 'You\'re absolutely right']
+    }
+  },
+
+  // Enhanced character voice generation
+  generateCharacterVoice(characterName, background, previousChapters) {
+    const existingDialogue = this.analyzeExistingDialogue(characterName, previousChapters);
+    
+    return {
+      speechPattern: this.selectSpeechPattern(background),
+      vocabulary: this.selectVocabulary(background),
+      conversationStyle: this.selectConversationStyle(characterName),
+      sentenceLength: this.determineSentencePreference(background),
+      topicPreferences: this.generateTopicPreferences(background),
+      avoidancePatterns: existingDialogue.overusedPhrases
+    };
+  },
+
+  selectSpeechPattern(background) {
+    const patterns = Object.keys(this.characterVoiceLibrary.speech_patterns);
+    // Logic to select based on background
+    return patterns[Math.floor(Math.random() * patterns.length)];
+  },
+
+  selectVocabulary(background) {
+    const vocabs = Object.keys(this.characterVoiceLibrary.regional_vocabularies);
+    return this.characterVoiceLibrary.regional_vocabularies[
+      vocabs[Math.floor(Math.random() * vocabs.length)]
+    ];
+  },
+
+  selectConversationStyle(characterName) {
+    const styles = Object.keys(this.characterVoiceLibrary.conversational_styles);
+    const selectedStyle = styles[Math.floor(Math.random() * styles.length)];
+    return this.characterVoiceLibrary.conversational_styles[selectedStyle];
+  },
+
+  // 3. Advanced Chapter Structure Diversification
+  chapterStructureBank: {
+    openings: [
+      'action_immediate', 'dialogue_mid_conversation', 'description_immersive', 'flashback_triggered',
+      'question_philosophical', 'conflict_ongoing', 'thought_internal', 'time_jump_forward',
+      'setting_focus_detailed', 'emotion_raw', 'mystery_element_introduced', 'relationship_tension',
+      'humor_unexpected', 'decision_aftermath', 'observation_character', 'memory_surfacing',
+      'sound_breaking_silence', 'movement_dynamic', 'contrast_previous', 'anticipation_building',
+      'routine_interrupted', 'discovery_made', 'problem_emerging', 'goal_declared',
+      'warning_given', 'secret_hinted', 'change_noticed', 'challenge_accepted'
+    ],
+    transitions: [
+      'meanwhile_elsewhere', 'hours_later', 'suddenly_shift', 'in_contrast', 'back_to_present',
+      'across_town', 'that_same_moment', 'days_passed', 'without_warning', 'as_expected',
+      'on_the_other_hand', 'little_did_they_know', 'simultaneously', 'in_the_distance',
+      'closer_to_home', 'by_coincidence', 'as_fate_would_have_it', 'unexpectedly',
+      'following_the_trail', 'retracing_steps', 'looking_ahead', 'circling_back'
+    ],
+    endings: [
+      'cliffhanger_major', 'revelation_character', 'humor_lightening', 'emotional_peak',
+      'action_pause_tense', 'question_profound', 'decision_crucial', 'conflict_escalation',
+      'quiet_reflection', 'foreshadowing_ominous', 'growth_moment', 'plot_advancement',
+      'mystery_deepened', 'relationship_shift', 'goal_achieved', 'setback_encountered',
+      'hope_emerging', 'doubt_creeping', 'resolution_partial', 'complication_new',
+      'understanding_dawning', 'misunderstanding_created', 'bond_strengthened', 'distance_growing'
+    ]
+  },
+
+  chapterUsageTracker: {
+    recentOpenings: [],
+    recentTransitions: [],
+    recentEndings: [],
+    patternHistory: []
+  },
+
+  // Enhanced chapter structure selection with pattern breaking
+  generateChapterStructure(chapterNumber, totalChapters, previousChapters) {
+    const openingStyle = this.selectVariedOpening(chapterNumber);
+    const transitionStyle = this.selectVariedTransition(chapterNumber);
+    const endingStyle = this.selectVariedEnding(chapterNumber);
+    
+    // Force structural variation every 3 chapters
+    if (chapterNumber % 3 === 0) {
+      return this.forceStructuralVariation(openingStyle, transitionStyle, endingStyle);
+    }
+    
+    return {
+      opening: openingStyle,
+      transition: transitionStyle,
+      ending: endingStyle,
+      pacing: this.generatePacingGuidance(chapterNumber),
+      focus: this.generateChapterFocus(chapterNumber, totalChapters)
+    };
+  },
+
+  selectVariedOpening(chapterNumber) {
+    const available = this.chapterStructureBank.openings.filter(
+      opening => !this.chapterUsageTracker.recentOpenings.includes(opening)
+    );
+    
+    if (available.length === 0) {
+      this.chapterUsageTracker.recentOpenings = [];
+      return this.chapterStructureBank.openings[Math.floor(Math.random() * this.chapterStructureBank.openings.length)];
+    }
+    
+    const selected = available[Math.floor(Math.random() * available.length)];
+    this.chapterUsageTracker.recentOpenings.push(selected);
+    
+    // Keep only last 6 openings
+    if (this.chapterUsageTracker.recentOpenings.length > 6) {
+      this.chapterUsageTracker.recentOpenings.shift();
+    }
+    
+    return selected;
+  },
+
+  selectVariedEnding(chapterNumber) {
+    const available = this.chapterStructureBank.endings.filter(
+      ending => !this.chapterUsageTracker.recentEndings.includes(ending)
+    );
+    
+    if (available.length === 0) {
+      this.chapterUsageTracker.recentEndings = [];
+      return this.chapterStructureBank.endings[Math.floor(Math.random() * this.chapterStructureBank.endings.length)];
+    }
+    
+    const selected = available[Math.floor(Math.random() * available.length)];
+    this.chapterUsageTracker.recentEndings.push(selected);
+    
+    if (this.chapterUsageTracker.recentEndings.length > 6) {
+      this.chapterUsageTracker.recentEndings.shift();
+    }
+    
+    return selected;
+  },
+
+  // 4. Advanced Narrative Controls with Surprise Elements
+  surpriseElementLibrary: {
+    character_surprises: [
+      'hidden_skill_revealed', 'unexpected_background_connection', 'personality_trait_subversion',
+      'secret_knowledge_exposed', 'relationship_history_unveiled', 'motivation_twist',
+      'allegiance_questioned', 'weakness_becomes_strength', 'strength_becomes_liability'
+    ],
+    plot_surprises: [
+      'information_recontextualizes_events', 'plan_has_unforeseen_consequence', 'seemingly_minor_detail_crucial',
+      'assumed_fact_proven_false', 'parallel_situation_emerges', 'timing_creates_opportunity',
+      'external_force_intervenes', 'internal_conflict_resolution_unexpected'
+    ],
+    environmental_surprises: [
+      'setting_reveals_hidden_aspect', 'weather_changes_plans', 'location_has_history',
+      'space_configured_differently_than_expected', 'discovery_in_familiar_place',
+      'environmental_obstacle_becomes_solution', 'setting_connects_to_character_past'
+    ],
+    dialogue_surprises: [
+      'subtext_contradicts_surface_meaning', 'character_says_unexpected_thing',
+      'conversation_topic_shift_reveals_truth', 'silence_more_meaningful_than_words',
+      'interruption_changes_dynamic', 'misheard_word_creates_misunderstanding',
+      'shared_reference_creates_bond', 'linguistic_clue_reveals_information'
+    ]
+  },
+
+  generateSurpriseElement(chapterNumber, chapterContext, previousChapters) {
+    const categories = Object.keys(this.surpriseElementLibrary);
+    const selectedCategory = categories[Math.floor(Math.random() * categories.length)];
+    const surprises = this.surpriseElementLibrary[selectedCategory];
+    
+    // Ensure surprise hasn't been used recently
+    const recentSurprises = this.getRecentSurprises(previousChapters);
+    const available = surprises.filter(surprise => !recentSurprises.includes(surprise));
+    
+    const selectedSurprise = available.length > 0 ? 
+      available[Math.floor(Math.random() * available.length)] :
+      surprises[Math.floor(Math.random() * surprises.length)];
+    
+    return {
+      type: selectedCategory,
+      element: selectedSurprise,
+      implementation: this.generateSurpriseImplementation(selectedSurprise, chapterContext)
+    };
+  },
+
+  generateSurpriseImplementation(surprise, context) {
+    // Generate specific implementation guidance for the surprise
+    const implementations = {
+      'hidden_skill_revealed': 'Have character demonstrate unexpected competency in crisis moment',
+      'information_recontextualizes_events': 'Reveal detail that changes meaning of previous scene',
+      'setting_reveals_hidden_aspect': 'Character notices something about location that changes its significance',
+      'conversation_topic_shift_reveals_truth': 'Casual comment exposes important information'
+    };
+    
+    return implementations[surprise] || 'Integrate naturally into chapter flow without forcing';
+  },
+
+  // 5. Stylistic Variation Engine
+  styleVariationEngine: {
+    pacingPatterns: {
+      'fast': { sentences: 'short_varied', paragraphs: 'brief_punchy', transitions: 'sharp_cuts' },
+      'medium': { sentences: 'mixed_length', paragraphs: 'balanced_flow', transitions: 'smooth_bridges' },
+      'slow': { sentences: 'longer_flowing', paragraphs: 'developed_rich', transitions: 'gradual_shifts' },
+      'variable': { sentences: 'deliberately_mixed', paragraphs: 'rhythm_based', transitions: 'mood_matched' }
+    },
+    metaphorCategories: {
+      'nature': ['like wind through trees', 'steady as mountain stone', 'flowing like river water'],
+      'mechanical': ['clockwork precision', 'well-oiled machine', 'gears grinding slowly'],
+      'artistic': ['painted in broad strokes', 'delicate as watercolor', 'bold as sculpture'],
+      'musical': ['rhythmic like drumbeat', 'harmonious as choir', 'discordant as broken piano'],
+      'architectural': ['built on solid foundation', 'scaffolding of support', 'bridge between worlds'],
+      'culinary': ['recipe for disaster', 'half-baked idea', 'full course of emotions']
+    },
+    wordChoicePatterns: {
+      'formal': { complexity: 'high', vocabulary: 'precise', tone: 'elevated' },
+      'conversational': { complexity: 'medium', vocabulary: 'accessible', tone: 'approachable' },
+      'casual': { complexity: 'low', vocabulary: 'everyday', tone: 'relaxed' },
+      'lyrical': { complexity: 'varied', vocabulary: 'evocative', tone: 'beautiful' },
+      'urgent': { complexity: 'simple', vocabulary: 'immediate', tone: 'pressing' },
+      'contemplative': { complexity: 'nuanced', vocabulary: 'thoughtful', tone: 'reflective' }
+    }
+  },
+
+  generateStyleGuidance(chapterNumber, sceneType, emotionalTone) {
+    const pacing = this.selectPacingPattern(sceneType, emotionalTone);
+    const metaphorCategory = this.selectMetaphorCategory(chapterNumber);
+    const wordChoice = this.selectWordChoicePattern(emotionalTone);
+    
+    return {
+      pacing: this.styleVariationEngine.pacingPatterns[pacing],
+      metaphors: this.styleVariationEngine.metaphorCategories[metaphorCategory],
+      wordChoice: this.styleVariationEngine.wordChoicePatterns[wordChoice],
+      sentenceVariation: this.generateSentenceVariationGuidance(chapterNumber),
+      paragraphStructure: this.generateParagraphStructureGuidance(sceneType),
+      avoidOverusedWords: this.getOverusedWordsToAvoid(chapterNumber)
+    };
+  },
+
+  // Enhanced main instruction generator
+  generateWritingInstructions(chapterNumber, chapterData, previousChapters) {
+    const structure = this.generateChapterStructure(chapterNumber, 25, previousChapters);
+    const surprise = this.generateSurpriseElement(chapterNumber, chapterData, previousChapters);
+    const style = this.generateStyleGuidance(chapterNumber, 'mixed', chapterData.emotionalTone || 'neutral');
+    const characters = this.generateCharacterVoiceInstructions(chapterData.characters, previousChapters);
+    
+    return {
+      // Structural elements
+      openingStyle: structure.opening,
+      endingStyle: structure.ending,
+      transitionStyle: structure.transition,
+      chapterFocus: structure.focus,
+      
+      // Surprise and narrative control
+      surpriseElement: surprise.element,
+      surpriseImplementation: surprise.implementation,
+      
+      // Style variations
+      pacingGuidance: style.pacing,
+      metaphorCategory: style.metaphors[0], // Use first metaphor as primary
+      wordChoicePattern: style.wordChoice,
+      
+      // Character-specific instructions
+      characterVoices: characters,
+      
+      // Anti-repetition controls
+      avoidancePatterns: this.generateAvoidancePatterns(previousChapters),
+      sensoryFocus: this.getSensoryDescription('mixed', chapterNumber),
+      
+      // Quality controls
+      qualityChecks: this.generateQualityCheckList(chapterNumber)
+    };
+  },
+
+  generateAvoidancePatterns(previousChapters) {
+    // Analyze last 3 chapters for overused patterns
+    const lastThree = previousChapters.slice(-3);
+    
+    return {
+      overusedPhrases: this.extractOverusedPhrases(lastThree),
+      repetitiveOpenings: this.extractRepetitiveOpenings(lastThree),
+      similarTransitions: this.extractSimilarTransitions(lastThree),
+      metaphorRepeats: this.extractRepeatedMetaphors(lastThree),
+      dialoguePatterns: this.extractDialoguePatterns(lastThree)
+    };
+  },
+
+  generateQualityCheckList(chapterNumber) {
+    return {
+      variationChecks: [
+        'Ensure sentence lengths vary throughout chapter',
+        'Check paragraph structure creates good rhythm',
+        'Verify character voices remain distinct',
+        'Confirm sensory details engage multiple senses'
+      ],
+      contentChecks: [
+        'Include surprise element naturally in narrative flow',
+        'Advance plot while developing character',
+        'Maintain consistent tone while varying style',
+        'Connect to overall story arc meaningfully'
+      ],
+      technicalChecks: [
+        'Avoid repetition of words within paragraphs',
+        'Balance dialogue, action, and description',
+        'Ensure transitions between scenes flow smoothly',
+        'Check that chapter serves story purpose'
+      ]
+    };
+  },
+
+  // Helper methods for extraction and analysis
+  extractOverusedPhrases(chapters) {
+    // Simplified implementation - would use actual text analysis in production
+    return ['suddenly', 'just then', 'all of a sudden', 'in that moment'];
+  },
+
+  extractRepetitiveOpenings(chapters) {
+    return ['The morning sun', 'As she walked', 'Meanwhile'];
+  },
+
+  extractSimilarTransitions(chapters) {
+    return ['Later that day', 'After a while', 'Soon enough'];
+  },
+
+  extractRepeatedMetaphors(chapters) {
+    return ['like a bird', 'ocean of', 'mountain of'];
+  },
+
+  extractDialoguePatterns(chapters) {
+    return ['he said simply', 'she replied quietly', 'they whispered'];
+  },
+
+  selectPacingPattern(sceneType, emotionalTone) {
+    const pacingMap = {
+      action: 'fast',
+      dialogue: 'medium', 
+      reflection: 'slow',
+      revelation: 'variable',
+      conflict: 'fast',
+      romance: 'slow',
+      mystery: 'variable'
+    };
+    
+    return pacingMap[sceneType] || 'medium';
+  },
+
+  selectMetaphorCategory(chapterNumber) {
+    const categories = Object.keys(this.styleVariationEngine.metaphorCategories);
+    // Rotate categories to ensure variety
+    return categories[chapterNumber % categories.length];
+  },
+
+  selectWordChoicePattern(emotionalTone) {
+    const toneMap = {
+      tense: 'urgent',
+      peaceful: 'lyrical',
+      dramatic: 'formal',
+      intimate: 'conversational',
+      mysterious: 'contemplative',
+      action: 'casual'
+    };
+    
+    return toneMap[emotionalTone] || 'conversational';
+  },
+
+  generateCharacterVoiceInstructions(characters, previousChapters) {
+    return characters.map(char => ({
+      name: char,
+      voice: this.generateCharacterVoice(char, 'general', previousChapters),
+      dialogueGuidance: this.generateDialogueGuidance(char, previousChapters)
+    }));
+  },
+
+  generateDialogueGuidance(characterName, previousChapters) {
+    return {
+      speechPattern: this.selectSpeechPattern('general'),
+      vocabulary: this.selectVocabulary('general'),
+      topicPreferences: ['current situation', 'personal background', 'future plans'],
+      avoidTopics: this.getOverusedTopicsForCharacter(characterName, previousChapters)
+    };
+  },
+
+  getOverusedTopicsForCharacter(characterName, previousChapters) {
+    // Simplified - would analyze actual dialogue in production
+    return ['weather', 'small talk'];
+  },
+
+  getRecentSurprises(previousChapters) {
+    // Would extract actual surprises used - simplified for now
+    return [];
+  },
+
+  generateSentenceVariationGuidance(chapterNumber) {
+    return {
+      shortSentences: 'Use for impact and clarity',
+      mediumSentences: 'Use for main narrative flow', 
+      longSentences: 'Use for complex ideas and atmosphere',
+      fragmentsOkay: 'Occasional fragments for emphasis acceptable'
+    };
+  },
+
+  generateParagraphStructureGuidance(sceneType) {
+    const structureMap = {
+      action: 'Keep paragraphs brief for fast pacing',
+      dialogue: 'New paragraph for each speaker',
+      description: 'Longer paragraphs for immersive detail',
+      reflection: 'Varied paragraph lengths for natural thought flow'
+    };
+    
+    return structureMap[sceneType] || 'Vary paragraph length for good rhythm';
+  },
+
+  getOverusedWordsToAvoid(chapterNumber) {
+    // Words that AI commonly overuses
+    return [
+      'suddenly', 'just', 'really', 'very', 'quite', 'rather', 'perhaps',
+      'seemed', 'appeared', 'felt like', 'sort of', 'kind of'
+    ];
+  },
+
+  // Additional missing helper methods
+  determineSentencePreference(background) {
+    // Determine sentence length preference based on character background
+    const backgroundMap = {
+      academic: 'longer',
+      rural: 'shorter',
+      urban: 'mixed',
+      professional: 'medium',
+      artistic: 'varied'
+    };
+    return backgroundMap[background] || 'mixed';
+  },
+
+  generateTopicPreferences(background) {
+    // Generate topic preferences based on character background
+    const topicMap = {
+      academic: ['research', 'theories', 'knowledge'],
+      rural: ['nature', 'community', 'practical matters'],
+      urban: ['technology', 'culture', 'opportunities'],
+      professional: ['work', 'goals', 'networking'],
+      artistic: ['creativity', 'expression', 'beauty']
+    };
+    return topicMap[background] || ['general conversation', 'current events'];
+  },
+
+  analyzeExistingDialogue(characterName, previousChapters) {
+    // Analyze existing dialogue patterns for character consistency
+    // Simplified implementation - in production would parse actual dialogue
+    return {
+      avgSentenceLength: Math.random() * 15 + 10,
+      commonPhrases: ['well', 'you know', 'I think'],
+      overusedPhrases: ['suddenly said', 'quietly replied'],
+      topicFrequency: { 'work': 0.3, 'family': 0.2, 'plans': 0.1 }
+    };
+  },
+
+  selectVariedTransition(chapterNumber) {
+    // Select transition style avoiding recent usage
+    const available = this.chapterStructureBank.transitions.filter(
+      transition => !this.chapterUsageTracker.recentTransitions.includes(transition)
+    );
+    
+    if (available.length === 0) {
+      this.chapterUsageTracker.recentTransitions = [];
+      return this.chapterStructureBank.transitions[
+        Math.floor(Math.random() * this.chapterStructureBank.transitions.length)
+      ];
+    }
+    
+    const selected = available[Math.floor(Math.random() * available.length)];
+    this.chapterUsageTracker.recentTransitions.push(selected);
+    
+    // Keep only last 4 transitions
+    if (this.chapterUsageTracker.recentTransitions.length > 4) {
+      this.chapterUsageTracker.recentTransitions.shift();
+    }
+    
+    return selected;
+  },
+
+  forceStructuralVariation(opening, transition, ending) {
+    // Force structural variation every few chapters
+    const alternativeOpenings = this.chapterStructureBank.openings.filter(
+      o => o !== opening && !o.includes('action') // Force different category
+    );
+    const alternativeEndings = this.chapterStructureBank.endings.filter(
+      e => e !== ending && !e.includes('cliffhanger') // Force different category
+    );
+    
+    return {
+      opening: alternativeOpenings.length > 0 ? 
+        alternativeOpenings[Math.floor(Math.random() * alternativeOpenings.length)] : opening,
+      transition: transition, // Keep transition
+      ending: alternativeEndings.length > 0 ? 
+        alternativeEndings[Math.floor(Math.random() * alternativeEndings.length)] : ending,
+      forced: true // Flag to indicate this was a forced variation
+    };
+  },
+
+  generatePacingGuidance(chapterNumber) {
+    // Generate specific pacing guidance
+    const pacingTypes = ['fast', 'medium', 'slow', 'variable'];
+    const selectedPacing = pacingTypes[chapterNumber % pacingTypes.length];
+    
+    return this.styleVariationEngine.pacingPatterns[selectedPacing];
+  },
+
+  generateChapterFocus(chapterNumber, totalChapters) {
+    // Determine what this chapter should focus on
+    const focusOptions = [
+      'character_development', 'plot_advancement', 'setting_exploration',
+      'relationship_building', 'conflict_escalation', 'mystery_deepening',
+      'tension_building', 'resolution_partial', 'world_building', 'theme_exploration'
+    ];
+    
+    // Rotate focus to ensure variety
+    return focusOptions[chapterNumber % focusOptions.length];
+  }
+};
+
 exports.handler = async function(event, context) {
   console.log('=== AutoGenerate Function Start ===');
   console.log('HTTP Method:', event.httpMethod);
@@ -555,747 +1297,7 @@ Provide a JSON response with an array of chapters:
       return outline;
     }
 
-    // Anti-AI Enhancement System - Makes Generated Fiction Feel Human-Written
-    const antiAISystem = {
-      // 1. Diversify Descriptive Patterns - Enhanced Implementation
-      sensoryBank: {
-        sky: [
-          'azure canopy stretching endlessly', 'weathered pewter dome overhead', 'cobalt expanse dotted with clouds',
-          'mottled gray ceiling pressing down', 'pearl-white vastness above', 'storm-bruised heavens',
-          'amber-tinged backdrop of evening', 'velvet darkness studded with stars', 'dawn-painted horizon',
-          'silver-streaked morning sky', 'copper-burnished sunset dome', 'indigo twilight ceiling',
-          'rain-heavy clouds gathering', 'wind-swept azure emptiness', 'haze-softened blue expanse',
-          'crystal-clear winter sky', 'humid summer canopy', 'crisp autumn atmosphere',
-          'overcast gray blanket', 'brilliant midday glare', 'dusky purple evening',
-          'star-pricked midnight canvas', 'moon-washed nocturnal sky', 'sun-bleached afternoon dome',
-          'misty morning veil', 'storm-torn cloudscape', 'gentle blue embrace above',
-          'threatening dark ceiling', 'serene cloudless expanse', 'dramatic cloud formations',
-          'pastel dawn awakening', 'fiery sunset display', 'peaceful evening glow',
-          'wild storm-tossed heavens', 'calm steady blue', 'shifting cloud patterns',
-          'luminous twilight canopy', 'harsh glaring brightness', 'soft filtered light above',
-          'ominous gathering darkness', 'refreshing blue openness', 'majestic cloud cathedral'
-        ],
-        ground: [
-          'weathered stone path winding ahead', 'soft earth cushioning each step', 'cracked pavement telling stories',
-          'mossy forest floor springy underfoot', 'sandy trail shifting beneath boots', 'muddy track from recent rain',
-          'gravel crunching with each stride', 'wooden planks worn smooth', 'grass-covered meadow ground',
-          'rocky terrain challenging balance', 'smooth marble flooring', 'rough concrete surface',
-          'leaf-strewn pathway', 'dusty dirt road', 'polished hardwood floors',
-          'carpeted hallway muffling sounds', 'tile flooring cool to touch', 'rubber matting providing grip',
-          'cobblestone street uneven', 'asphalt parking lot heated', 'brick walkway precisely laid',
-          'snow-covered ground crunching', 'ice-slicked surface treacherous', 'warm sand between toes',
-          'pebbled beach shifting', 'boardwalk creaking slightly', 'metal grating echoing steps',
-          'linoleum floor squeaking', 'parquet pattern beneath feet', 'stone steps worn by time',
-          'grassy hill sloping down', 'mountain trail winding up', 'valley floor spreading wide',
-          'desert sand endless', 'stream bed rocky', 'garden path neatly kept',
-          'alley pavement gritty', 'plaza stones geometric', 'deck boards weathered gray',
-          'basement floor concrete cold', 'attic flooring creaking old', 'porch steps painted white',
-          'sidewalk familiar routine', 'trail disappearing ahead', 'ground solid and reassuring'
-        ],
-        interior: [
-          'dim corners hiding secrets', 'filtered light creating patterns', 'warm shadows embracing space',
-          'cluttered environment telling stories', 'bare walls echoing emptiness', 'cozy nook inviting rest',
-          'spacious room allowing breath', 'cramped quarters forcing closeness', 'high ceiling soaring above',
-          'low beams creating intimacy', 'large windows flooding light', 'small apertures filtering glow',
-          'rich tapestries warming walls', 'stark surfaces reflecting sound', 'comfortable furniture arranged',
-          'antique pieces holding history', 'modern fixtures gleaming new', 'rustic elements grounding space',
-          'elegant details catching eye', 'simple design calming mind', 'chaotic arrangement reflecting life',
-          'organized shelves displaying order', 'empty spaces feeling lonely', 'crowded areas buzzing energy',
-          'soft lighting creating mood', 'harsh fluorescents revealing all', 'candles flickering warmth',
-          'natural light shifting throughout day', 'artificial illumination steady', 'shadowy recesses mysterious',
-          'polished surfaces reflecting images', 'textured walls inviting touch', 'smooth finishes easy maintenance',
-          'wooden elements bringing nature inside', 'metal accents adding modern touch', 'fabric softening hard edges',
-          'plants breathing life into room', 'books filling shelves knowledge', 'artwork adorning walls beauty',
-          'mirrors expanding perceived space', 'curtains framing outdoor views', 'rugs defining separate areas',
-          'ceiling fans circulating air gently', 'heating vents warming space', 'open doorways connecting rooms',
-          'closed doors ensuring privacy', 'staircases leading to mystery', 'hallways stretching distances',
-          'alcoves providing retreat', 'bay windows creating reading nooks', 'fireplaces gathering social warmth'
-        ],
-        sounds: [
-          'distant murmur of conversation', 'sharp crack breaking silence', 'gentle rustle of movement',
-          'muffled voices through walls', 'echoing footsteps in hallway', 'soft whisper barely audible',
-          'sudden silence falling heavy', 'rhythmic tapping maintaining beat', 'wind whistling through gaps',
-          'rain pattering on roof', 'thunder rumbling overhead', 'birds chirping morning songs',
-          'traffic humming constant background', 'machinery grinding mechanical', 'children laughing distant playground',
-          'clock ticking steady rhythm', 'paper rustling as pages turn', 'keyboard clicking rapid typing',
-          'phone ringing interrupting quiet', 'doorbell chiming visitor arrival', 'refrigerator humming kitchen',
-          'water dripping slow leak', 'pipes creaking old building', 'floorboards groaning under weight',
-          'music playing soft background', 'television murmuring other room', 'radio static between stations',
-          'dog barking neighborhood alert', 'cat purring contentment', 'insects buzzing summer evening',
-          'leaves rustling autumn breeze', 'fire crackling warm hearth', 'ice cubes clinking cold drink',
-          'engine starting morning routine', 'brakes squealing sudden stop', 'tires screeching sharp turn',
-          'sirens wailing emergency distance', 'construction noise urban backdrop', 'school bell ringing period change',
-          'lawnmower cutting suburban grass', 'chainsaw clearing fallen tree', 'hammer striking nail precise',
-          'typewriter keys mechanical rhythm', 'pencil scratching paper surface', 'eraser rubbing removing mistakes',
-          'scissors cutting clean line', 'zipper sliding smooth closure', 'button clicking satisfying snap',
-          'fabric tearing unexpected rip', 'glass breaking sharp crash', 'metal clanging hollow ring'
-        ],
-        smells: [
-          'earthy scent after rain', 'sharp tang of cleaning solution', 'sweet fragrance of blooming flowers',
-          'musty odor of old books', 'clean air mountain fresh', 'acrid smoke from distant fire',
-          'floral notes drifting garden', 'metallic taste in air', 'coffee brewing morning ritual',
-          'bread baking warm kitchen', 'vanilla candle soft sweetness', 'pine needles forest fresh',
-          'ocean salt spray carried wind', 'grass newly cut suburban', 'leather chair well-worn',
-          'woodsmoke fireplace cozy', 'gasoline station pungent', 'paint fumes renovation project',
-          'perfume lingering after departure', 'soap clean bathroom', 'shampoo fruity shower',
-          'cooking spices exotic blend', 'garlic sautéing dinner prep', 'onions caramelizing slow heat',
-          'chocolate melting sweet temptation', 'citrus zest bright kitchen', 'herbs garden fresh picked',
-          'fish market oceanic strong', 'cheese aging complex notes', 'wine fermentation rich deep',
-          'beer hops bitter sharp', 'whiskey oak barrel aged', 'tobacco pipe grandfather comfort',
-          'incense meditation peaceful', 'candle wax warm melted', 'oil paint artist studio',
-          'glue craft project sticky', 'marker ink permanent sharp', 'chalk dust classroom memory',
-          'sweat gymnasium exertion', 'chlorine pool chemical clean', 'sunscreen summer protection',
-          'campfire smoke adventure outdoor', 'barbecue meat grilling social', 'popcorn movie theater classic',
-          'hospital antiseptic sterile clean', 'library books knowledge musty', 'garage motor oil mechanical',
-          'garden soil rich fertile', 'compost decomposition natural cycle', 'fertilizer spring growth preparation'
-        ],
-        textures: [
-          'rough surface requiring careful touch', 'smooth finish inviting caress', 'coarse fabric scratching skin',
-          'silky material flowing through fingers', 'grainy texture catching fingertips', 'polished wood warm natural',
-          'cold metal shocking contact', 'warm skin comforting human', 'bumpy surface creating friction',
-          'sleek design slipping easily', 'ribbed pattern providing grip', 'soft cushion yielding pressure',
-          'hard surface resisting force', 'elastic material stretching then returning', 'brittle substance threatening break',
-          'flexible bend without damage', 'sticky surface clinging stubbornly', 'slippery coating avoiding grasp',
-          'porous material absorbing moisture', 'waterproof barrier repelling liquid', 'absorbent fabric soaking spill',
-          'glossy finish reflecting light', 'matte surface absorbing illumination', 'textured pattern creating visual interest',
-          'embossed design raised tactile', 'engraved letters carved deep', 'painted surface smooth applied',
-          'varnished wood protected preserved', 'raw timber natural unfinished', 'sanded smoothness preparation complete',
-          'woven fabric interlaced threads', 'knitted material stretched loops', 'crocheted pattern hooked design',
-          'leather hide natural processed', 'vinyl artificial substitute', 'rubber bouncing resilient',
-          'plastic hard petroleum product', 'ceramic fired clay hardened', 'glass transparent fragile beauty',
-          'paper fibrous flat medium', 'cardboard corrugated strength', 'foam cushioning air filled',
-          'gel semi-solid viscous', 'liquid flowing taking shape', 'powder fine particles loose',
-          'crystal hard mineral formation', 'stone natural earth hardness', 'concrete artificial stone mixture',
-          'brick fired clay rectangular', 'tile ceramic square fitted', 'slate natural stone split',
-          'marble metamorphic rock polished', 'granite igneous rock speckled', 'sandstone sedimentary rough natural'
-        ]
-      },
 
-      // Track usage across last 3 chapters
-      recentUsage: {
-        descriptions: new Map(),
-        metaphors: new Map(),
-        openings: new Map(),
-        phrases: new Map()
-      },
-
-      // Enhanced description tracker with filtering
-      getSensoryDescription(type, chapterNumber, characterPerspective = null, timeOfDay = null) {
-        const bank = this.sensoryBank[type] || [];
-        const recentKey = `${type}_recent`;
-        const recent = this.recentUsage.descriptions.get(recentKey) || new Set();
-        
-        // Character-filtered descriptions
-        let availableDescriptions = bank;
-        if (characterPerspective) {
-          availableDescriptions = this.filterByCharacterPerspective(bank, characterPerspective);
-        }
-        
-        // Time-sensitive descriptions
-        if (timeOfDay) {
-          availableDescriptions = this.filterByTimeOfDay(availableDescriptions, timeOfDay, type);
-        }
-        
-        // Remove recently used (last 3 chapters)
-        const unused = availableDescriptions.filter(desc => !recent.has(desc));
-        
-        if (unused.length === 0) {
-          // If all used, reset and pick randomly
-          recent.clear();
-          this.recentUsage.descriptions.set(recentKey, recent);
-        }
-        
-        const available = unused.length > 0 ? unused : availableDescriptions;
-        const selected = available[Math.floor(Math.random() * available.length)];
-        
-        // Track usage
-        recent.add(selected);
-        if (recent.size > 15) { // Keep last 15 descriptions
-          const first = recent.values().next().value;
-          recent.delete(first);
-        }
-        this.recentUsage.descriptions.set(recentKey, recent);
-        
-        return selected;
-      },
-
-      filterByCharacterPerspective(descriptions, character) {
-        // Character-specific filtering logic
-        const characterTraits = {
-          nature_lover: ['forest', 'earth', 'natural', 'organic', 'wild'],
-          urban_dweller: ['concrete', 'asphalt', 'building', 'street', 'city'],
-          artist: ['color', 'texture', 'pattern', 'design', 'visual'],
-          practical: ['functional', 'useful', 'efficient', 'working'],
-          romantic: ['gentle', 'soft', 'warm', 'beautiful', 'elegant']
-        };
-        
-        const traits = characterTraits[character] || [];
-        if (traits.length === 0) return descriptions;
-        
-        // Prefer descriptions that match character traits
-        const matching = descriptions.filter(desc => 
-          traits.some(trait => desc.toLowerCase().includes(trait))
-        );
-        
-        return matching.length > 0 ? matching.concat(descriptions).slice(0, descriptions.length) : descriptions;
-      },
-
-      filterByTimeOfDay(descriptions, timeOfDay, type) {
-        const timeKeywords = {
-          morning: ['dawn', 'morning', 'early', 'fresh', 'new', 'bright'],
-          afternoon: ['noon', 'bright', 'clear', 'warm', 'blazing'],
-          evening: ['dusk', 'evening', 'twilight', 'amber', 'golden'],
-          night: ['night', 'dark', 'moon', 'star', 'shadow', 'dim']
-        };
-        
-        const keywords = timeKeywords[timeOfDay] || [];
-        if (keywords.length === 0) return descriptions;
-        
-        // Prefer time-appropriate descriptions
-        const timeAppropriate = descriptions.filter(desc =>
-          keywords.some(keyword => desc.toLowerCase().includes(keyword))
-        );
-        
-        return timeAppropriate.length > 0 ? 
-          timeAppropriate.concat(descriptions).slice(0, descriptions.length) : 
-          descriptions;
-      },
-
-      // 2. Enhanced Character Voice System
-      characterVoiceLibrary: {
-        speech_patterns: {
-          direct: ['states facts plainly', 'asks direct questions', 'uses short sentences'],
-          meandering: ['circles back to topics', 'uses longer explanations', 'includes tangents'],
-          formal: ['uses complete sentences', 'avoids contractions', 'precise word choice'],
-          casual: ['uses contractions freely', 'informal vocabulary', 'relaxed grammar'],
-          humorous: ['makes jokes', 'uses wordplay', 'lightens serious moments'],
-          serious: ['thoughtful responses', 'considers implications', 'measured speech']
-        },
-        regional_vocabularies: {
-          southern: ['y\'all', 'fixin\' to', 'might could', 'over yonder', 'bless your heart'],
-          northeastern: ['wicked', 'no worries', 'regular coffee', 'the T', 'rotary'],
-          midwest: ['ope', 'you betcha', 'pop', 'casserole', 'uff da'],
-          western: ['hella', 'the 405', 'marine layer', 'no way', 'totally'],
-          rural: ['holler', 'creek', 'fixing', 'reckon', 'might be'],
-          urban: ['subway', 'block', 'bodega', 'avenue', 'downtown']
-        },
-        conversational_styles: {
-          questioner: ['What do you think?', 'Have you considered?', 'Why do you suppose?'],
-          observer: ['I noticed that', 'It seems like', 'The way I see it'],
-          storyteller: ['That reminds me of', 'You know what happened?', 'Let me tell you'],
-          advisor: ['You might want to', 'Have you tried', 'In my experience'],
-          challenger: ['But what if', 'Are you sure?', 'That doesn\'t make sense'],
-          supporter: ['That\'s a great point', 'I understand', 'You\'re absolutely right']
-        }
-      },
-
-      // Enhanced character voice generation
-      generateCharacterVoice(characterName, background, previousChapters) {
-        const existingDialogue = this.analyzeExistingDialogue(characterName, previousChapters);
-        
-        return {
-          speechPattern: this.selectSpeechPattern(background),
-          vocabulary: this.selectVocabulary(background),
-          conversationStyle: this.selectConversationStyle(characterName),
-          sentenceLength: this.determineSentencePreference(background),
-          topicPreferences: this.generateTopicPreferences(background),
-          avoidancePatterns: existingDialogue.overusedPhrases
-        };
-      },
-
-      selectSpeechPattern(background) {
-        const patterns = Object.keys(this.characterVoiceLibrary.speech_patterns);
-        // Logic to select based on background
-        return patterns[Math.floor(Math.random() * patterns.length)];
-      },
-
-      selectVocabulary(background) {
-        const vocabs = Object.keys(this.characterVoiceLibrary.regional_vocabularies);
-        return this.characterVoiceLibrary.regional_vocabularies[
-          vocabs[Math.floor(Math.random() * vocabs.length)]
-        ];
-      },
-
-      selectConversationStyle(characterName) {
-        const styles = Object.keys(this.characterVoiceLibrary.conversational_styles);
-        const selectedStyle = styles[Math.floor(Math.random() * styles.length)];
-        return this.characterVoiceLibrary.conversational_styles[selectedStyle];
-      },
-
-      // 3. Advanced Chapter Structure Diversification
-      chapterStructureBank: {
-        openings: [
-          'action_immediate', 'dialogue_mid_conversation', 'description_immersive', 'flashback_triggered',
-          'question_philosophical', 'conflict_ongoing', 'thought_internal', 'time_jump_forward',
-          'setting_focus_detailed', 'emotion_raw', 'mystery_element_introduced', 'relationship_tension',
-          'humor_unexpected', 'decision_aftermath', 'observation_character', 'memory_surfacing',
-          'sound_breaking_silence', 'movement_dynamic', 'contrast_previous', 'anticipation_building',
-          'routine_interrupted', 'discovery_made', 'problem_emerging', 'goal_declared',
-          'warning_given', 'secret_hinted', 'change_noticed', 'challenge_accepted'
-        ],
-        transitions: [
-          'meanwhile_elsewhere', 'hours_later', 'suddenly_shift', 'in_contrast', 'back_to_present',
-          'across_town', 'that_same_moment', 'days_passed', 'without_warning', 'as_expected',
-          'on_the_other_hand', 'little_did_they_know', 'simultaneously', 'in_the_distance',
-          'closer_to_home', 'by_coincidence', 'as_fate_would_have_it', 'unexpectedly',
-          'following_the_trail', 'retracing_steps', 'looking_ahead', 'circling_back'
-        ],
-        endings: [
-          'cliffhanger_major', 'revelation_character', 'humor_lightening', 'emotional_peak',
-          'action_pause_tense', 'question_profound', 'decision_crucial', 'conflict_escalation',
-          'quiet_reflection', 'foreshadowing_ominous', 'growth_moment', 'plot_advancement',
-          'mystery_deepened', 'relationship_shift', 'goal_achieved', 'setback_encountered',
-          'hope_emerging', 'doubt_creeping', 'resolution_partial', 'complication_new',
-          'understanding_dawning', 'misunderstanding_created', 'bond_strengthened', 'distance_growing'
-        ]
-      },
-
-      chapterUsageTracker: {
-        recentOpenings: [],
-        recentTransitions: [],
-        recentEndings: [],
-        patternHistory: []
-      },
-
-      // Enhanced chapter structure selection with pattern breaking
-      generateChapterStructure(chapterNumber, totalChapters, previousChapters) {
-        const openingStyle = this.selectVariedOpening(chapterNumber);
-        const transitionStyle = this.selectVariedTransition(chapterNumber);
-        const endingStyle = this.selectVariedEnding(chapterNumber);
-        
-        // Force structural variation every 3 chapters
-        if (chapterNumber % 3 === 0) {
-          return this.forceStructuralVariation(openingStyle, transitionStyle, endingStyle);
-        }
-        
-        return {
-          opening: openingStyle,
-          transition: transitionStyle,
-          ending: endingStyle,
-          pacing: this.generatePacingGuidance(chapterNumber),
-          focus: this.generateChapterFocus(chapterNumber, totalChapters)
-        };
-      },
-
-      selectVariedOpening(chapterNumber) {
-        const available = this.chapterStructureBank.openings.filter(
-          opening => !this.chapterUsageTracker.recentOpenings.includes(opening)
-        );
-        
-        if (available.length === 0) {
-          this.chapterUsageTracker.recentOpenings = [];
-          return this.chapterStructureBank.openings[Math.floor(Math.random() * this.chapterStructureBank.openings.length)];
-        }
-        
-        const selected = available[Math.floor(Math.random() * available.length)];
-        this.chapterUsageTracker.recentOpenings.push(selected);
-        
-        // Keep only last 6 openings
-        if (this.chapterUsageTracker.recentOpenings.length > 6) {
-          this.chapterUsageTracker.recentOpenings.shift();
-        }
-        
-        return selected;
-      },
-
-      selectVariedEnding(chapterNumber) {
-        const available = this.chapterStructureBank.endings.filter(
-          ending => !this.chapterUsageTracker.recentEndings.includes(ending)
-        );
-        
-        if (available.length === 0) {
-          this.chapterUsageTracker.recentEndings = [];
-          return this.chapterStructureBank.endings[Math.floor(Math.random() * this.chapterStructureBank.endings.length)];
-        }
-        
-        const selected = available[Math.floor(Math.random() * available.length)];
-        this.chapterUsageTracker.recentEndings.push(selected);
-        
-        if (this.chapterUsageTracker.recentEndings.length > 6) {
-          this.chapterUsageTracker.recentEndings.shift();
-        }
-        
-        return selected;
-      },
-
-      // 4. Advanced Narrative Controls with Surprise Elements
-      surpriseElementLibrary: {
-        character_surprises: [
-          'hidden_skill_revealed', 'unexpected_background_connection', 'personality_trait_subversion',
-          'secret_knowledge_exposed', 'relationship_history_unveiled', 'motivation_twist',
-          'allegiance_questioned', 'weakness_becomes_strength', 'strength_becomes_liability'
-        ],
-        plot_surprises: [
-          'information_recontextualizes_events', 'plan_has_unforeseen_consequence', 'seemingly_minor_detail_crucial',
-          'assumed_fact_proven_false', 'parallel_situation_emerges', 'timing_creates_opportunity',
-          'external_force_intervenes', 'internal_conflict_resolution_unexpected'
-        ],
-        environmental_surprises: [
-          'setting_reveals_hidden_aspect', 'weather_changes_plans', 'location_has_history',
-          'space_configured_differently_than_expected', 'discovery_in_familiar_place',
-          'environmental_obstacle_becomes_solution', 'setting_connects_to_character_past'
-        ],
-        dialogue_surprises: [
-          'subtext_contradicts_surface_meaning', 'character_says_unexpected_thing',
-          'conversation_topic_shift_reveals_truth', 'silence_more_meaningful_than_words',
-          'interruption_changes_dynamic', 'misheard_word_creates_misunderstanding',
-          'shared_reference_creates_bond', 'linguistic_clue_reveals_information'
-        ]
-      },
-
-      generateSurpriseElement(chapterNumber, chapterContext, previousChapters) {
-        const categories = Object.keys(this.surpriseElementLibrary);
-        const selectedCategory = categories[Math.floor(Math.random() * categories.length)];
-        const surprises = this.surpriseElementLibrary[selectedCategory];
-        
-        // Ensure surprise hasn't been used recently
-        const recentSurprises = this.getRecentSurprises(previousChapters);
-        const available = surprises.filter(surprise => !recentSurprises.includes(surprise));
-        
-        const selectedSurprise = available.length > 0 ? 
-          available[Math.floor(Math.random() * available.length)] :
-          surprises[Math.floor(Math.random() * surprises.length)];
-        
-        return {
-          type: selectedCategory,
-          element: selectedSurprise,
-          implementation: this.generateSurpriseImplementation(selectedSurprise, chapterContext)
-        };
-      },
-
-      generateSurpriseImplementation(surprise, context) {
-        // Generate specific implementation guidance for the surprise
-        const implementations = {
-          'hidden_skill_revealed': 'Have character demonstrate unexpected competency in crisis moment',
-          'information_recontextualizes_events': 'Reveal detail that changes meaning of previous scene',
-          'setting_reveals_hidden_aspect': 'Character notices something about location that changes its significance',
-          'conversation_topic_shift_reveals_truth': 'Casual comment exposes important information'
-        };
-        
-        return implementations[surprise] || 'Integrate naturally into chapter flow without forcing';
-      },
-
-      // 5. Stylistic Variation Engine
-      styleVariationEngine: {
-        pacingPatterns: {
-          'fast': { sentences: 'short_varied', paragraphs: 'brief_punchy', transitions: 'sharp_cuts' },
-          'medium': { sentences: 'mixed_length', paragraphs: 'balanced_flow', transitions: 'smooth_bridges' },
-          'slow': { sentences: 'longer_flowing', paragraphs: 'developed_rich', transitions: 'gradual_shifts' },
-          'variable': { sentences: 'deliberately_mixed', paragraphs: 'rhythm_based', transitions: 'mood_matched' }
-        },
-        metaphorCategories: {
-          'nature': ['like wind through trees', 'steady as mountain stone', 'flowing like river water'],
-          'mechanical': ['clockwork precision', 'well-oiled machine', 'gears grinding slowly'],
-          'artistic': ['painted in broad strokes', 'delicate as watercolor', 'bold as sculpture'],
-          'musical': ['rhythmic like drumbeat', 'harmonious as choir', 'discordant as broken piano'],
-          'architectural': ['built on solid foundation', 'scaffolding of support', 'bridge between worlds'],
-          'culinary': ['recipe for disaster', 'half-baked idea', 'full course of emotions']
-        },
-        wordChoicePatterns: {
-          'formal': { complexity: 'high', vocabulary: 'precise', tone: 'elevated' },
-          'conversational': { complexity: 'medium', vocabulary: 'accessible', tone: 'approachable' },
-          'casual': { complexity: 'low', vocabulary: 'everyday', tone: 'relaxed' },
-          'lyrical': { complexity: 'varied', vocabulary: 'evocative', tone: 'beautiful' },
-          'urgent': { complexity: 'simple', vocabulary: 'immediate', tone: 'pressing' },
-          'contemplative': { complexity: 'nuanced', vocabulary: 'thoughtful', tone: 'reflective' }
-        }
-      },
-
-      generateStyleGuidance(chapterNumber, sceneType, emotionalTone) {
-        const pacing = this.selectPacingPattern(sceneType, emotionalTone);
-        const metaphorCategory = this.selectMetaphorCategory(chapterNumber);
-        const wordChoice = this.selectWordChoicePattern(emotionalTone);
-        
-        return {
-          pacing: this.styleVariationEngine.pacingPatterns[pacing],
-          metaphors: this.styleVariationEngine.metaphorCategories[metaphorCategory],
-          wordChoice: this.styleVariationEngine.wordChoicePatterns[wordChoice],
-          sentenceVariation: this.generateSentenceVariationGuidance(chapterNumber),
-          paragraphStructure: this.generateParagraphStructureGuidance(sceneType),
-          avoidOverusedWords: this.getOverusedWordsToAvoid(chapterNumber)
-        };
-      },
-
-      // Enhanced main instruction generator
-      generateWritingInstructions(chapterNumber, chapterData, previousChapters) {
-        const structure = this.generateChapterStructure(chapterNumber, 25, previousChapters);
-        const surprise = this.generateSurpriseElement(chapterNumber, chapterData, previousChapters);
-        const style = this.generateStyleGuidance(chapterNumber, 'mixed', chapterData.emotionalTone || 'neutral');
-        const characters = this.generateCharacterVoiceInstructions(chapterData.characters, previousChapters);
-        
-        return {
-          // Structural elements
-          openingStyle: structure.opening,
-          endingStyle: structure.ending,
-          transitionStyle: structure.transition,
-          chapterFocus: structure.focus,
-          
-          // Surprise and narrative control
-          surpriseElement: surprise.element,
-          surpriseImplementation: surprise.implementation,
-          
-          // Style variations
-          pacingGuidance: style.pacing,
-          metaphorCategory: style.metaphors[0], // Use first metaphor as primary
-          wordChoicePattern: style.wordChoice,
-          
-          // Character-specific instructions
-          characterVoices: characters,
-          
-          // Anti-repetition controls
-          avoidancePatterns: this.generateAvoidancePatterns(previousChapters),
-          sensoryFocus: this.getSensoryDescription('mixed', chapterNumber),
-          
-          // Quality controls
-          qualityChecks: this.generateQualityCheckList(chapterNumber)
-        };
-      },
-
-      generateAvoidancePatterns(previousChapters) {
-        // Analyze last 3 chapters for overused patterns
-        const lastThree = previousChapters.slice(-3);
-        
-        return {
-          overusedPhrases: this.extractOverusedPhrases(lastThree),
-          repetitiveOpenings: this.extractRepetitiveOpenings(lastThree),
-          similarTransitions: this.extractSimilarTransitions(lastThree),
-          metaphorRepeats: this.extractRepeatedMetaphors(lastThree),
-          dialoguePatterns: this.extractDialoguePatterns(lastThree)
-        };
-      },
-
-      generateQualityCheckList(chapterNumber) {
-        return {
-          variationChecks: [
-            'Ensure sentence lengths vary throughout chapter',
-            'Check paragraph structure creates good rhythm',
-            'Verify character voices remain distinct',
-            'Confirm sensory details engage multiple senses'
-          ],
-          contentChecks: [
-            'Include surprise element naturally in narrative flow',
-            'Advance plot while developing character',
-            'Maintain consistent tone while varying style',
-            'Connect to overall story arc meaningfully'
-          ],
-          technicalChecks: [
-            'Avoid repetition of words within paragraphs',
-            'Balance dialogue, action, and description',
-            'Ensure transitions between scenes flow smoothly',
-            'Check that chapter serves story purpose'
-          ]
-        };
-      },
-
-      // Helper methods for extraction and analysis
-      extractOverusedPhrases(chapters) {
-        // Simplified implementation - would use actual text analysis in production
-        return ['suddenly', 'just then', 'all of a sudden', 'in that moment'];
-      },
-
-      extractRepetitiveOpenings(chapters) {
-        return ['The morning sun', 'As she walked', 'Meanwhile'];
-      },
-
-      extractSimilarTransitions(chapters) {
-        return ['Later that day', 'After a while', 'Soon enough'];
-      },
-
-      extractRepeatedMetaphors(chapters) {
-        return ['like a bird', 'ocean of', 'mountain of'];
-      },
-
-      extractDialoguePatterns(chapters) {
-        return ['he said simply', 'she replied quietly', 'they whispered'];
-      },
-
-      selectPacingPattern(sceneType, emotionalTone) {
-        const pacingMap = {
-          action: 'fast',
-          dialogue: 'medium', 
-          reflection: 'slow',
-          revelation: 'variable',
-          conflict: 'fast',
-          romance: 'slow',
-          mystery: 'variable'
-        };
-        
-        return pacingMap[sceneType] || 'medium';
-      },
-
-      selectMetaphorCategory(chapterNumber) {
-        const categories = Object.keys(this.styleVariationEngine.metaphorCategories);
-        // Rotate categories to ensure variety
-        return categories[chapterNumber % categories.length];
-      },
-
-      selectWordChoicePattern(emotionalTone) {
-        const toneMap = {
-          tense: 'urgent',
-          peaceful: 'lyrical',
-          dramatic: 'formal',
-          intimate: 'conversational',
-          mysterious: 'contemplative',
-          action: 'casual'
-        };
-        
-        return toneMap[emotionalTone] || 'conversational';
-      },
-
-      generateCharacterVoiceInstructions(characters, previousChapters) {
-        return characters.map(char => ({
-          name: char,
-          voice: this.generateCharacterVoice(char, 'general', previousChapters),
-          dialogueGuidance: this.generateDialogueGuidance(char, previousChapters)
-        }));
-      },
-
-      generateDialogueGuidance(characterName, previousChapters) {
-        return {
-          speechPattern: this.selectSpeechPattern('general'),
-          vocabulary: this.selectVocabulary('general'),
-          topicPreferences: ['current situation', 'personal background', 'future plans'],
-          avoidTopics: this.getOverusedTopicsForCharacter(characterName, previousChapters)
-        };
-      },
-
-      getOverusedTopicsForCharacter(characterName, previousChapters) {
-        // Simplified - would analyze actual dialogue in production
-        return ['weather', 'small talk'];
-      },
-
-      getRecentSurprises(previousChapters) {
-        // Would extract actual surprises used - simplified for now
-        return [];
-      },
-
-      generateSentenceVariationGuidance(chapterNumber) {
-        return {
-          shortSentences: 'Use for impact and clarity',
-          mediumSentences: 'Use for main narrative flow', 
-          longSentences: 'Use for complex ideas and atmosphere',
-          fragmentsOkay: 'Occasional fragments for emphasis acceptable'
-        };
-      },
-
-      generateParagraphStructureGuidance(sceneType) {
-        const structureMap = {
-          action: 'Keep paragraphs brief for fast pacing',
-          dialogue: 'New paragraph for each speaker',
-          description: 'Longer paragraphs for immersive detail',
-          reflection: 'Varied paragraph lengths for natural thought flow'
-        };
-        
-        return structureMap[sceneType] || 'Vary paragraph length for good rhythm';
-      },
-
-      getOverusedWordsToAvoid(chapterNumber) {
-        // Words that AI commonly overuses
-        return [
-          'suddenly', 'just', 'really', 'very', 'quite', 'rather', 'perhaps',
-          'seemed', 'appeared', 'felt like', 'sort of', 'kind of'
-        ];
-      },
-
-      // Additional missing helper methods
-      determineSentencePreference(background) {
-        // Determine sentence length preference based on character background
-        const backgroundMap = {
-          academic: 'longer',
-          rural: 'shorter',
-          urban: 'mixed',
-          professional: 'medium',
-          artistic: 'varied'
-        };
-        return backgroundMap[background] || 'mixed';
-      },
-
-      generateTopicPreferences(background) {
-        // Generate topic preferences based on character background
-        const topicMap = {
-          academic: ['research', 'theories', 'knowledge'],
-          rural: ['nature', 'community', 'practical matters'],
-          urban: ['technology', 'culture', 'opportunities'],
-          professional: ['work', 'goals', 'networking'],
-          artistic: ['creativity', 'expression', 'beauty']
-        };
-        return topicMap[background] || ['general conversation', 'current events'];
-      },
-
-      analyzeExistingDialogue(characterName, previousChapters) {
-        // Analyze existing dialogue patterns for character consistency
-        // Simplified implementation - in production would parse actual dialogue
-        return {
-          avgSentenceLength: Math.random() * 15 + 10,
-          commonPhrases: ['well', 'you know', 'I think'],
-          overusedPhrases: ['suddenly said', 'quietly replied'],
-          topicFrequency: { 'work': 0.3, 'family': 0.2, 'plans': 0.1 }
-        };
-      },
-
-      selectVariedTransition(chapterNumber) {
-        // Select transition style avoiding recent usage
-        const available = this.chapterStructureBank.transitions.filter(
-          transition => !this.chapterUsageTracker.recentTransitions.includes(transition)
-        );
-        
-        if (available.length === 0) {
-          this.chapterUsageTracker.recentTransitions = [];
-          return this.chapterStructureBank.transitions[
-            Math.floor(Math.random() * this.chapterStructureBank.transitions.length)
-          ];
-        }
-        
-        const selected = available[Math.floor(Math.random() * available.length)];
-        this.chapterUsageTracker.recentTransitions.push(selected);
-        
-        // Keep only last 4 transitions
-        if (this.chapterUsageTracker.recentTransitions.length > 4) {
-          this.chapterUsageTracker.recentTransitions.shift();
-        }
-        
-        return selected;
-      },
-
-      forceStructuralVariation(opening, transition, ending) {
-        // Force structural variation every few chapters
-        const alternativeOpenings = this.chapterStructureBank.openings.filter(
-          o => o !== opening && !o.includes('action') // Force different category
-        );
-        const alternativeEndings = this.chapterStructureBank.endings.filter(
-          e => e !== ending && !e.includes('cliffhanger') // Force different category
-        );
-        
-        return {
-          opening: alternativeOpenings.length > 0 ? 
-            alternativeOpenings[Math.floor(Math.random() * alternativeOpenings.length)] : opening,
-          transition: transition, // Keep transition
-          ending: alternativeEndings.length > 0 ? 
-            alternativeEndings[Math.floor(Math.random() * alternativeEndings.length)] : ending,
-          forced: true // Flag to indicate this was a forced variation
-        };
-      },
-
-      generatePacingGuidance(chapterNumber) {
-        // Generate specific pacing guidance
-        const pacingTypes = ['fast', 'medium', 'slow', 'variable'];
-        const selectedPacing = pacingTypes[chapterNumber % pacingTypes.length];
-        
-        return this.styleVariationEngine.pacingPatterns[selectedPacing];
-      },
-
-      generateChapterFocus(chapterNumber, totalChapters) {
-        // Determine what this chapter should focus on
-        const focusOptions = [
-          'character_development', 'plot_advancement', 'setting_exploration',
-          'relationship_building', 'conflict_escalation', 'mystery_deepening',
-          'tension_building', 'resolution_partial', 'world_building', 'theme_exploration'
-        ];
-        
-        // Rotate focus to ensure variety
-        return focusOptions[chapterNumber % focusOptions.length];
-      }
-    };
 
     // Generate all chapters
     async function generateAllChapters(jobId, synopsis, genre, subgenre, outline, analysis) {
