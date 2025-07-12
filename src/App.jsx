@@ -1985,527 +1985,331 @@ Please copy this entire error message for debugging.
     console.log('🔧 RENDERING AutoGenerate - Status:', autoGenData.status);
     console.log('🔧 AutoGenerate data:', autoGenData);
     
-    try {
-      return (
-        <div className="content-panel" style={{ 
-          minHeight: '600px', 
-          background: '#f0f8ff', 
-          padding: '20px',
-          border: '3px solid red',
-          position: 'relative'
-        }}>
-          {/* MEGA DEBUG - SUPER VISIBLE */}
-          <div style={{
-            position: 'fixed',
-            top: '20px',
-            left: '50%',
-            transform: 'translateX(-50%)',
-            background: 'red',
-            color: 'white',
-            padding: '20px',
-            fontSize: '16px',
-            fontWeight: 'bold',
-            zIndex: 9999,
-            border: '3px solid yellow',
-            borderRadius: '10px',
-            maxWidth: '90vw',
-            textAlign: 'center'
-          }}>
-            🚨 AUTO-GENERATE UI IS LOADING! 🚨<br/>
-            Status: {autoGenData.status}<br/>
-            If you see this, the function is working!
-          </div>
+    // Calculate time estimates
+    const getTimeEstimate = (wordCount) => {
+      const estimates = {
+        'flash-fiction': { min: 2, max: 4 },
+        'short-story': { min: 5, max: 10 },
+        'novelette': { min: 15, max: 25 },
+        'novella': { min: 30, max: 45 },
+        'novel': { min: 60, max: 90 },
+        'epic': { min: 120, max: 180 }
+      };
+      return estimates[wordCount] || { min: 60, max: 90 };
+    };
 
-          <div className="panel-header" style={{ 
-            marginTop: '120px',
-            background: 'white',
-            padding: '20px',
-            border: '2px solid blue',
-            borderRadius: '10px'
-          }}>
-            <h1 style={{ 
-              color: 'red', 
-              fontSize: '32px',
-              textAlign: 'center',
-              background: 'yellow',
-              padding: '20px',
-              border: '3px solid blue'
-            }}>🤖 AutoGenerate - Set It and Forget It</h1>
-            <p style={{ 
-              color: 'blue', 
-              fontSize: '18px',
-              textAlign: 'center',
-              background: 'lightgreen',
-              padding: '10px'
-            }}>Generate a complete novel from a detailed synopsis automatically</p>
-            
-            {/* Debug Info - Force Visible */}
-            <div style={{ 
-              background: '#ffffff', 
-              border: '5px solid #007acc',
-              padding: '20px', 
-              margin: '20px 0', 
-              borderRadius: '8px',
-              fontSize: '16px',
-              fontFamily: 'monospace',
-              color: '#000',
-              textAlign: 'left'
-            }}>
-              <strong style={{ fontSize: '18px', color: 'red' }}>🔧 DEBUG INFO (This should be visible!):</strong><br/>
-              <div style={{ fontSize: '16px', lineHeight: '1.5', marginTop: '10px' }}>
-                Status: <strong style={{ color: 'red' }}>{autoGenData.status}</strong><br/>
-                Job ID: <strong>{autoGenData.jobId || 'None'}</strong><br/>
-                Progress: <strong style={{ color: 'green' }}>{autoGenData.progress}%</strong><br/>
-                Current Phase: <strong>{autoGenData.currentPhase || 'None'}</strong><br/>
-                Last Update: <strong>{autoGenData.lastUpdate ? new Date(autoGenData.lastUpdate).toLocaleString() : 'None'}</strong><br/>
-                Genre: <strong>{autoGenData.genre || 'Not selected'}</strong><br/>
-                Subgenre: <strong>{autoGenData.subgenre || 'Not selected'}</strong><br/>
-                Word Count: <strong>{autoGenData.wordCount || 'Not selected'}</strong>
-              </div>
-            </div>
-          </div>
+    const timeEstimate = autoGenData.wordCount ? getTimeEstimate(autoGenData.wordCount) : null;
+    const elapsedTime = autoGenData.startTime ? Math.floor((Date.now() - autoGenData.startTime) / 60000) : 0;
+    const remainingTime = timeEstimate && autoGenData.progress > 0 
+      ? Math.max(0, Math.floor((elapsedTime / autoGenData.progress * 100) - elapsedTime))
+      : null;
 
-      {autoGenData.status === 'idle' && (
-        <div className="auto-generate-setup">
-          <div className="setup-section">
-            <h3>1. Select Genre & Subgenre</h3>
-            <div className="genre-selection">
-              <div className="genre-grid">
-                <div className="genre-card">
-                  <h4>Fantasy</h4>
-                  <div className="subgenre-list">
-                    {['High Fantasy', 'Urban Fantasy', 'Dark Fantasy', 'Epic Fantasy', 'Sword & Sorcery', 'Paranormal Fantasy'].map(subgenre => (
-                      <button
-                        key={subgenre}
-                        className={`subgenre-btn ${autoGenData.genre === 'Fantasy' && autoGenData.subgenre === subgenre ? 'selected' : ''}`}
-                        onClick={() => setAutoGenData(prev => ({ ...prev, genre: 'Fantasy', subgenre }))}
-                      >
-                        {subgenre}
-                      </button>
-                    ))}
-                  </div>
-                </div>
+    return (
+      <div className="content-panel">
+        <div className="panel-header">
+          <h2>🤖 AutoGenerate - Set It and Forget It</h2>
+          <p>Generate a complete novel from a detailed synopsis automatically</p>
+        </div>
 
-                <div className="genre-card">
-                  <h4>Science Fiction</h4>
-                  <div className="subgenre-list">
-                    {['Space Opera', 'Cyberpunk', 'Dystopian', 'Time Travel', 'Alien Contact', 'Post-Apocalyptic'].map(subgenre => (
-                      <button
-                        key={subgenre}
-                        className={`subgenre-btn ${autoGenData.genre === 'Science Fiction' && autoGenData.subgenre === subgenre ? 'selected' : ''}`}
-                        onClick={() => setAutoGenData(prev => ({ ...prev, genre: 'Science Fiction', subgenre }))}
-                      >
-                        {subgenre}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="genre-card">
-                  <h4>Romance</h4>
-                  <div className="subgenre-list">
-                    {['Contemporary Romance', 'Historical Romance', 'Paranormal Romance', 'Romantic Suspense', 'Erotic Romance', 'LGBTQ+ Romance'].map(subgenre => (
-                      <button
-                        key={subgenre}
-                        className={`subgenre-btn ${autoGenData.genre === 'Romance' && autoGenData.subgenre === subgenre ? 'selected' : ''}`}
-                        onClick={() => setAutoGenData(prev => ({ ...prev, genre: 'Romance', subgenre }))}
-                      >
-                        {subgenre}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="genre-card">
-                  <h4>Christian Fiction</h4>
-                  <div className="subgenre-list">
-                    {['Inspirational Romance', 'Biblical Fiction', 'Amish Romance', 'Christian Suspense', 'End Times', 'Christian Fantasy'].map(subgenre => (
-                      <button
-                        key={subgenre}
-                        className={`subgenre-btn ${autoGenData.genre === 'Christian Fiction' && autoGenData.subgenre === subgenre ? 'selected' : ''}`}
-                        onClick={() => setAutoGenData(prev => ({ ...prev, genre: 'Christian Fiction', subgenre }))}
-                      >
-                        {subgenre}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="genre-card">
-                  <h4>Mystery</h4>
-                  <div className="subgenre-list">
-                    {['Cozy Mystery', 'Police Procedural', 'Detective Fiction', 'Noir', 'Psychological Thriller', 'True Crime'].map(subgenre => (
-                      <button
-                        key={subgenre}
-                        className={`subgenre-btn ${autoGenData.genre === 'Mystery' && autoGenData.subgenre === subgenre ? 'selected' : ''}`}
-                        onClick={() => setAutoGenData(prev => ({ ...prev, genre: 'Mystery', subgenre }))}
-                      >
-                        {subgenre}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="genre-card">
-                  <h4>Thriller</h4>
-                  <div className="subgenre-list">
-                    {['Psychological Thriller', 'Medical Thriller', 'Legal Thriller', 'Espionage', 'Action Thriller', 'Conspiracy'].map(subgenre => (
-                      <button
-                        key={subgenre}
-                        className={`subgenre-btn ${autoGenData.genre === 'Thriller' && autoGenData.subgenre === subgenre ? 'selected' : ''}`}
-                        onClick={() => setAutoGenData(prev => ({ ...prev, genre: 'Thriller', subgenre }))}
-                      >
-                        {subgenre}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="genre-card">
-                  <h4>Horror</h4>
-                  <div className="subgenre-list">
-                    {['Gothic Horror', 'Supernatural Horror', 'Psychological Horror', 'Body Horror', 'Cosmic Horror', 'Slasher'].map(subgenre => (
-                      <button
-                        key={subgenre}
-                        className={`subgenre-btn ${autoGenData.genre === 'Horror' && autoGenData.subgenre === subgenre ? 'selected' : ''}`}
-                        onClick={() => setAutoGenData(prev => ({ ...prev, genre: 'Horror', subgenre }))}
-                      >
-                        {subgenre}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="genre-card">
-                  <h4>Historical Fiction</h4>
-                  <div className="subgenre-list">
-                    {['Medieval', 'Victorian', 'World War Era', 'Ancient Civilizations', 'Wild West', 'Renaissance'].map(subgenre => (
-                      <button
-                        key={subgenre}
-                        className={`subgenre-btn ${autoGenData.genre === 'Historical Fiction' && autoGenData.subgenre === subgenre ? 'selected' : ''}`}
-                        onClick={() => setAutoGenData(prev => ({ ...prev, genre: 'Historical Fiction', subgenre }))}
-                      >
-                        {subgenre}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="genre-card">
-                  <h4>Contemporary Fiction</h4>
-                  <div className="subgenre-list">
-                    {['Literary Fiction', 'Women\'s Fiction', 'Family Saga', 'Coming of Age', 'Social Issues', 'Slice of Life'].map(subgenre => (
-                      <button
-                        key={subgenre}
-                        className={`subgenre-btn ${autoGenData.genre === 'Contemporary Fiction' && autoGenData.subgenre === subgenre ? 'selected' : ''}`}
-                        onClick={() => setAutoGenData(prev => ({ ...prev, genre: 'Contemporary Fiction', subgenre }))}
-                      >
-                        {subgenre}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="genre-card">
-                  <h4>Young Adult</h4>
-                  <div className="subgenre-list">
-                    {['YA Fantasy', 'YA Romance', 'YA Dystopian', 'YA Contemporary', 'YA Sci-Fi', 'YA Mystery'].map(subgenre => (
-                      <button
-                        key={subgenre}
-                        className={`subgenre-btn ${autoGenData.genre === 'Young Adult' && autoGenData.subgenre === subgenre ? 'selected' : ''}`}
-                        onClick={() => setAutoGenData(prev => ({ ...prev, genre: 'Young Adult', subgenre }))}
-                      >
-                        {subgenre}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="genre-card">
-                  <h4>Adventure</h4>
-                  <div className="subgenre-list">
-                    {['Action Adventure', 'Survival', 'Treasure Hunt', 'Exploration', 'Military', 'Spy Fiction'].map(subgenre => (
-                      <button
-                        key={subgenre}
-                        className={`subgenre-btn ${autoGenData.genre === 'Adventure' && autoGenData.subgenre === subgenre ? 'selected' : ''}`}
-                        onClick={() => setAutoGenData(prev => ({ ...prev, genre: 'Adventure', subgenre }))}
-                      >
-                        {subgenre}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="genre-card">
-                  <h4>Crime</h4>
-                  <div className="subgenre-list">
-                    {['Heist', 'Organized Crime', 'Serial Killer', 'Courtroom Drama', 'Private Detective', 'Forensic'].map(subgenre => (
-                      <button
-                        key={subgenre}
-                        className={`subgenre-btn ${autoGenData.genre === 'Crime' && autoGenData.subgenre === subgenre ? 'selected' : ''}`}
-                        onClick={() => setAutoGenData(prev => ({ ...prev, genre: 'Crime', subgenre }))}
-                      >
-                        {subgenre}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="genre-card">
-                  <h4>Western</h4>
-                  <div className="subgenre-list">
-                    {['Traditional Western', 'Weird Western', 'Modern Western', 'Outlaw', 'Frontier', 'Native American'].map(subgenre => (
-                      <button
-                        key={subgenre}
-                        className={`subgenre-btn ${autoGenData.genre === 'Western' && autoGenData.subgenre === subgenre ? 'selected' : ''}`}
-                        onClick={() => setAutoGenData(prev => ({ ...prev, genre: 'Western', subgenre }))}
-                      >
-                        {subgenre}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="setup-section">
-            <h3>2. Choose Word Count</h3>
-            <div className="word-count-selection">
-              <div 
-                className={`word-count-card ${autoGenData.wordCount === 'flash-fiction' ? 'selected' : ''}`}
-                onClick={() => setAutoGenData(prev => ({ ...prev, wordCount: 'flash-fiction' }))}
-              >
-                <h4>Flash Fiction</h4>
-                <p className="range">500-1,000 words</p>
-                <p className="description">Very short story</p>
-              </div>
-              <div 
-                className={`word-count-card ${autoGenData.wordCount === 'short-story' ? 'selected' : ''}`}
-                onClick={() => setAutoGenData(prev => ({ ...prev, wordCount: 'short-story' }))}
-              >
-                <h4>Short Story</h4>
-                <p className="range">1,000-7,500 words</p>
-                <p className="description">Single sitting read</p>
-              </div>
-              <div 
-                className={`word-count-card ${autoGenData.wordCount === 'novelette' ? 'selected' : ''}`}
-                onClick={() => setAutoGenData(prev => ({ ...prev, wordCount: 'novelette' }))}
-              >
-                <h4>Novelette</h4>
-                <p className="range">7,500-17,500 words</p>
-                <p className="description">Extended short story</p>
-              </div>
-              <div 
-                className={`word-count-card ${autoGenData.wordCount === 'novella' ? 'selected' : ''}`}
-                onClick={() => setAutoGenData(prev => ({ ...prev, wordCount: 'novella' }))}
-              >
-                <h4>Novella</h4>
-                <p className="range">17,500-40,000 words</p>
-                <p className="description">Short novel</p>
-              </div>
-              <div 
-                className={`word-count-card ${autoGenData.wordCount === 'novel' ? 'selected' : ''}`}
-                onClick={() => setAutoGenData(prev => ({ ...prev, wordCount: 'novel' }))}
-              >
-                <h4>Novel</h4>
-                <p className="range">40,000-100,000 words</p>
-                <p className="description">Standard novel length</p>
-              </div>
-              <div 
-                className={`word-count-card ${autoGenData.wordCount === 'epic' ? 'selected' : ''}`}
-                onClick={() => setAutoGenData(prev => ({ ...prev, wordCount: 'epic' }))}
-              >
-                <h4>Epic Novel</h4>
-                <p className="range">100,000+ words</p>
-                <p className="description">Extended novel</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Cost Estimation Section */}
-          {autoGenData.wordCount && (
+        {autoGenData.status === 'idle' && (
+          <div className="auto-generate-setup">
             <div className="setup-section">
-              <h3>💰 Cost Estimation</h3>
-              <div className="cost-estimation">
-                <div className="cost-options">
-                  <div className="cost-option standard">
-                    <h4>🚀 Standard Processing</h4>
-                    <div className="cost-breakdown">
-                      <div className="cost-item">
-                        <span>Synopsis (GPT-4o-mini):</span>
-                        <span>${currentCostEstimate?.breakdown.synopsis.cost.toFixed(3)}</span>
+              <h3>🎭 1. Select Genre & Subgenre</h3>
+              {autoGenData.genre && autoGenData.subgenre && (
+                <div className="selection-display">
+                  <span className="selected-genre">✅ {autoGenData.genre} - {autoGenData.subgenre}</span>
+                  <button 
+                    onClick={() => setAutoGenData(prev => ({ ...prev, genre: '', subgenre: '' }))}
+                    className="btn-change"
+                  >
+                    Change
+                  </button>
+                </div>
+              )}
+              
+              {(!autoGenData.genre || !autoGenData.subgenre) && (
+                <div className="genre-selection">
+                  <div className="genre-grid">
+                    {Object.entries(genres).map(([genre, subgenres]) => (
+                      <div key={genre} className="genre-card">
+                        <h4>{genre}</h4>
+                        <div className="subgenre-list">
+                          {subgenres.map(subgenre => (
+                            <button
+                              key={subgenre}
+                              className={`subgenre-btn ${autoGenData.genre === genre && autoGenData.subgenre === subgenre ? 'selected' : ''}`}
+                              onClick={() => setAutoGenData(prev => ({ ...prev, genre, subgenre }))}
+                            >
+                              {subgenre}
+                            </button>
+                          ))}
+                        </div>
                       </div>
-                      <div className="cost-item">
-                        <span>Outline (GPT-4o-mini):</span>
-                        <span>${currentCostEstimate?.breakdown.outline.cost.toFixed(3)}</span>
-                      </div>
-                      <div className="cost-item">
-                        <span>Chapters (GPT-4o):</span>
-                        <span>${currentCostEstimate?.breakdown.chapters.cost.toFixed(2)}</span>
-                      </div>
-                      <div className="cost-total">
-                        <span><strong>Total Cost:</strong></span>
-                        <span><strong>${currentCostEstimate?.total.toFixed(2)}</strong></span>
-                      </div>
-                    </div>
-                    <p className="processing-time">⏱️ ~15-20 minutes</p>
-                  </div>
-
-                  <div className="cost-option batch">
-                    <h4>📦 Batch Processing (50% Off!)</h4>
-                    <div className="cost-breakdown">
-                      <div className="cost-item">
-                        <span>Standard Cost:</span>
-                        <span>${batchCostEstimate?.subtotal.toFixed(2)}</span>
-                      </div>
-                      <div className="cost-item discount">
-                        <span>Batch Discount (50%):</span>
-                        <span>-${batchCostEstimate?.batchDiscount.toFixed(2)}</span>
-                      </div>
-                      <div className="cost-total">
-                        <span><strong>Total Cost:</strong></span>
-                        <span><strong>${batchCostEstimate?.total.toFixed(2)}</strong></span>
-                      </div>
-                    </div>
-                    <p className="processing-time">⏱️ ~24-48 hours (queued processing)</p>
-                    <p className="batch-info">💡 Uses OpenAI's batch API for significant cost savings</p>
+                    ))}
                   </div>
                 </div>
-                
-                <div className="processing-choice">
-                  <label>
-                    <input 
-                      type="radio" 
-                      name="processingType" 
-                      value="standard" 
-                      defaultChecked 
-                    />
-                    Standard Processing (Immediate)
-                  </label>
-                  <label>
-                    <input 
-                      type="radio" 
-                      name="processingType" 
-                      value="batch" 
-                    />
-                    Batch Processing (50% Off, Slower)
-                  </label>
-                </div>
-              </div>
-            </div>
-          )}
-
-          <div className="setup-section">
-            <h3>🧪 Test Connection</h3>
-            <p>Test if the AutoGenerate function is working properly:</p>
-            <button 
-              onClick={testAutoGenerate}
-              className="btn-secondary"
-              style={{ marginBottom: '1rem' }}
-            >
-              🔧 Test AutoGenerate Function
-            </button>
-          </div>
-
-          <div className="setup-section">
-            <h3>3. Paste Your Detailed Synopsis</h3>
-            <p className="synopsis-instructions">
-              Provide a comprehensive 2000-5000 word synopsis that includes:
-              • Main characters and their arcs • Plot structure and key events 
-              • Setting and world details • Major conflicts and resolutions
-              • Themes and tone
-            </p>
-            <textarea
-              className="synopsis-input"
-              placeholder="Paste your detailed synopsis here... (2000-5000 words recommended for best results)"
-              rows={20}
-              value={autoGenData.synopsis}
-              onChange={(e) => setAutoGenData(prev => ({ ...prev, synopsis: e.target.value }))}
-            />
-            <div className="synopsis-stats">
-              Word count: {getWordCount(autoGenData.synopsis)} words
-              {getWordCount(autoGenData.synopsis) < 1000 && (
-                <span className="warning"> • Consider adding more detail for better results</span>
               )}
             </div>
-          </div>
 
-          <div className="setup-section">
-            <h3>4. Start Generation</h3>
-            {autoGenData.genre && autoGenData.subgenre && autoGenData.wordCount && (
-              <div className="generation-summary">
-                <p><strong>Selected:</strong> {autoGenData.genre} - {autoGenData.subgenre}</p>
-                        <span><strong>Target Length:</strong> {
-                          autoGenData.wordCount === 'flash-fiction' ? 'Flash Fiction' :
-                          autoGenData.wordCount === 'short-story' ? 'Short Story' :
-                          autoGenData.wordCount === 'novelette' ? 'Novelette' :
-                          autoGenData.wordCount === 'novella' ? 'Novella' :
-                          autoGenData.wordCount === 'novel' ? 'Novel' :
-                          autoGenData.wordCount === 'epic' ? 'Epic Novel' : 'Unknown'
-                        }</span>
-                <p><strong>Synopsis:</strong> {getWordCount(autoGenData.synopsis)} words</p>
+            <div className="setup-section">
+              <h3>📏 2. Choose Word Count</h3>
+              {autoGenData.wordCount && (
+                <div className="selection-display">
+                  <span className="selected-wordcount">
+                    ✅ {wordCounts.find(wc => wc.id === autoGenData.wordCount)?.name} 
+                    ({wordCounts.find(wc => wc.id === autoGenData.wordCount)?.range})
+                  </span>
+                  <button 
+                    onClick={() => setAutoGenData(prev => ({ ...prev, wordCount: '' }))}
+                    className="btn-change"
+                  >
+                    Change
+                  </button>
+                </div>
+              )}
+              
+              {!autoGenData.wordCount && (
+                <div className="word-count-selection">
+                  <div className="word-count-grid">
+                    {wordCounts.map(wc => (
+                      <div 
+                        key={wc.id}
+                        className={`word-count-card ${autoGenData.wordCount === wc.id ? 'selected' : ''}`}
+                        onClick={() => setAutoGenData(prev => ({ ...prev, wordCount: wc.id }))}
+                      >
+                        <h4>{wc.name}</h4>
+                        <p className="range">{wc.range}</p>
+                        <p className="description">{wc.description}</p>
+                        {wc.id === autoGenData.wordCount && timeEstimate && (
+                          <p className="time-estimate">⏱️ ~{timeEstimate.min}-{timeEstimate.max} minutes</p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Cost Estimation Section */}
+            {autoGenData.wordCount && (
+              <div className="setup-section">
+                <h3>💰 3. Cost Estimation</h3>
+                <div className="cost-estimation">
+                  <div className="cost-options">
+                    <div className="cost-option standard">
+                      <h4>🚀 Standard Processing</h4>
+                      <div className="cost-breakdown">
+                        <div className="cost-item">
+                          <span>Synopsis Analysis:</span>
+                          <span>${currentCostEstimate?.breakdown.synopsis.cost.toFixed(3)}</span>
+                        </div>
+                        <div className="cost-item">
+                          <span>Chapter Outline:</span>
+                          <span>${currentCostEstimate?.breakdown.outline.cost.toFixed(3)}</span>
+                        </div>
+                        <div className="cost-item">
+                          <span>Chapter Writing:</span>
+                          <span>${currentCostEstimate?.breakdown.chapters.cost.toFixed(2)}</span>
+                        </div>
+                        <div className="cost-total">
+                          <span><strong>Total Cost:</strong></span>
+                          <span><strong>${currentCostEstimate?.total.toFixed(2)}</strong></span>
+                        </div>
+                      </div>
+                      <p className="processing-time">⏱️ ~{timeEstimate.min}-{timeEstimate.max} minutes</p>
+                    </div>
+                  </div>
+                </div>
               </div>
             )}
-            
-            <button 
-              onClick={startAutoGeneration}
-              className="btn-generate-auto"
-              disabled={!autoGenData.synopsis.trim() || !autoGenData.genre || !autoGenData.subgenre || !autoGenData.wordCount}
-            >
-              🚀 Generate Complete Novel
-            </button>
-            
-            <div className="auto-gen-info">
-              <h4>What happens next:</h4>
-              <ul>
-                <li>✨ AI analyzes your synopsis and plans the novel structure</li>
-                <li>📋 Generates a complete chapter-by-chapter outline</li>
-                <li>✍️ Writes each chapter using advanced "show, don't tell" techniques</li>
-                <li>📚 Provides a complete, export-ready novel</li>
-              </ul>
-              <p className="timing-note">
-                <strong>Estimated time:</strong> 10-15 minutes for a full novel
+
+            <div className="setup-section">
+              <h3>📝 4. Provide Your Detailed Synopsis</h3>
+              <p className="synopsis-instructions">
+                📚 <strong>For best results, provide a comprehensive synopsis (2000-5000 words) that includes:</strong>
               </p>
+              <ul className="synopsis-checklist">
+                <li>🎭 Main characters and their character arcs</li>
+                <li>📈 Complete plot structure with key events</li>
+                <li>🌍 Setting and world details</li>
+                <li>⚔️ Major conflicts and how they resolve</li>
+                <li>💭 Themes and overall tone</li>
+                <li>🎬 Key scenes you want included</li>
+              </ul>
+              
+              <textarea
+                className="synopsis-input"
+                placeholder="Paste your detailed synopsis here... 
+
+Example start:
+In the dystopian city of New Angeles, 2087, seventeen-year-old Maya Chen discovers she has the rare ability to manipulate digital networks with her mind. The world is controlled by the mega-corporation Nexus Corp, which has enslaved humanity through neural implants that monitor every thought and action.
+
+Maya's story begins when..."
+                rows={20}
+                value={autoGenData.synopsis}
+                onChange={(e) => setAutoGenData(prev => ({ ...prev, synopsis: e.target.value }))}
+              />
+              <div className="synopsis-stats">
+                <span className="word-count">
+                  📊 {getWordCount(autoGenData.synopsis)} words
+                </span>
+                {getWordCount(autoGenData.synopsis) < 1000 && getWordCount(autoGenData.synopsis) > 0 && (
+                  <span className="warning">⚠️ Consider adding more detail for better results</span>
+                )}
+                {getWordCount(autoGenData.synopsis) >= 2000 && (
+                  <span className="success">✅ Excellent detail level!</span>
+                )}
+              </div>
+            </div>
+
+            <div className="setup-section">
+              <h3>🚀 5. Start Generation</h3>
+              {autoGenData.genre && autoGenData.subgenre && autoGenData.wordCount && (
+                <div className="generation-summary">
+                  <div className="summary-card">
+                    <h4>📋 Generation Summary</h4>
+                    <div className="summary-details">
+                      <p><strong>📚 Genre:</strong> {autoGenData.genre} - {autoGenData.subgenre}</p>
+                      <p><strong>📏 Length:</strong> {wordCounts.find(wc => wc.id === autoGenData.wordCount)?.name} ({wordCounts.find(wc => wc.id === autoGenData.wordCount)?.range})</p>
+                      <p><strong>📝 Synopsis:</strong> {getWordCount(autoGenData.synopsis)} words</p>
+                      {timeEstimate && (
+                        <p><strong>⏱️ Estimated Time:</strong> {timeEstimate.min}-{timeEstimate.max} minutes</p>
+                      )}
+                      {currentCostEstimate && (
+                        <p><strong>💰 Estimated Cost:</strong> ${currentCostEstimate.total.toFixed(2)}</p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+              
+              <button 
+                onClick={startAutoGeneration}
+                className="btn-generate-auto"
+                disabled={!autoGenData.synopsis.trim() || !autoGenData.genre || !autoGenData.subgenre || !autoGenData.wordCount || getWordCount(autoGenData.synopsis) < 100}
+              >
+                {getWordCount(autoGenData.synopsis) < 100 ? 
+                  '📝 Add Synopsis to Continue' :
+                  '🚀 Generate Complete Novel'
+                }
+              </button>
+              
+              <div className="auto-gen-info">
+                <h4>🔮 What happens next:</h4>
+                <div className="process-steps">
+                  <div className="process-step">
+                    <span className="step-icon">🧠</span>
+                    <div className="step-content">
+                      <h5>AI Analysis</h5>
+                      <p>Advanced AI analyzes your synopsis for characters, themes, and structure</p>
+                    </div>
+                  </div>
+                  <div className="process-step">
+                    <span className="step-icon">📋</span>
+                    <div className="step-content">
+                      <h5>Chapter Planning</h5>
+                      <p>Creates detailed chapter-by-chapter outline with proper pacing</p>
+                    </div>
+                  </div>
+                  <div className="process-step">
+                    <span className="step-icon">✍️</span>
+                    <div className="step-content">
+                      <h5>Chapter Writing</h5>
+                      <p>Writes each chapter with "show, don't tell" storytelling techniques</p>
+                    </div>
+                  </div>
+                  <div className="process-step">
+                    <span className="step-icon">📚</span>
+                    <div className="step-content">
+                      <h5>Final Assembly</h5>
+                      <p>Delivers complete, export-ready novel in multiple formats</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="setup-section">
+              <h3>🧪 Test Connection</h3>
+              <p>Verify the AutoGenerate system is working properly:</p>
+              <button 
+                onClick={testAutoGenerate}
+                className="btn-secondary"
+              >
+                🔧 Test AutoGenerate Function
+              </button>
             </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {autoGenData.status === 'processing' && (
-        <div className="progress-container">
+        {autoGenData.status === 'processing' && (
           <div className="auto-generate-progress">
             <div className="progress-header">
               <h3>🔄 Generating Your Novel...</h3>
-              <p>Sit back and relax! Your novel is being crafted with advanced AI.</p>
+              <p>Sit back and relax! Your {autoGenData.genre} {autoGenData.subgenre} novel is being crafted.</p>
               {autoGenData.jobId && (
-                <p className="job-id">Job ID: {autoGenData.jobId}</p>
+                <p className="job-id">🔗 Job ID: <code>{autoGenData.jobId}</code></p>
               )}
             </div>
             
-            <div className="progress-bar">
-              <div 
-                className="progress-fill" 
-                style={{ width: `${autoGenData.progress}%` }}
-              ></div>
+            <div className="progress-visual">
+              <div className="progress-bar">
+                <div 
+                  className="progress-fill" 
+                  style={{ width: `${autoGenData.progress || 0}%` }}
+                >
+                  <span className="progress-text">{autoGenData.progress || 0}%</span>
+                </div>
+              </div>
+              
+              <div className="progress-details">
+                <div className="progress-info-grid">
+                  <div className="info-item">
+                    <span className="info-label">Current Phase:</span>
+                    <span className="info-value">{autoGenData.currentPhase || 'Initializing...'}</span>
+                  </div>
+                  <div className="info-item">
+                    <span className="info-label">Progress:</span>
+                    <span className="info-value">{autoGenData.progress || 0}% Complete</span>
+                  </div>
+                  <div className="info-item">
+                    <span className="info-label">Elapsed Time:</span>
+                    <span className="info-value">{elapsedTime} minutes</span>
+                  </div>
+                  {remainingTime !== null && (
+                    <div className="info-item">
+                      <span className="info-label">Est. Remaining:</span>
+                      <span className="info-value">{remainingTime} minutes</span>
+                    </div>
+                  )}
+                  {autoGenData.lastUpdate && (
+                    <div className="info-item">
+                      <span className="info-label">Last Update:</span>
+                      <span className="info-value">{new Date(autoGenData.lastUpdate).toLocaleTimeString()}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
             
-            <div className="progress-details">
-              <p className="current-phase">{autoGenData.currentPhase}</p>
-              <p className="progress-percent">{autoGenData.progress}% Complete</p>
-              {autoGenData.lastUpdate && (
-                <p className="last-update">Last update: {new Date(autoGenData.lastUpdate).toLocaleTimeString()}</p>
-              )}
-            </div>
-            
-            <div className="progress-info">
-              <p>🎯 <strong>Genre:</strong> {autoGenData.genre} - {autoGenData.subgenre}</p>
-              <p>📏 <strong>Target:</strong> {wordCounts.find(wc => wc.id === autoGenData.wordCount)?.name}</p>
-              {autoGenData.startTime && (
-                <p>⏱️ <strong>Started:</strong> {new Date(autoGenData.startTime).toLocaleTimeString()}</p>
-              )}
-              {autoGenData.estimatedTimeMinutes > 0 && (
-                <p>🕒 <strong>Estimated time:</strong> {autoGenData.estimatedTimeMinutes} minutes</p>
+            <div className="generation-stats">
+              <div className="stat-card">
+                <h4>🎭 Genre</h4>
+                <p>{autoGenData.genre}<br/><small>{autoGenData.subgenre}</small></p>
+              </div>
+              <div className="stat-card">
+                <h4>📏 Target Length</h4>
+                <p>{wordCounts.find(wc => wc.id === autoGenData.wordCount)?.name}</p>
+              </div>
+              <div className="stat-card">
+                <h4>⏰ Started</h4>
+                <p>{autoGenData.startTime ? new Date(autoGenData.startTime).toLocaleTimeString() : 'Unknown'}</p>
+              </div>
+              {timeEstimate && (
+                <div className="stat-card">
+                  <h4>🕒 Est. Duration</h4>
+                  <p>{timeEstimate.min}-{timeEstimate.max} min</p>
+                </div>
               )}
             </div>
             
@@ -2521,164 +2325,184 @@ Please copy this entire error message for debugging.
                 onClick={resetAutoGenerate}
                 className="btn-secondary"
               >
-                🔄 Reset
+                🔄 Reset & Start Over
               </button>
             </div>
-          </div>
-        </div>
-      )}
 
-      {autoGenData.status === 'complete' && autoGenData.novel && (
-        <div className="auto-generate-complete">
-          <div className="completion-header">
-            <h3>🎉 Novel Generation Complete!</h3>
-            <p>Your novel has been successfully generated and is ready for download.</p>
-          </div>
-          
-          <div className="novel-stats">
-            <div className="stat-card">
-              <h4>📚 Total Chapters</h4>
-              <p>{autoGenData.novel.chapters.length}</p>
-            </div>
-            <div className="stat-card">
-              <h4>📝 Total Words</h4>
-              <p>{autoGenData.novel.metadata.totalWords.toLocaleString()}</p>
-            </div>
-            <div className="stat-card">
-              <h4>🎭 Genre</h4>
-              <p>{autoGenData.novel.genre} - {autoGenData.novel.subgenre}</p>
-            </div>
-            <div className="stat-card">
-              <h4>⏰ Generated</h4>
-              <p>{new Date(autoGenData.novel.metadata.generatedAt).toLocaleString()}</p>
+            <div className="progress-tips">
+              <h4>💡 While You Wait:</h4>
+              <ul>
+                <li>🔄 This page will automatically update with progress</li>
+                <li>📱 Feel free to switch tabs or minimize the browser</li>
+                <li>⏰ Longer novels take more time but produce better quality</li>
+                <li>🎨 The AI is crafting each chapter with care and detail</li>
+              </ul>
             </div>
           </div>
-          
-          <div className="export-section">
-            <h4>📥 Download Your Novel</h4>
-            <div className="export-controls">
+        )}
+
+        {autoGenData.status === 'complete' && autoGenData.novel && (
+          <div className="auto-generate-complete">
+            <div className="completion-header">
+              <h3>🎉 Novel Generation Complete!</h3>
+              <p>Your {autoGenData.novel.genre} novel has been successfully generated and is ready for download.</p>
+            </div>
+            
+            <div className="novel-stats">
+              <div className="stat-card">
+                <h4>📚 Chapters</h4>
+                <p>{autoGenData.novel.chapters.length}</p>
+              </div>
+              <div className="stat-card">
+                <h4>📝 Total Words</h4>
+                <p>{autoGenData.novel.metadata.totalWords.toLocaleString()}</p>
+              </div>
+              <div className="stat-card">
+                <h4>🎭 Genre</h4>
+                <p>{autoGenData.novel.genre}<br/><small>{autoGenData.novel.subgenre}</small></p>
+              </div>
+              <div className="stat-card">
+                <h4>⏰ Generated</h4>
+                <p>{new Date(autoGenData.novel.metadata.generatedAt).toLocaleDateString()}</p>
+              </div>
+            </div>
+            
+            <div className="export-section">
+              <h4>📥 Download Your Novel</h4>
+              <div className="export-controls">
+                <button 
+                  onClick={() => exportAutoGeneratedNovel('docx')} 
+                  className="btn-export docx"
+                >
+                  📄 Download .docx
+                </button>
+                <button 
+                  onClick={() => exportAutoGeneratedNovel('pdf')} 
+                  className="btn-export pdf"
+                >
+                  📕 Download PDF
+                </button>
+                <button 
+                  onClick={() => exportAutoGeneratedNovel('html')} 
+                  className="btn-export html"
+                >
+                  📝 Export for Google Docs
+                </button>
+              </div>
+            </div>
+            
+            <div className="chapter-preview">
+              <h4>📖 Chapter Preview</h4>
+              <div className="chapter-list">
+                {autoGenData.novel.chapters.slice(0, 3).map((chapter, index) => (
+                  <div key={index} className="chapter-preview-item">
+                    <h5>Chapter {chapter.chapterNumber || chapter.number || index + 1}: {chapter.title}</h5>
+                    <p className="chapter-summary">{chapter.summary}</p>
+                    <p className="chapter-stats">{chapter.wordCount} words</p>
+                    <button 
+                      onClick={() => setGeneratedContent(chapter.content)}
+                      className="btn-view-chapter"
+                    >
+                      📖 View Full Chapter
+                    </button>
+                  </div>
+                ))}
+                {autoGenData.novel.chapters.length > 3 && (
+                  <p className="more-chapters">
+                    ... and {autoGenData.novel.chapters.length - 3} more chapters
+                  </p>
+                )}
+              </div>
+              
+              <div className="full-novel-preview">
+                <button 
+                  onClick={() => {
+                    const fullContent = autoGenData.novel.chapters
+                      .map(ch => `Chapter ${ch.chapterNumber || ch.number}: ${ch.title}\n\n${ch.content}`)
+                      .join('\n\n---\n\n');
+                    setGeneratedContent(fullContent);
+                  }}
+                  className="btn-view-full"
+                >
+                  📖 View Complete Novel
+                </button>
+              </div>
+            </div>
+            
+            <div className="action-controls">
               <button 
-                onClick={() => exportAutoGeneratedNovel('docx')} 
-                className="btn-export docx"
+                onClick={resetAutoGenerate}
+                className="btn-new-novel"
               >
-                📄 Download .docx
-              </button>
-              <button 
-                onClick={() => exportAutoGeneratedNovel('pdf')} 
-                className="btn-export pdf"
-              >
-                📕 Download PDF
-              </button>
-              <button 
-                onClick={() => exportAutoGeneratedNovel('html')} 
-                className="btn-export html"
-              >
-                📝 Export for Google Docs
+                🔄 Generate Another Novel
               </button>
             </div>
           </div>
-          
-          <div className="chapter-preview">
-            <h4>📖 Chapter Preview</h4>
-            <div className="chapter-list">
-              {autoGenData.novel.chapters.slice(0, 3).map((chapter, index) => (
-                <div key={index} className="chapter-preview-item">
-                  <h5>Chapter {chapter.chapterNumber || chapter.number || index + 1}: {chapter.title}</h5>
-                  <p className="chapter-summary">{chapter.summary}</p>
-                  <p className="chapter-stats">{chapter.wordCount} words</p>
-                  <button 
-                    onClick={() => setGeneratedContent(chapter.content)}
-                    className="btn-view-chapter"
-                  >
-                    📖 View Full Chapter
-                  </button>
-                </div>
-              ))}
-              {autoGenData.novel.chapters.length > 3 && (
-                <p className="more-chapters">
-                  ... and {autoGenData.novel.chapters.length - 3} more chapters
-                </p>
+        )}
+
+        {autoGenData.status === 'error' && (
+          <div className="auto-generate-error">
+            <h3>❌ Generation Failed</h3>
+            <div className="error-details">
+              <p className="error-message">{autoGenData.error}</p>
+              <p>Please try again or contact support if the problem persists.</p>
+              
+              {autoGenData.jobId && (
+                <p className="job-reference">Reference Job ID: <code>{autoGenData.jobId}</code></p>
               )}
             </div>
             
-            <div className="full-novel-preview">
-              <h4>📋 Full Novel Content</h4>
+            <div className="error-actions">
               <button 
-                onClick={() => {
-                  const fullContent = autoGenData.novel.chapters
-                    .map(ch => `Chapter ${ch.chapterNumber || ch.number}: ${ch.title}\n\n${ch.content}`)
-                    .join('\n\n---\n\n');
-                  setGeneratedContent(fullContent);
-                }}
-                className="btn-view-full"
+                onClick={resetAutoGenerate}
+                className="btn-retry"
               >
-                📖 View Complete Novel
+                🔄 Try Again
+              </button>
+              <button 
+                onClick={testAutoGenerate}
+                className="btn-secondary"
+              >
+                🧪 Test Connection
               </button>
             </div>
           </div>
-          
-          <div className="action-controls">
-            <button 
-              onClick={resetAutoGenerate}
-              className="btn-new-novel"
-            >
-              🔄 Generate Another Novel
-            </button>
-          </div>
-        </div>
-      )}
+        )}
 
-      {autoGenData.status === 'error' && (
-        <div className="auto-generate-error">
-          <h3>❌ Generation Failed</h3>
-          <p className="error-message">{autoGenData.error}</p>
-          <p>Please try again or contact support if the problem persists.</p>
-          
-          <div className="error-actions">
-            <button 
-              onClick={resetAutoGenerate}
-              className="btn-retry"
-            >
-              🔄 Try Again
-            </button>
+        {autoGenData.status === 'cancelled' && (
+          <div className="auto-generate-cancelled">
+            <h3>🛑 Generation Cancelled</h3>
+            <p>Novel generation was cancelled by the user.</p>
+            <p>You can start a new generation at any time.</p>
+            
+            <div className="cancelled-actions">
+              <button 
+                onClick={resetAutoGenerate}
+                className="btn-new-novel"
+              >
+                🚀 Start New Generation
+              </button>
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {autoGenData.status === 'cancelled' && (
-        <div className="auto-generate-cancelled">
-          <h3>🛑 Generation Cancelled</h3>
-          <p>Novel generation was cancelled by the user.</p>
-          <p>You can start a new generation at any time.</p>
-          
-          <div className="cancelled-actions">
-            <button 
-              onClick={resetAutoGenerate}
-              className="btn-new-novel"
-            >
-              🚀 Start New Generation
-            </button>
+        {/* Generated Content Display */}
+        {generatedContent && (
+          <div className="generated-content-section">
+            <h4>📖 Generated Content</h4>
+            <div className="content-viewer">
+              <pre className="content-text">{generatedContent}</pre>
+              <button 
+                onClick={() => setGeneratedContent('')}
+                className="btn-close-content"
+              >
+                ✕ Close
+              </button>
+            </div>
           </div>
-        </div>
-      )}
-    </div>
-    )
-    } catch (error) {
-      console.error('🚨 AutoGenerate render error:', error);
-      return (
-        <div style={{
-          background: 'red',
-          color: 'white',
-          padding: '20px',
-          margin: '20px',
-          fontSize: '18px',
-          fontWeight: 'bold'
-        }}>
-          🚨 AUTOGENERATE ERROR: {error.message}<br/>
-          Check console for details (F12)
-        </div>
-      );
-    }
+        )}
+      </div>
+    );
   }
 
   const renderContent = () => {
