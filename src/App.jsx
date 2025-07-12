@@ -2251,7 +2251,7 @@ Maya's story begins when..."
             </div>
 
             <div className="setup-section">
-              <h3>� Advanced AI Writing Technology</h3>
+              <h3>🔬 Advanced AI Writing Technology</h3>
               <p>Your novel will be generated using cutting-edge anti-AI techniques to ensure human-like quality:</p>
               
               <div className="ai-features-grid">
@@ -2347,7 +2347,7 @@ Maya's story begins when..."
             </div>
 
             <div className="setup-section">
-              <h3>�🧪 Test Connection</h3>
+              <h3>🧪 Test Connection</h3>
               <p>Verify the AutoGenerate system is working properly:</p>
               <button 
                 onClick={testAutoGenerate}
@@ -2892,7 +2892,7 @@ Maya's story begins when..."
                 
                 <div className="progress-stats">
                   <div className="stat">
-                    <span className="stat-icon">�</span>
+                    <span className="stat-icon">📋</span>
                     <span className="stat-text">Outlined: {autoGenData.chaptersOutlined || 0}</span>
                   </div>
                   <div className="stat">
@@ -3017,15 +3017,11 @@ Maya's story begins when..."
     // Reset state and start processing
     setAutoGenData(prev => ({
       ...prev,
-      };
-
-      console.log('Sending start request to autoGenerateNovel function...');
-      
-      const response = await fetch('/.netlify/functions/autoGenerateNovel', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+      status: 'initializing',
+      progress: 0,
+      currentPhase: 'Preparing to generate...',
+      error: null
+    }));
 
     try {
       console.log('Starting AutoGeneration with data:', {
