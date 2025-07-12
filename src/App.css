@@ -1293,3 +1293,120 @@ textarea {
     font-size: 1.1rem;
   }
 }
+
+/* Chapter Structure Guide */
+.chapter-structure-guide {
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+  border: 2px solid #38bdf8;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 4px 12px rgba(56, 189, 248, 0.1);
+}
+
+.chapter-structure-guide h3 {
+  color: #0c4a6e;
+  margin-bottom: 1rem;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.structure-info {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.structure-stat {
+  text-align: center;
+  background: rgba(255, 255, 255, 0.8);
+  padding: 1rem;
+  border-radius: 8px;
+  border: 1px solid #bae6fd;
+}
+
+.stat-number {
+  display: block;
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #0369a1;
+  margin-bottom: 0.25rem;
+}
+
+.stat-label {
+  font-size: 0.875rem;
+  color: #075985;
+  font-weight: 500;
+}
+
+.structure-description {
+  background: rgba(255, 255, 255, 0.6);
+  padding: 0.75rem;
+  border-radius: 6px;
+  border-left: 4px solid #38bdf8;
+  margin: 1rem 0 0.5rem 0;
+  font-style: italic;
+  color: #0c4a6e;
+}
+
+.words-per-chapter {
+  color: #0369a1;
+  font-size: 0.95rem;
+  margin-bottom: 1rem;
+}
+
+/* Status Messages */
+.warning-message {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  border: 2px solid #f59e0b;
+  border-radius: 8px;
+  padding: 1rem;
+  margin: 1rem 0;
+  color: #92400e;
+  font-weight: 500;
+  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.2);
+}
+
+.success-message {
+  background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+  border: 2px solid #10b981;
+  border-radius: 8px;
+  padding: 1rem;
+  margin: 1rem 0;
+  color: #065f46;
+  font-weight: 500;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.2);
+}
+
+.info-message {
+  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+  border: 2px solid #3b82f6;
+  border-radius: 8px;
+  padding: 1rem;
+  margin: 1rem 0;
+  color: #1e40af;
+  font-weight: 500;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.2);
+}
+
+.warning-message strong,
+.success-message strong,
+.info-message strong {
+  font-weight: 700;
+}
+
+/* Disabled button styles */
+.btn-generate:disabled {
+  background: linear-gradient(135deg, #9ca3af 0%, #6b7280 100%);
+  color: #d1d5db;
+  cursor: not-allowed;
+  opacity: 0.6;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.btn-generate:disabled:hover {
+  transform: none !important;
+  box-shadow: none !important;
+}

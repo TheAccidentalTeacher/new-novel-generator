@@ -444,10 +444,18 @@ Please copy this entire error message for debugging.
 
   const handleQuickGenOutlineNext = async () => {
     const chapterNumber = quickGenData.outline.length + 1
+    const chapterStructure = getRecommendedChapterStructure(quickGenData.wordCount)
+    
+    // Check if we've exceeded the maximum chapters
+    if (chapterNumber > chapterStructure.max) {
+      alert(`⚠️ Maximum chapters reached!\n\nFor ${quickGenData.wordCount}, the maximum recommended chapters is ${chapterStructure.max}. Adding more chapters would result in very short chapters (less than ${Math.floor(500 / chapterNumber)} words each).\n\nConsider moving to the chapter writing step or choosing a longer story format.`)
+      return
+    }
+    
     setLoading(true)
     
     try {
-      console.log(`Generating outline for chapter ${chapterNumber}`)
+      console.log(`Generating outline for chapter ${chapterNumber} (${chapterNumber}/${chapterStructure.max} max)`)
       
       const response = await fetch('/.netlify/functions/generateNovel', {
         method: 'POST',
@@ -460,7 +468,10 @@ Please copy this entire error message for debugging.
           subgenre: quickGenData.subgenre,
           synopsis: quickGenData.synopsis,
           outline: quickGenData.outline,
-          chapterNumber: chapterNumber
+          chapterNumber: chapterNumber,
+          wordCount: quickGenData.wordCount,
+          chapterStructure: chapterStructure,
+          totalChapters: chapterStructure.recommended
         })
       })
       
@@ -502,6 +513,13 @@ Please copy this entire error message for debugging.
         }))
         
         console.log(`Successfully added chapter ${chapterNumber} to outline:`, parsedChapter.title)
+        
+        // Show guidance after adding chapter
+        if (chapterNumber >= chapterStructure.recommended) {
+          alert(`✅ Chapter ${chapterNumber} added!\n\n${chapterNumber >= chapterStructure.recommended ? 
+            `You've reached the recommended ${chapterStructure.recommended} chapters for ${quickGenData.wordCount}. This is a good structure!` : 
+            `${chapterStructure.recommended - chapterNumber} more chapters recommended for optimal ${quickGenData.wordCount} structure.`}`)
+        }
         
       } else if (data.error) {
         throw new Error(data.error)
@@ -573,6 +591,68 @@ Please copy this entire error message for debugging.
       case 'novel': return { min: 2500, max: 4000, target: 3000 };
       case 'epic': return { min: 3000, max: 5000, target: 4000 };
       default: return { min: 2000, max: 4000, target: 3000 };
+    }
+  }
+
+  // Get recommended chapter count and structure based on story length
+  const getRecommendedChapterStructure = (storyLength) => {
+    switch(storyLength) {
+      case 'flash-fiction': 
+        return { 
+          recommended: 1, 
+          min: 1, 
+          max: 3, 
+          description: "Very short single scene or 2-3 micro-chapters",
+          wordsPerChapter: "250-500 words per section" 
+        };
+      case 'short-story': 
+        return { 
+          recommended: 3, 
+          min: 1, 
+          max: 5, 
+          description: "Brief story with beginning, middle, end",
+          wordsPerChapter: "800-1500 words per chapter" 
+        };
+      case 'novelette': 
+        return { 
+          recommended: 5, 
+          min: 3, 
+          max: 8, 
+          description: "Extended short story with multiple scenes",
+          wordsPerChapter: "1500-3000 words per chapter" 
+        };
+      case 'novella': 
+        return { 
+          recommended: 8, 
+          min: 5, 
+          max: 12, 
+          description: "Short novel with developed plot",
+          wordsPerChapter: "2500-4000 words per chapter" 
+        };
+      case 'novel': 
+        return { 
+          recommended: 15, 
+          min: 10, 
+          max: 25, 
+          description: "Full-length novel with complex plot",
+          wordsPerChapter: "3000-5000 words per chapter" 
+        };
+      case 'epic': 
+        return { 
+          recommended: 25, 
+          min: 20, 
+          max: 40, 
+          description: "Epic novel with multiple arcs",
+          wordsPerChapter: "3500-6000 words per chapter" 
+        };
+      default: 
+        return { 
+          recommended: 15, 
+          min: 10, 
+          max: 25, 
+          description: "Standard novel structure",
+          wordsPerChapter: "3000-5000 words per chapter" 
+        };
     }
   }
 
@@ -1680,6 +1760,11 @@ Please copy this entire error message for debugging.
 
     // Step 4: Outline Generation (was step 5)
     if (quickGenStep === 5) {
+      const chapterStructure = getRecommendedChapterStructure(quickGenData.wordCount);
+      const currentChapterCount = quickGenData.outline.length;
+      const canAddMore = currentChapterCount < chapterStructure.max;
+      const hasReachedRecommended = currentChapterCount >= chapterStructure.recommended;
+      
       return (
         <div className="content-panel">
           <div className="panel-header">
@@ -1693,14 +1778,55 @@ Please copy this entire error message for debugging.
             )}
           </div>
           
+          <div className="chapter-structure-guide">
+            <h3>📊 Recommended Structure for {quickGenData.wordCount.replace('-', ' ').toUpperCase()}</h3>
+            <div className="structure-info">
+              <div className="structure-stat">
+                <span className="stat-number">{chapterStructure.recommended}</span>
+                <span className="stat-label">Recommended Chapters</span>
+              </div>
+              <div className="structure-stat">
+                <span className="stat-number">{chapterStructure.min}-{chapterStructure.max}</span>
+                <span className="stat-label">Chapter Range</span>
+              </div>
+              <div className="structure-stat">
+                <span className="stat-number">{currentChapterCount}</span>
+                <span className="stat-label">Generated So Far</span>
+              </div>
+            </div>
+            <p className="structure-description">{chapterStructure.description}</p>
+            <p className="words-per-chapter"><strong>Target:</strong> {chapterStructure.wordsPerChapter}</p>
+            
+            {currentChapterCount >= chapterStructure.max && (
+              <div className="warning-message">
+                ⚠️ <strong>Maximum chapters reached!</strong> You have {currentChapterCount} chapters, which is the maximum recommended for {quickGenData.wordCount}. Adding more may result in very short chapters.
+              </div>
+            )}
+            
+            {hasReachedRecommended && currentChapterCount < chapterStructure.max && (
+              <div className="success-message">
+                ✅ <strong>Good structure!</strong> You have {currentChapterCount} chapters, which meets the recommended count. You can add {chapterStructure.max - currentChapterCount} more if needed.
+              </div>
+            )}
+            
+            {currentChapterCount < chapterStructure.recommended && (
+              <div className="info-message">
+                💡 <strong>Keep going!</strong> You have {currentChapterCount} chapters. Consider adding {chapterStructure.recommended - currentChapterCount} more to reach the recommended {chapterStructure.recommended} chapters.
+              </div>
+            )}
+          </div>
+          
           <div className="outline-section">
             <div className="outline-controls">
               <button 
                 onClick={handleQuickGenOutlineNext}
                 className="btn-generate"
-                disabled={loading}
+                disabled={loading || !canAddMore}
+                title={!canAddMore ? `Maximum chapters (${chapterStructure.max}) reached for ${quickGenData.wordCount}` : ''}
               >
-                {loading ? 'Generating Chapter... (GPT-4o-mini)' : `Generate Chapter ${quickGenData.outline.length + 1}`}
+                {loading ? 'Generating Chapter... (GPT-4o-mini)' : 
+                 !canAddMore ? `Max Chapters Reached (${chapterStructure.max})` :
+                 `Generate Chapter ${quickGenData.outline.length + 1}`}
               </button>
               
               {quickGenData.outline.length > 0 && (
