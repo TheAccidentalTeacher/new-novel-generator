@@ -3017,15 +3017,15 @@ Maya's story begins when..."
     // Reset state and start processing
     setAutoGenData(prev => ({
       ...prev,
-      status: 'processing',
-      progress: 0,
-      currentPhase: 'Starting generation...',
-      error: null,
-      novel: null,
-      jobId: null,
-      pollUrl: null,
-      startTime: new Date().toISOString()
-    }));
+      };
+
+      console.log('Sending start request to autoGenerateNovel function...');
+      
+      const response = await fetch('/.netlify/functions/autoGenerateNovel', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
 
     try {
       console.log('Starting AutoGeneration with data:', {
