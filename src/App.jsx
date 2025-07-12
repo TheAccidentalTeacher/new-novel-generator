@@ -1882,14 +1882,21 @@ Please copy this entire error message for debugging.
             zIndex: 9999,
             border: '3px solid yellow',
             borderRadius: '10px',
-            maxWidth: '90vw'
+            maxWidth: '90vw',
+            textAlign: 'center'
           }}>
             🚨 AUTO-GENERATE UI IS LOADING! 🚨<br/>
             Status: {autoGenData.status}<br/>
             If you see this, the function is working!
           </div>
 
-          <div className="panel-header" style={{ marginTop: '80px' }}>
+          <div className="panel-header" style={{ 
+            marginTop: '120px',
+            background: 'white',
+            padding: '20px',
+            border: '2px solid blue',
+            borderRadius: '10px'
+          }}>
             <h1 style={{ 
               color: 'red', 
               fontSize: '32px',
@@ -1908,24 +1915,27 @@ Please copy this entire error message for debugging.
             
             {/* Debug Info - Force Visible */}
             <div style={{ 
-              background: '#e8f4fd', 
+              background: '#ffffff', 
               border: '5px solid #007acc',
               padding: '20px', 
               margin: '20px 0', 
               borderRadius: '8px',
               fontSize: '16px',
               fontFamily: 'monospace',
-              color: '#333'
+              color: '#000',
+              textAlign: 'left'
             }}>
-              <strong style={{ fontSize: '18px' }}>🔧 DEBUG INFO (This should be visible!):</strong><br/>
-              Status: <strong style={{ color: 'red' }}>{autoGenData.status}</strong><br/>
-              Job ID: <strong>{autoGenData.jobId || 'None'}</strong><br/>
-              Progress: <strong>{autoGenData.progress}%</strong><br/>
-              Current Phase: <strong>{autoGenData.currentPhase || 'None'}</strong><br/>
-              Last Update: <strong>{autoGenData.lastUpdate ? new Date(autoGenData.lastUpdate).toLocaleString() : 'None'}</strong><br/>
-              Genre: <strong>{autoGenData.genre || 'Not selected'}</strong><br/>
-              Subgenre: <strong>{autoGenData.subgenre || 'Not selected'}</strong><br/>
-              Word Count: <strong>{autoGenData.wordCount || 'Not selected'}</strong>
+              <strong style={{ fontSize: '18px', color: 'red' }}>🔧 DEBUG INFO (This should be visible!):</strong><br/>
+              <div style={{ fontSize: '16px', lineHeight: '1.5', marginTop: '10px' }}>
+                Status: <strong style={{ color: 'red' }}>{autoGenData.status}</strong><br/>
+                Job ID: <strong>{autoGenData.jobId || 'None'}</strong><br/>
+                Progress: <strong style={{ color: 'green' }}>{autoGenData.progress}%</strong><br/>
+                Current Phase: <strong>{autoGenData.currentPhase || 'None'}</strong><br/>
+                Last Update: <strong>{autoGenData.lastUpdate ? new Date(autoGenData.lastUpdate).toLocaleString() : 'None'}</strong><br/>
+                Genre: <strong>{autoGenData.genre || 'Not selected'}</strong><br/>
+                Subgenre: <strong>{autoGenData.subgenre || 'Not selected'}</strong><br/>
+                Word Count: <strong>{autoGenData.wordCount || 'Not selected'}</strong>
+              </div>
             </div>
           </div>
 
@@ -1981,6 +1991,21 @@ Please copy this entire error message for debugging.
                 </div>
 
                 <div className="genre-card">
+                  <h4>Christian Fiction</h4>
+                  <div className="subgenre-list">
+                    {['Inspirational Romance', 'Biblical Fiction', 'Amish Romance', 'Christian Suspense', 'End Times', 'Christian Fantasy'].map(subgenre => (
+                      <button
+                        key={subgenre}
+                        className={`subgenre-btn ${autoGenData.genre === 'Christian Fiction' && autoGenData.subgenre === subgenre ? 'selected' : ''}`}
+                        onClick={() => setAutoGenData(prev => ({ ...prev, genre: 'Christian Fiction', subgenre }))}
+                      >
+                        {subgenre}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="genre-card">
                   <h4>Mystery</h4>
                   <div className="subgenre-list">
                     {['Cozy Mystery', 'Police Procedural', 'Detective Fiction', 'Noir', 'Psychological Thriller', 'True Crime'].map(subgenre => (
@@ -2018,6 +2043,96 @@ Please copy this entire error message for debugging.
                         key={subgenre}
                         className={`subgenre-btn ${autoGenData.genre === 'Horror' && autoGenData.subgenre === subgenre ? 'selected' : ''}`}
                         onClick={() => setAutoGenData(prev => ({ ...prev, genre: 'Horror', subgenre }))}
+                      >
+                        {subgenre}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="genre-card">
+                  <h4>Historical Fiction</h4>
+                  <div className="subgenre-list">
+                    {['Medieval', 'Victorian', 'World War Era', 'Ancient Civilizations', 'Wild West', 'Renaissance'].map(subgenre => (
+                      <button
+                        key={subgenre}
+                        className={`subgenre-btn ${autoGenData.genre === 'Historical Fiction' && autoGenData.subgenre === subgenre ? 'selected' : ''}`}
+                        onClick={() => setAutoGenData(prev => ({ ...prev, genre: 'Historical Fiction', subgenre }))}
+                      >
+                        {subgenre}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="genre-card">
+                  <h4>Contemporary Fiction</h4>
+                  <div className="subgenre-list">
+                    {['Literary Fiction', 'Women\'s Fiction', 'Family Saga', 'Coming of Age', 'Social Issues', 'Slice of Life'].map(subgenre => (
+                      <button
+                        key={subgenre}
+                        className={`subgenre-btn ${autoGenData.genre === 'Contemporary Fiction' && autoGenData.subgenre === subgenre ? 'selected' : ''}`}
+                        onClick={() => setAutoGenData(prev => ({ ...prev, genre: 'Contemporary Fiction', subgenre }))}
+                      >
+                        {subgenre}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="genre-card">
+                  <h4>Young Adult</h4>
+                  <div className="subgenre-list">
+                    {['YA Fantasy', 'YA Romance', 'YA Dystopian', 'YA Contemporary', 'YA Sci-Fi', 'YA Mystery'].map(subgenre => (
+                      <button
+                        key={subgenre}
+                        className={`subgenre-btn ${autoGenData.genre === 'Young Adult' && autoGenData.subgenre === subgenre ? 'selected' : ''}`}
+                        onClick={() => setAutoGenData(prev => ({ ...prev, genre: 'Young Adult', subgenre }))}
+                      >
+                        {subgenre}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="genre-card">
+                  <h4>Adventure</h4>
+                  <div className="subgenre-list">
+                    {['Action Adventure', 'Survival', 'Treasure Hunt', 'Exploration', 'Military', 'Spy Fiction'].map(subgenre => (
+                      <button
+                        key={subgenre}
+                        className={`subgenre-btn ${autoGenData.genre === 'Adventure' && autoGenData.subgenre === subgenre ? 'selected' : ''}`}
+                        onClick={() => setAutoGenData(prev => ({ ...prev, genre: 'Adventure', subgenre }))}
+                      >
+                        {subgenre}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="genre-card">
+                  <h4>Crime</h4>
+                  <div className="subgenre-list">
+                    {['Heist', 'Organized Crime', 'Serial Killer', 'Courtroom Drama', 'Private Detective', 'Forensic'].map(subgenre => (
+                      <button
+                        key={subgenre}
+                        className={`subgenre-btn ${autoGenData.genre === 'Crime' && autoGenData.subgenre === subgenre ? 'selected' : ''}`}
+                        onClick={() => setAutoGenData(prev => ({ ...prev, genre: 'Crime', subgenre }))}
+                      >
+                        {subgenre}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="genre-card">
+                  <h4>Western</h4>
+                  <div className="subgenre-list">
+                    {['Traditional Western', 'Weird Western', 'Modern Western', 'Outlaw', 'Frontier', 'Native American'].map(subgenre => (
+                      <button
+                        key={subgenre}
+                        className={`subgenre-btn ${autoGenData.genre === 'Western' && autoGenData.subgenre === subgenre ? 'selected' : ''}`}
+                        onClick={() => setAutoGenData(prev => ({ ...prev, genre: 'Western', subgenre }))}
                       >
                         {subgenre}
                       </button>
